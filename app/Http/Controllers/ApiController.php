@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Storage;
 use OpenAI\Laravel\Facades\OpenAI;
+use Illuminate\Http\Request;
 
 class ApiController extends Controller
 {
     public function test(Request $request)
     {
+
         $jsonData = $this->getDataFromRequest($request);
 
         dd($jsonData);
