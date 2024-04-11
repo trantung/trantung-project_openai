@@ -5,7 +5,7 @@ use Carbon\Carbon;
 use Storage;
 use OpenAI\Laravel\Facades\OpenAI;
 
-class ApiController extends BaseApiController
+class ApiController extends Controllers
 {
     public function test(Request $request)
     {
