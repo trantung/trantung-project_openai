@@ -3,20 +3,24 @@
 namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Storage;
+use OpenAI\Laravel\Facades\OpenAI;
 
 class ApiController extends BaseApiController
 {
     public function test(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
-        $text = "";
+
+        dd($jsonData);
+
         $model = 'gpt-4-turbo';
         $question = $jsonData['question'];
         // $open_ai_key = getenv('OPENAI_API_KEY');
-        $open_ai_key = getenv('OPENAI_API_KEY');
-        $open_ai = new OpenAi($open_ai_key);
-        $chat = $open_ai->chat([
-           'model' => $model,
+        // $open_ai_key = getenv('OPENAI_API_KEY');
+        // $open_ai = new OpenAi($open_ai_key);
+
+        $chat = OpenAI::chat()->create([
+            'model' => $model,
            'response_format'=>["type"=>"json_object"],
            'messages' => [
                [
