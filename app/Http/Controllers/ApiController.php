@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Carbon\Carbon;
 use Storage;
 use OpenAI\Laravel\Facades\OpenAI;
 
-class ApiController extends Controllers
+class ApiController extends Controller
 {
     public function test(Request $request)
     {
