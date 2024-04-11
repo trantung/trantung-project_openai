@@ -10,3 +10,4 @@ Route::get('/api', function () {
     return view('welcome');
 });
 
+Route::post("openai/test", [App\Http\Controllers\ApiController::class,'test']);
