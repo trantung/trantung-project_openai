@@ -9,12 +9,17 @@ use Illuminate\Http\Request;
 
 class ApiController extends Controller
 {
+    public function getDataFromRequest($request)
+    {
+        return $request->json()->all();
+    }
+
     public function test(Request $request)
     {
-
+// 
         $jsonData = $this->getDataFromRequest($request);
 
-        dd($jsonData);
+        // dd($jsonData);
 
         $model = 'gpt-4-turbo';
         $question = $jsonData['question'];
