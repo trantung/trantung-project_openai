@@ -14,6 +14,15 @@ class ApiController extends Controller
         return $request->json()->all();
     }
 
+    public function responseSuccess($statusCode, $message)
+    {
+        return response()->json(array(
+            'code' => $statusCode,
+            'data' => $message,
+            'message' => 'Success'
+        ), 200);
+    }
+    
     public function test(Request $request)
     {
 // 
