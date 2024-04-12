@@ -18,24 +18,10 @@ class ApiController extends Controller
     {
 // 
         $jsonData = $this->getDataFromRequest($request);
-
-        // dd($jsonData);
-	$yourApiKey = getenv('OPENAI_API_KEY');
-$client = OpenAI::client($yourApiKey);
-
-//$result = $client->chat()->create([
-  //  'model' => 'gpt-4',
-    //'messages' => [
-      //  ['role' => 'user', 'content' => 'Hello!'],
-    //],
-//]);
-//	dd($result);
-//echo $result->choices[0]->message->content;
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
         $model = 'gpt-4-turbo';
         $question = $jsonData['question'];
-        // $open_ai_key = getenv('OPENAI_API_KEY');
-        // $open_ai_key = getenv('OPENAI_API_KEY');
-        // $open_ai = new OpenAi($open_ai_key);
 
         $chat = $client->chat()->create([
             'model' => $model,
@@ -54,12 +40,8 @@ $client = OpenAI::client($yourApiKey);
            'temperature' => 0,
            'max_tokens' => 2000
         ]);
-	dd($chat->choices[0]->message->content);
-        $dataResponseChat = json_decode($chat);
-       	dd($dataResponseChat);
-	$data = json_decode($chat)->choices[0]->message->content;
-        $response = [];
-        foreach(json_decode($data) as $value) {
+        $dataResponseChat = $chat->choices[0]->message->content;
+        foreach(json_decode($dataResponseChat) as $value) {
             foreach($value as $result) {
                 if(!empty($result->error) && !empty($result->correction) && !empty($result->explanation)) {
                     $response[] = [
