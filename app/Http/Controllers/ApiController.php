@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use Storage;
-use OpenAI\Laravel\Facades\OpenAI;
+use \OpenAI;
 use Illuminate\Http\Request;
 
 class ApiController extends Controller
@@ -20,14 +20,24 @@ class ApiController extends Controller
         $jsonData = $this->getDataFromRequest($request);
 
         // dd($jsonData);
+	$yourApiKey = getenv('OPENAI_API_KEY');
+$client = OpenAI::client($yourApiKey);
 
+//$result = $client->chat()->create([
+  //  'model' => 'gpt-4',
+    //'messages' => [
+      //  ['role' => 'user', 'content' => 'Hello!'],
+    //],
+//]);
+//	dd($result);
+//echo $result->choices[0]->message->content;
         $model = 'gpt-4-turbo';
         $question = $jsonData['question'];
         // $open_ai_key = getenv('OPENAI_API_KEY');
         // $open_ai_key = getenv('OPENAI_API_KEY');
         // $open_ai = new OpenAi($open_ai_key);
 
-        $chat = OpenAI::chat()->create([
+        $chat = $client->chat()->create([
             'model' => $model,
            'response_format'=>["type"=>"json_object"],
            'messages' => [
@@ -44,9 +54,10 @@ class ApiController extends Controller
            'temperature' => 0,
            'max_tokens' => 2000
         ]);
-
+	dd($chat->choices[0]->message->content);
         $dataResponseChat = json_decode($chat);
-        $data = json_decode($chat)->choices[0]->message->content;
+       	dd($dataResponseChat);
+	$data = json_decode($chat)->choices[0]->message->content;
         $response = [];
         foreach(json_decode($data) as $value) {
             foreach($value as $result) {
