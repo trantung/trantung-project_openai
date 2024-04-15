@@ -11,3 +11,7 @@ Route::get('/api', function () {
 });
 
 Route::post("api/openai/test", [App\Http\Controllers\ApiController::class,'test']);
+Route::post("api/openai/sentence_1", [App\Http\Controllers\ApiController::class,'test']);
+//cục 2: introduction
+Route::post("api/openai/introduction", [App\Http\Controllers\ApiController::class,'introduction']);
+// Route::post("api/openai/test", [App\Http\Controllers\ApiController::class,'test']);
