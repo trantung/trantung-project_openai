@@ -50,14 +50,10 @@ class ApiController extends Controller
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
         $dataResponseChat = json_decode($dataResponseChat);
-        dd($dataResponseChat);
         $response = [
-            'Introduction' => $dataResponseChat->Introduction,
-            'Comments' => [
-                'Strengths' => implode("\n", $dataResponseChat->Comments->Strengths),
-                'Weaknesses' => implode("\n", $dataResponseChat->Comments->Weaknesses),
-            ],
-            'Suggestions' => implode("\n", $dataResponseChat->Suggestions),
+            'topic_sentence' => $dataResponseChat->topic_sentence,
+            'explanation' => $dataResponseChat->explanation,
+            'improved_example' => $dataResponseChat->improved_example,
         ];
         return $this->responseSuccess(200, $response);
     }
