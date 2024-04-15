@@ -85,11 +85,6 @@ class ApiController extends Controller
                 'Suggestions' => $this->TopicMainPoint($value->Suggestions),
             ];
         }
-        $response = [
-            'topic_sentence' => $dataResponseChat->topic_sentence,
-            'explanation' => $dataResponseChat->explanation,
-            'improved_example' => $dataResponseChat->improved_example,
-        ];
         return $this->responseSuccess(200, $response);
     }
 
