@@ -22,6 +22,7 @@ class ApiController extends Controller
             'message' => 'Success'
         ), 200);
     }
+
     public function introduction(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
@@ -40,7 +41,7 @@ class ApiController extends Controller
                ],
                [
                    "role" => "user",
-                   "content" => "could you help me to identify introduction of IELTS Writing Task 2. Show me the explanation and suggest improvements for introduction. This is my IELTS Writing Task 2: \n" . $question
+                   "content" => "could you help me to identify introduction of IELTS Writing Task 2. Please explain to me and give comments on the strengths and weaknesses of my IELTS Writing Task 2. Then provide suggestions for improving the introduction. This is my IELTS Writing Task 2: \n" . $question
                ],
 
             ],
@@ -48,18 +49,25 @@ class ApiController extends Controller
            'max_tokens' => 2000
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
-        dd($dataResponseChat);
-        foreach(json_decode($dataResponseChat) as $value) {
-            foreach($value as $result) {
-                if(!empty($result->error) && !empty($result->correction) && !empty($result->explanation)) {
-                    $response[] = [
-                        'error' => $result->error,
-                        'correction' => $result->correction,
-                        'explanation' => $result->explanation,
-                    ];
-                }
-            }
-        }
+        $response = [
+            'Introduction' => $dataResponseChat->Introduction,
+            'Comments' => [
+                'Strengths' => implode("\n", $dataResponseChat->Comments->Strengths),
+                'Weaknesses' => implode("\n", $dataResponseChat->Comments->Weaknesses),
+            ],
+            'Suggestions' => implode("\n", $dataResponseChat->Suggestions),
+        ];
+        // foreach(json_decode($dataResponseChat) as $value) {
+        //     foreach($value as $result) {
+        //         if(!empty($result->error) && !empty($result->correction) && !empty($result->explanation)) {
+        //             $response[] = [
+        //                 'error' => $result->error,
+        //                 'correction' => $result->correction,
+        //                 'explanation' => $result->explanation,
+        //             ];
+        //         }
+        //     }
+        // }
         return $this->responseSuccess(200, $response);
     }
 
