@@ -48,6 +48,17 @@ class ApiController extends Controller
         return $res;
     }
 
+    public function getValueFromText($str, $data)
+    {
+        foreach($data as $key => $value)
+        {
+            if (str_contains($key, $str)) {
+                return $value;
+            }
+        }
+        return [];
+    }
+
     public function topicSentence(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
@@ -79,10 +90,10 @@ class ApiController extends Controller
         foreach($dataResponseChat as $key => $value)
         {
             $res[$key] = [
-                'TopicSentence' => $value->TopicSentence,
-                'MainPoints' => implode("\n", $value->MainPoints),
-                'Explanation' => $this->TopicMainPoint($value->Explanation),
-                'Suggestions' => $this->TopicMainPoint($value->Suggestions),
+                'TopicSentence' => $this->getValueFromText('Topic',$value),
+                'MainPoints' => implode("\n", $this->getValueFromText('Point',$value)),
+                'Explanation' => $this->TopicMainPoint($this->getValueFromText('Explanation',$value)),
+                'Suggestions' => $this->TopicMainPoint($this->getValueFromText('Suggestions',$value)),
             ];
         }
         return $this->responseSuccess(200, $response);
