@@ -23,6 +23,31 @@ class ApiController extends Controller
         ), 200);
     }
 
+    public function mainPoints($data)
+    {
+        $res = $result = [];
+        foreach($data as $key => $value)
+        {
+            $res[] = $value;
+        }
+        foreach($res as $k => $v) {
+            $result[] = [
+                'point' => $v
+            ];
+        }
+        return $result;
+    }
+
+    public function TopicMainPoint($data)
+    {
+        $res = [];
+        $res = [
+            'TopicSentence' => $data->TopicSentence,
+            'MainPoints' => $this->mainPoints($data->MainPoints),
+        ];
+        return $res;
+    }
+
     public function topicSentence(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
@@ -50,6 +75,16 @@ class ApiController extends Controller
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
         $dataResponseChat = json_decode($dataResponseChat);
+        $res = [];
+        foreach($dataResponseChat as $key => $value)
+        {
+            $res[$key] = [
+                'TopicSentence' => $value->TopicSentence,
+                'MainPoints' => implode("\n", $value->MainPoints),
+                'Explanation' => $this->TopicMainPoint($value->Explanation),
+                'Suggestions' => $this->TopicMainPoint($value->Suggestions),
+            ];
+        }
         $response = [
             'topic_sentence' => $dataResponseChat->topic_sentence,
             'explanation' => $dataResponseChat->explanation,
