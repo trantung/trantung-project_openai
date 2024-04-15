@@ -23,6 +23,45 @@ class ApiController extends Controller
         ), 200);
     }
 
+    public function topicSentence(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        $model = 'gpt-4-turbo';
+        $question = $jsonData['question'];
+
+        $chat = $client->chat()->create([
+            'model' => $model,
+           'response_format'=>["type"=>"json_object"],
+           'messages' => [
+               [
+                   "role" => "system",
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.Identify topic sentence of IELTS Essay Task 2. Response is JSON format"
+               ],
+               [
+                   "role" => "user",
+                   "content" => "could you help me to identify topic sentence of IELTS Essay Task 2. Then provide explanation and improved example. This is my IELTS Essay Task 2: \n" . $question
+               ],
+
+            ],
+           'temperature' => 0,
+           'max_tokens' => 2000
+        ]);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $dataResponseChat = json_decode($dataResponseChat);
+        dd($dataResponseChat);
+        $response = [
+            'Introduction' => $dataResponseChat->Introduction,
+            'Comments' => [
+                'Strengths' => implode("\n", $dataResponseChat->Comments->Strengths),
+                'Weaknesses' => implode("\n", $dataResponseChat->Comments->Weaknesses),
+            ],
+            'Suggestions' => implode("\n", $dataResponseChat->Suggestions),
+        ];
+        return $this->responseSuccess(200, $response);
+    }
+
     public function introduction(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
@@ -49,6 +88,7 @@ class ApiController extends Controller
            'max_tokens' => 2000
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
+        $dataResponseChat = json_decode($dataResponseChat);
         $response = [
             'Introduction' => $dataResponseChat->Introduction,
             'Comments' => [
@@ -57,17 +97,6 @@ class ApiController extends Controller
             ],
             'Suggestions' => implode("\n", $dataResponseChat->Suggestions),
         ];
-        // foreach(json_decode($dataResponseChat) as $value) {
-        //     foreach($value as $result) {
-        //         if(!empty($result->error) && !empty($result->correction) && !empty($result->explanation)) {
-        //             $response[] = [
-        //                 'error' => $result->error,
-        //                 'correction' => $result->correction,
-        //                 'explanation' => $result->explanation,
-        //             ];
-        //         }
-        //     }
-        // }
         return $this->responseSuccess(200, $response);
     }
 
