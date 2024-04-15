@@ -86,10 +86,10 @@ class ApiController extends Controller
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
         $dataResponseChat = json_decode($dataResponseChat);
-        $res = [];
+        $response = [];
         foreach($dataResponseChat as $key => $value)
         {
-            $res[$key] = [
+            $response[$key] = [
                 'TopicSentence' => $this->getValueFromText('Topic',$value),
                 'MainPoints' => implode("\n", $this->getValueFromText('Point',$value)),
                 'Explanation' => $this->TopicMainPoint($this->getValueFromText('Explanation',$value)),
