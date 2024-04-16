@@ -73,11 +73,11 @@ class ApiController extends Controller
            'messages' => [
                [
                    "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.Identify the topic sentence and the main points in the Body Paragraphs of an IELTS Essay Task 2, give comments on the strengths and weaknesses and suggestions for improvement for each topic sentence and main points. Response is JSON format"
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.Identify the topic sentence and the main points in the Body Paragraphs of an IELTS Essay Task 2, give comments on the strengths and weaknesses and suggestions for improvement for each topic sentence and main points in the Body Paragraphs. Response is JSON format"
                ],
                [
                    "role" => "user",
-                   "content" => "could you help me to identify the topic sentence and the main points in the Body Paragraphs of an IELTS Essay Task 2, give comments on the strengths and weaknesses and suggestions for improvement for each topic sentence and main points.This is my IELTS Essay Task 2: \n" . $question
+                   "content" => "could you help me to identify the topic sentence and the main points in the Body Paragraphs of an IELTS Essay Task 2, give comments on the strengths and weaknesses and suggestions for improvement for each topic sentence and main points in the Body Paragraphs.This is my IELTS Essay Task 2: \n" . $question
                ],
 
             ],
@@ -92,8 +92,11 @@ class ApiController extends Controller
             $response[$key] = [
                 'TopicSentence' => $this->getValueFromText('Topic',$value),
                 'MainPoints' => implode("\n", $this->getValueFromText('Point',$value)),
-                'Explanation' => $this->TopicMainPoint($this->getValueFromText('Explanation',$value)),
-                'Suggestions' => $this->TopicMainPoint($this->getValueFromText('Suggestions',$value)),
+                'Comments' => [
+                    'Strengths' => $this->getValueFromText('Strengths', $value),
+                    'Weaknesses' => $this->getValueFromText('Weaknesses', $value),
+                    'Suggestions' => $this->getValueFromText('Suggestions', $value),
+                ],
             ];
         }
         return $this->responseSuccess(200, $response);
