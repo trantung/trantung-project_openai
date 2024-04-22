@@ -48,7 +48,7 @@ class ApiController extends Controller
         return $res;
     }
 
-    public function getValueFromText($str, $data)
+    public function getValueFromArray($str, $data)
     {
         foreach($data as $key => $value)
         {
@@ -57,6 +57,72 @@ class ApiController extends Controller
             }
         }
         return [];
+    }
+
+    public function getValueFromText($str, $key, $value)
+    {
+        if (str_contains($key, $str) && is_string($value)) {
+            return $value;
+        }
+        return null;
+    }
+
+    public function conclusion(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        $model = 'gpt-4-turbo';
+        $question = $jsonData['question'];
+
+        $chat = $client->chat()->create([
+            'model' => $model,
+           'response_format'=>["type"=>"json_object"],
+           'messages' => [
+               [
+                   "role" => "system",
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.Identify conclusion of an IELTS Essay Task 2, give comments on the strengths and weaknesses. Improvement with example for conclusion. After that provide an overall consisting of 4 to 6 concise sentences indicating what needs to be improved. Response is JSON with format following rule: Conclusion is string, Comments has Strengths is string and Weaknesses is string, Improvements is string and Overall is array" 
+               ],
+               [
+                   "role" => "user",
+                   "content" => "could you help me to identify conclusion of an IELTS Essay Task 2, give comments on the strengths and weaknesses. Then help me to improve with examples of conclusion. After that provide an overall consisting of 4 to 6 concise sentences indicating what needs to be improved. This is my IELTS Essay Task 2: \n" . $question
+               ],
+
+            ],
+           'temperature' => 0,
+           'max_tokens' => 2000
+        ]);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $dataResponseChat = json_decode($dataResponseChat);
+        $response = [
+            'Conclusion' => $dataResponseChat->Conclusion,
+            'Comments' => [
+                'Strengths' => $dataResponseChat->Comments->Strengths,
+                'Weaknesses' => $dataResponseChat->Comments->Weaknesses,
+            ],
+            'Improvements' => $dataResponseChat->Comments->Improvements,
+            'Overall' => implode("\n", $dataResponseChat->Overall),
+        ];
+        return $this->responseSuccess(200, $response);
+    }
+
+    public function getComment($data)
+    {
+        $strengths = $weaknesses = [];
+        foreach($data as $key => $value) {
+            if ($key == 'Strengths') {
+                $strengths = $value;
+            }
+            if ($key== 'Weaknesses') {
+                $weaknesses = $value;
+            }
+        }
+        dd($strengths, $weaknesses);
+        $res = [
+            'Strengths' => implode("\n", $strengths),
+            'Weaknesses' => implode("\n", $weaknesses),
+        ];
+        return $res;
     }
 
     public function topicSentence(Request $request)
@@ -73,11 +139,11 @@ class ApiController extends Controller
            'messages' => [
                [
                    "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.Identify the topic sentence and the main points in the Body Paragraphs of an IELTS Essay Task 2, give comments on the strengths and weaknesses and suggestions for improvement for each topic sentence and main points in the Body Paragraphs. Response is JSON format"
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.Identify only the topic sentence and the main points in the Body Paragraphs of an IELTS Essay Task 2, give comments on the strengths and weaknesses.Improvement with example for each topic sentence and main points in the Body Paragraphs. Response is JSON format"
                ],
                [
                    "role" => "user",
-                   "content" => "could you help me to identify the topic sentence and the main points in the Body Paragraphs of an IELTS Essay Task 2, give comments on the strengths and weaknesses and suggestions for improvement for each topic sentence and main points in the Body Paragraphs.This is my IELTS Essay Task 2: \n" . $question
+                   "content" => "could you help me to identify the topic sentence and the main points in the Body Paragraphs of an IELTS Essay Task 2, give comments on the strengths and weaknesses. Then help me to improve with examples of improvement for each topic sentence and main points in the Body Paragraphs.This is my IELTS Essay Task 2: \n" . $question
                ],
 
             ],
@@ -86,17 +152,21 @@ class ApiController extends Controller
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
         $dataResponseChat = json_decode($dataResponseChat);
+        // dd($dataResponseChat);
         $response = [];
         foreach($dataResponseChat as $key => $value)
         {
             $response[$key] = [
-                'TopicSentence' => $this->getValueFromText('Topic',$value),
-                'MainPoints' => implode("\n", $this->getValueFromText('Point',$value)),
+                'TopicSentence' => $this->getValueFromArray('Topic',$value),
+                'MainPoints' => implode("\n", $this->getValueFromArray('Point',$value)),
                 'Comments' => [
-                    'Strengths' => $this->getValueFromText('Strengths', $value),
-                    'Weaknesses' => $this->getValueFromText('Weaknesses', $value),
-                    'Suggestions' => $this->getValueFromText('Suggestions', $value),
+                    'Strengths' => $value->Comments->Strengths,
+                    'Weaknesses' => $value->Comments->Weaknesses,
                 ],
+                'Improvements' => [
+                    'Topic_sentence_improve' => $this->getValueFromArray('Topic',$value->Improvements),
+                    'Main_points' => $this->getValueFromArray('Point',$value->Improvements),
+                ]
             ];
         }
         return $this->responseSuccess(200, $response);
@@ -105,6 +175,7 @@ class ApiController extends Controller
     public function introduction(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
+        dd(111);
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
         $model = 'gpt-4-turbo';
