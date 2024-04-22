@@ -237,16 +237,15 @@ class ApiController extends Controller
            'max_tokens' => 2000
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
-        foreach(json_decode($dataResponseChat) as $value) {
-            foreach($value as $result) {
-                if(!empty($result->error) && !empty($result->correction) && !empty($result->explanation)) {
-                    $response[] = [
-                        'error' => $result->error,
-                        'correction' => $result->correction,
-                        'explanation' => $result->explanation,
-                    ];
-                }
-            }
+        $data = json_decode($dataResponseChat)->criteria;
+        // dd(json_decode($dataResponseChat));
+        $response = [];
+        foreach($data as $value) {
+            $response[] = [
+                'criterion' => $value->criterion,
+                'score' => $value->score,
+                'explanation' => $value->explanation,
+            ];
         }
         return $this->responseSuccess(200, $response);
     }
