@@ -213,7 +213,6 @@ class ApiController extends Controller
 
     public function test(Request $request)
     {
-// 
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
@@ -226,11 +225,11 @@ class ApiController extends Controller
            'messages' => [
                [
                    "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.Identify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 2. Response is JSON format"
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.Please grade the IELTS Writing Task 2 essay based on the following criteria: \n- The writer addresses all the requirements of the question \n- The writer addresses all the requirements of the question in a balanced manner \n- The writer presents opinions clearly and consistently throughout the essay \n- The writer develops ideas with relevant arguments \n- The writer fully develops the ideas.\n All the above criteria are scored according to the following rules: \n -If not met, then Band ≤ 3\n -Needs improvement, then 4 ≤ Band ≤ 5 \n -Satisfactory, then Band = 6 \n-Good, then Band = 7 \n-Very good, then 8 ≤ Band ≤ 9 \n-The overall score will be the average of the total scores for the five criteria.\n This is the prompt for the IELTS Writing Task 2 essay:\n Even though Globalization affects the world’s economics in a very positive way, its negative sides should not be forgotten. Discuss. \n Response is JSON format"
                ],
                [
                    "role" => "user",
-                   "content" => "could you help me to identify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 2. Show me the errors and suggest improvements and explain for suggest improvements. This is my IELTS Writing Task 2: \n" . $question
+                   "content" => "Please grade the my IELTS Writing Task 2 essay. Show me grade for each criteria and explain why the scoring is done this way for each criterion. This is my IELTS Writing Task 2: \n" . $question
                ],
 
             ],
