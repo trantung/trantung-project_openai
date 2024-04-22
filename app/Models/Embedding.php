@@ -25,18 +25,18 @@ class Embedding extends Model
     public static function getQueryEmbedding($text)
     {
         $open_ai_key = getenv('OPENAI_API_KEY');
-        $open_ai = new OpenAi($open_ai_key);
-        $result = $open_ai->embeddings([
-            "model" => "text-embedding-ada-002",
-            "input" => $text
+        $client = OpenAI::client($open_ai_key);
+        $result = $client->embeddings()->create([
+            'model' => 'text-embedding-ada-002',
+            'input' => $text,
         ]);
-        $res = json_decode($result);
-        if (count($res->data) == 0) {
+        // $res = json_decode($result->embeddings);
+        if (count($result->embeddings) == 0) {
             throw new Exception("Failed to generated query embedding!");
         }
-        if(empty($res->data[0])) {
+        if(empty($result->embeddings[0])) {
             throw new Exception("Failed to generated data");
         }
-        return $res->data[0]->embedding;
+        return $result->embeddings[0]->embedding;
     }
 }

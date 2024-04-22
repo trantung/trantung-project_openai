@@ -24,13 +24,28 @@
                             <tr>
                                 <th id='columnname' class='manage-column column-columnname' scope='col'>ID</th>
                                 <th id='columnname' class='manage-column column-columnname' scope='col'>Model Name</th>
-                                <th id='columnname' class='manage-column column-columnname' scope='col'>Status</th>
                                 <th id='columnname' class='manage-column column-columnname' scope='col'>Created Date</th>
                                 <th id='columnname' class='manage-column column-columnname' scope='col'>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            
+                            @forelse ($data as $value)
+                            <tr>
+                                <td class="align-middle">{{ $value->id }}</td>
+                                <td class="align-middle">{{ $value->model_name }}</td>
+                                <td class="align-middle">{{ $value->created_at }}</td>
+                                <td class="align-middle">
+                                    <div class="btn-group" role="group" aria-label="Basic example">
+                                        <a href="{{ route('training.detail', ['id'=>$value->id]) }}" type="button" class="btn btn-secondary">Detail</a>
+                                        <a href="{{ route('training.delete', ['id'=>$value->id]) }}" type="button" class="btn btn-danger">Delete</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td class="text-center" colspan="5">User not found</td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

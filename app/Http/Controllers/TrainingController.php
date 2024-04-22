@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth; 
 use \OpenAI;
+use App\Models\Embedding;
 
 class TrainingController extends BaseApiController
 {
@@ -21,7 +22,8 @@ class TrainingController extends BaseApiController
     
     public function index()
     {
-        return view('training.index');
+        $data = DB::connection('pgsql')->table('embeddings')->paginate(10);
+        return view('training.index', compact('data'));
     }
  
     public function create()
@@ -31,24 +33,31 @@ class TrainingController extends BaseApiController
  
     public function store(Request $request)
     {
-        $data = $this->convertDataToJsonTo($request);
-        if($data['code'] != 200){
-            return $this->responseError(422, $this->convertDataToJsonTo($request)['data']['messages']);
+        // $data = $this->convertDataToJsonTo($request);
+        // if($data['code'] != 200){
+        //     return $this->responseError(422, $this->convertDataToJsonTo($request)['data']['messages']);
+        // }
+        $questions = $request['questions'];
+        $answers = $request['answers'];
+        foreach ($questions as $index => $question) {
+            $questionContent = str_replace(['\\', '"'], ["'", '\"'], trim(preg_replace('/\s\s+/', ' ', $question)));
+            $answerContent = str_replace(['\\', '"'], ["'", '\"'], trim(preg_replace('/\s\s+/', ' ', $answers[$index])));
+            $tokens = Embedding::tokenize($answerContent, 200);
+            foreach ($tokens as $token) {
+                $text = implode("\n", $token);
+                $vectors = Embedding::getQueryEmbedding($text);
+                $embeddingId = DB::connection('pgsql')->table('embeddings')->insertGetId([
+                    'question' => $questionContent,
+                    'answer' => $answerContent,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'model_name' => $request['model_name'],
+                    'embedding' => json_encode($vectors)
+                ]);
+            }            
         }
-        $yourApiKey = getenv('OPENAI_API_KEY');
-        $client = OpenAI::client($yourApiKey);
-        $response = $client->embeddings()->create([
-            'model' => 'text-embedding-ada-002',
-            'input' => 'The food was delicious and the waiter...',
-        ]);
-        dd($response);
         // $message = $jsonData['content'];
-        $checkExist = DB::connection('pgsql')->table('embeddings')->where('model_code', $modelCode)->first()->get();
-        dd($checkExist);
-        if($checkExist){
-            return $this->responseError(412,'Model name is exist');
-        }
-        dd($this->convertDataToJsonTo($request)['data']['messages']);
+        session()->flash('success', 'Data created successfully');
+        return redirect(route('training.index'));
     }
     
     
@@ -117,5 +126,26 @@ class TrainingController extends BaseApiController
             ]
         ];
         return $arr;
+    }
+
+    public function deleteTraining($id)
+    {
+        $embedding = DB::connection('pgsql')->table('embeddings')->find($id);
+
+        if (!$embedding) {
+            session()->flash('error', 'Data Not Found');
+            return redirect(route('training.index'));
+        }
+
+        DB::connection('pgsql')->table('embeddings')->where('id', $id)->delete();
+
+        session()->flash('success', 'Data Deleted Successfully');
+        return redirect(route('training.index'));
+    }
+
+    public function detailTraining($id)
+    {
+        $embedding = DB::connection('pgsql')->table('embeddings')->find($id);
+        return view('training.detail', compact('embedding'));
     }
 }
