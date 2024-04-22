@@ -247,6 +247,7 @@ class ApiController extends Controller
                 'explanation' => $value->explanation,
             ];
         }
+        $response['overall_score'] = json_decode($dataResponseChat)->overall_score;
         return $this->responseSuccess(200, $response);
     }
 }
