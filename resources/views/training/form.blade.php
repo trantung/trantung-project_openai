@@ -24,7 +24,7 @@
                             <label class="col-sm-3 col-form-label">Base model:</label>
                             <div class="col-sm-8">
                                 <select name="base_model" id="base_model" class="form-control">
-                                    <option value="turbo">Default</option>
+                                    <option value="">Default</option>
                                 </select>
                             </div>
                         </div>
@@ -142,7 +142,7 @@
                 base_model: $('#base_model').val(),
                 questions: questions,
                 answers: answers,
-                userName: "{{ Auth::id(); }}"
+                userName: "{{ Auth::user()->name; }}"
             },
             success: function(response) {
                 var data = JSON.parse(response);

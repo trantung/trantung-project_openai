@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth; 
 use \OpenAI;
 use App\Models\Embedding;
+use Storage;
+use App\Models\UserModelData;
+use App\Models\UserModelDataStatus;
+use App\Models\UserFileTrainings;
 
 class TrainingController extends BaseApiController
 {
@@ -22,7 +26,8 @@ class TrainingController extends BaseApiController
     
     public function index()
     {
-        $data = DB::connection('pgsql')->table('embeddings')->paginate(10);
+        // $data = DB::connection('pgsql')->table('embeddings')->paginate(10);
+        $data = UserModelData::paginate(10);
         return view('training.index', compact('data'));
     }
  
@@ -30,33 +35,97 @@ class TrainingController extends BaseApiController
     {
         return view('training.form');
     }
- 
+
+    public function createSlug($str, $delimiter = '-')
+    {
+        $slug = strtolower(trim(preg_replace('/[\s-]+/', $delimiter, preg_replace('/[^A-Za-z0-9-]+/', $delimiter, preg_replace('/[&]/', 'and', preg_replace('/[\']/', '', iconv('UTF-8', 'ASCII//TRANSLIT', $str))))), $delimiter));
+        return $slug;
+    }
+
     public function store(Request $request)
     {
-        // $data = $this->convertDataToJsonTo($request);
-        // if($data['code'] != 200){
-        //     return $this->responseError(422, $this->convertDataToJsonTo($request)['data']['messages']);
-        // }
+        $data = $this->convertDataToJsonTo($request);
+        if($data['code'] != 200){
+            return $this->responseError(422, $this->convertDataToJsonTo($request)['data']['messages']);
+        }
+
+        $modelCode = $this->createSlug($request['model_name']);
+        $checkExist = UserModelData::where('model_code', $modelCode)->first();
+        if($checkExist){
+            return $this->responseError(412,'Model name is exist');
+        }
+        $user = Auth::user();
+
+        $message = $data['data']['messages'];
+        $resultQuestion = $topicBaseOn = '';
+        foreach($message as $value)
+        {
+            foreach($value['messages'] as $v)
+            {
+                if($v['role'] == 'user') {
+                    $resultQuestion = $resultQuestion . ' ' . $v['content'];
+                }
+            }
+        }
+
+        $topicRelate = $this->getTopicRelate($resultQuestion);
+        if(!empty($request['base_model'])) {
+            $baseOnId = $request['base_model'];
+            $checkBaseOnId = UserModelData::find($baseOnId);
+            if(!$checkBaseOnId) {
+                return $this->responseError(412,'Model name is exist');
+            }
+            $topicBaseOn = $checkBaseOnId->topic_detail;
+        }
+        $topicDetail = $topicRelate . ',' .$topicBaseOn;
+        $modelDataId = UserModelData::create([
+            'username' => $user->name,
+            'model_name' => $request['model_name'],
+            'model_code' => $modelCode,
+            'model_ai_id' => '',
+            'status' => 0,
+            'base_on_id' => $request['base_model'],
+            'type' => 0,
+            'approved' => 1,
+            'topic_detail' => $topicDetail,
+        ])->id;
+
+        
         $questions = $request['questions'];
         $answers = $request['answers'];
-        foreach ($questions as $index => $question) {
-            $questionContent = str_replace(['\\', '"'], ["'", '\"'], trim(preg_replace('/\s\s+/', ' ', $question)));
-            $answerContent = str_replace(['\\', '"'], ["'", '\"'], trim(preg_replace('/\s\s+/', ' ', $answers[$index])));
-            $tokens = Embedding::tokenize($answerContent, 200);
-            foreach ($tokens as $token) {
-                $text = implode("\n", $token);
-                $vectors = Embedding::getQueryEmbedding($text);
-                $embeddingId = DB::connection('pgsql')->table('embeddings')->insertGetId([
-                    'question' => $questionContent,
-                    'answer' => $answerContent,
-                    'created_at' => date('Y-m-d H:i:s'),
-                    'model_name' => $request['model_name'],
-                    'embedding' => json_encode($vectors)
-                ]);
-            }            
-        }
+        // foreach ($questions as $index => $question) {
+        //     $questionContent = str_replace(['\\', '"'], ["'", '\"'], trim(preg_replace('/\s\s+/', ' ', $question)));
+        //     $answerContent = str_replace(['\\', '"'], ["'", '\"'], trim(preg_replace('/\s\s+/', ' ', $answers[$index])));
+        //     $tokens = Embedding::tokenize($answerContent, 200);
+        //     foreach ($tokens as $token) {
+        //         $text = implode("\n", $token);
+        //         $vectors = Embedding::getQueryEmbedding($text);
+        //         $embeddingId = DB::connection('pgsql')->table('embeddings')->insertGetId([
+        //             'question' => $questionContent,
+        //             'answer' => $answerContent,
+        //             'created_at' => date('Y-m-d H:i:s'),
+        //             'model_name' => $request['model_name'],
+        //             'embedding' => json_encode($vectors)
+        //         ]);
+        //     }            
+        // }
+
+
         // $message = $jsonData['content'];
-        session()->flash('success', 'Data created successfully');
+        $res = $this->createUserFileTrain($modelDataId, $data, $request);
+        if(!empty($res['message']) && $res['code'] == 305){
+            session()->flash('error', $res['message']);
+            return redirect(route('training.index'));
+        }
+        if($res == true) {
+            $messages = array(
+                'messages' =>'create is successful',
+                'model_data_id' => $modelDataId
+            );
+            session()->flash('success', 'Data created successfully');
+            return redirect(route('training.index'));
+        }
+        session()->flash('error', 'Create is error');
         return redirect(route('training.index'));
     }
     
@@ -130,14 +199,14 @@ class TrainingController extends BaseApiController
 
     public function deleteTraining($id)
     {
-        $embedding = DB::connection('pgsql')->table('embeddings')->find($id);
-
+        // $embedding = DB::connection('pgsql')->table('embeddings')->find($id);
+        $embedding = UserModelData::find($id);
         if (!$embedding) {
             session()->flash('error', 'Data Not Found');
             return redirect(route('training.index'));
         }
 
-        DB::connection('pgsql')->table('embeddings')->where('id', $id)->delete();
+        UserModelData::where('id', $id)->delete();
 
         session()->flash('success', 'Data Deleted Successfully');
         return redirect(route('training.index'));
@@ -145,7 +214,164 @@ class TrainingController extends BaseApiController
 
     public function detailTraining($id)
     {
-        $embedding = DB::connection('pgsql')->table('embeddings')->find($id);
-        return view('training.detail', compact('embedding'));
+        // $embedding = DB::connection('pgsql')->table('embeddings')->find($id);
+        $embedding = UserModelData::find($id);
+        $data = UserFileTrainings::where('user_model_data_id', $id)->first();
+        $content = [];
+        if(!empty($data)){
+            $content = json_decode($data['content']);
+        }
+        
+        // foreach($content as $value){
+        //     $userContent = '';
+        //     $assistantContent = '';
+        //     if(!empty($value->messages)){
+        //         foreach ($value->messages as $message) {
+        //             if ($message->role === 'user' && !empty($message->content)) {
+        //                 $userContent = $message->content;
+        //             } elseif ($message->role === 'assistant' && !empty($message->content)) {
+        //                 $assistantContent = $message->content;
+        //             }
+        //         }  
+        //     } 
+        //     // if ($value->role === 'user' && !empty($value->content)) {
+        //     //     $userContent = $value->content;
+        //     // } elseif ($value->role === 'assistant' && !empty($value->content)) {
+        //     //     $assistantContent = $value->content;
+        //     // }
+        //     dd($userContent, $assistantContent);
+        // }
+        return view('training.detail', compact('embedding', 'content'));
+    }
+
+    public function createUserFileTrain($modelDataId, $data, $request){
+        $jsonContent = json_encode($data['data']['messages'], JSON_PRETTY_PRINT);
+        //convert json to jsonl and create file jsonl
+        $jsonlContent = $this->convertJsonToJsonl($data['data']['messages']);
+        $user = Auth::user();
+        $filename = $modelDataId . '_' .time();
+        $userFileTrainingId = UserFileTrainings::create([
+            'user_model_data_id' => $modelDataId,
+            'username' => $user->name,
+            'mode_ai_id_base_on' => $request['base_model'],
+            'file_id' => $filename,
+            'content' => $jsonContent,
+        ])->id;
+        Storage::disk('local')->put('/training/'. $user->name . '/' . $filename . '.jsonl', $jsonlContent);
+        $file_path = storage_path('app/training/'. $user->name . '/' . $filename . '.jsonl');
+        $open_ai_key = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($open_ai_key);
+        $response = $client->files()->upload([
+            'purpose' => 'fine-tune',
+            'file' => fopen($file_path, 'r'),
+        ]);
+        $result = $response->toArray();
+        if(!empty($result['id'])){
+            UserFileTrainings::where('id', $userFileTrainingId)->update(['open_ai_file_id' => $response->id]);
+            $res = $this->createUserModelDataStatus($userFileTrainingId, $modelDataId, $request, $response->id);
+            dd($res);
+            if(!empty($res['message']) && $res['code'] == 305){
+                $response = [
+                    'code' => 305,
+                    'message' => $res['message']
+                ];
+                return $response;
+            }
+            if($res == true) {
+                return true;
+            }
+        }else{
+            $userModelData = UserModelData::find($modelDataId);
+            if(!empty($userModelData)){
+                $userModelData->update([
+                    'status' => UserModelData::OPENAI_ERROR,
+                    'note' => $result['error']['message']
+                ]);
+            }
+            $response = [
+                'code' => 305,
+                'message' => 'training failed'
+            ];
+            return $response;
+        }
+        return false;
+    }
+
+    public function createUserModelDataStatus($userFileTrainingId, $modelDataId, $jsonData, $fileId)
+    {
+        $user = Auth::user();
+        $userModelDataStatusId = UserModelDataStatus::create([
+            'user_file_training_id' => $userFileTrainingId,
+            'user_model_data_id' => $modelDataId,
+            'username' => $user->name,
+            'mode_ai_id_base_on' => $jsonData['base_model'],
+            'status' => UserModelDataStatus::STATUS_VALIDATE,
+            'cron' => UserModelDataStatus::NOT_RUN,
+        ])->id;
+        $model = 'gpt-3.5-turbo-0125';
+        if(!empty($jsonData['base_model'])){
+            $userModelData = UserModelData::find($jsonData['base_model']);
+            if(!$userModelData) {
+                return $this->responseError(404, 'Not found');
+            }
+            $model = $userModelData->model_ai_id;
+        }
+        $open_ai_key = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($open_ai_key);
+        $response = $client->fineTuning()->createJob([
+            'training_file' => $fileId,
+            'validation_file' => null,
+            'model' => $model,
+            'hyperparameters' => [
+                'n_epochs' => 4,
+            ],
+            'suffix' => null,
+        ]);
+        dd($fileId, $model, $open_ai_key, $response);
+
+        $result = $response->toArray();
+        dd($result);
+        if(!empty($result['id'])){
+            UserModelDataStatus::where('id', $userModelDataStatusId)
+                ->update(['openai_job_id' => $result['id'], 'status' => UserModelDataStatus::STATUS_TRAINING]);
+            return true;
+        }else{
+            $userModelData = UserModelData::find($modelDataId);
+            if(!empty($userModelData)){
+                $userModelData->update([
+                    'status' => UserModelData::OPENAI_ERROR,
+                    'note' => $result['error']['message']
+                ]);
+            }
+            $arr = [
+                'code' => 305,
+                'message' => 'training file failed'
+            ];
+            return $arr;
+        }
+        return false;
+    }
+
+    public function getTopicRelate($resultQuestion)
+    {
+        $model = 'ft:gpt-3.5-turbo-0613:pythaverse-space:datatrain12-12:8UoNA0Dc';
+        $model = 'gpt-3.5-turbo-0125';
+        $open_ai_key = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($open_ai_key);
+        $chat = $client->chat()->create([
+           'model' => $model,
+           'messages' => [
+               [
+                   "role" => "user",
+                   "content" => "Please help me identify the shortest possible topics separated by commas from the following list of questions: \n" . $resultQuestion
+               ],
+            ],
+           'temperature' => 0,
+           'max_tokens' => 1000
+        ]);
+        if(!empty($chat->error)) {
+            return '';
+        }
+        return $chat->choices[0]->message->content;
     }
 }

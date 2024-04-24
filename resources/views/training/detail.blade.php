@@ -20,24 +20,35 @@
                                 <input type="text" required name="model_name" class="form-control" placeholder="Name" value="{{$embedding->model_name}}">
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col mb-3">
-                                <label class="form-label">Question</label>
-                                <textarea name="question_model" id="radio-other" placeholder="question" class="form-control">{{$embedding->question}}</textarea>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col">
-                                <label class="form-label">Answer</label>
-                                <textarea name="answer_model" id="radio-other" placeholder="answer" class="form-control">{{$embedding->answer}}</textarea>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col">
-                                <label class="form-label">Embedding</label>
-                                <textarea name="embedding" id="radio-other" placeholder="answer" class="form-control">{{$embedding->embedding}}</textarea>
-                            </div>
-                        </div>
+                        @foreach ($content as $value)
+                            @php
+                                $userContent = '';
+                                $assistantContent = '';
+                                if(!empty($value->messages)){
+                                    foreach ($value->messages as $message) {
+                                        if ($message->role === 'user' && !empty($message->content)) {
+                                            $userContent = $message->content;
+                                        } elseif ($message->role === 'assistant' && !empty($message->content)) {
+                                            $assistantContent = $message->content;
+                                        }
+                                    }  
+                            @endphp
+                                    <div class="row">
+                                        <div class="col mb-3">
+                                            <label class="form-label">Question</label>
+                                            <textarea name="question_model" placeholder="question" class="form-control">{{$userContent}}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col">
+                                            <label class="form-label">Answer</label>
+                                            <textarea name="answer_model" placeholder="answer" class="form-control">{{$assistantContent}}</textarea>
+                                        </div>
+                                    </div>
+                            @php
+                                }
+                            @endphp
+                        @endforeach
                     </form>
                 </div>
             </div>

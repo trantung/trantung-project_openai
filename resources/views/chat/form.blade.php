@@ -14,7 +14,10 @@
                         <div class="Toastify"></div>
                         <div class="w-screen h-screen flex px-2 py-4">
                             <div class="flex flex-col w-[40%] h-screen justify-start mr-4 pb-6 text-[16px]">
-                                <div class="flex flex-1">
+                                <div class="flex flex-2">
+                                    <input type="text" placeholder="Fill a name" name="name" id="name" style="border-radius: .5rem;border-color: rgb(206 212 218);" class="form-control">
+                                </div>
+                                <div class="flex flex-1 mt-2">
                                     <textarea placeholder="Fill a question"
                                         class="flex-1 p-2 bg-white border-[1.5px] border-[#ced4da] rounded-lg resize-none focus:outline-none"></textarea>
                                 </div>
