@@ -134,13 +134,122 @@ class TrainingController extends BaseApiController
     {
         return view('chat.form');
     }
+
+    public function chat(Request $request)
+    {
+        // $filename = time() .'_history';
+        $filename = 'test_history';
+
+        $file_path = storage_path('app/chat/' . $filename . '.json');
+
+        if( ! file_exists($file_path) ) {
+            $historyChat[] = [
+                'username' => Auth::user()->name,
+                // 'model_id' => $modelId,
+                'role' => 'user',
+                'content' => $request['question'],
+                'time' => time(),
+            ];
+            Storage::disk('local')->put('/chat/' . $filename . '.json', json_encode($historyChat));
+        }else{
+            $historyChat = json_decode(file_get_contents($file_path),true);
+            $arrayUserQuestion[] = [
+                'username' => Auth::user()->name,
+                // 'model_id' => $modelId,
+                'role' => 'user',
+                'content' => $request['question'],
+                'time' => time(),
+            ];
+            $historyChat = array_merge($historyChat, $arrayUserQuestion);
+            Storage::disk('local')->put('/chat/' . $filename . '.json', json_encode($historyChat));
+        }
+
+        $resChat = [];
+        foreach($historyChat as $value) {
+            $resChat[] = [
+                'role' => $value['role'],
+                'content' => $value['content'],
+            ];
+        }
+
+        $open_ai_key = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($open_ai_key);
+        $response = $client->chat()->create([
+            'model' => 'gpt-3.5-turbo',
+            'messages' => $resChat
+        ]);
+
+        $dataUpdateFileContent[] = [
+            'username' => 'assistant_chat_bot',
+            // 'model_id' => $modelId,
+            'role' => 'assistant',
+            'content' => $response->choices[0]->message->content,
+            'to' => Auth::user()->name,
+            'time' => time(),
+        ];
+        $contentFile = array_merge($historyChat, $dataUpdateFileContent);
+        Storage::disk('local')->put('/chat/' . $filename . '.json', json_encode($contentFile));
+
+        return $response->choices[0]->message->content;
+    }
+
+    public function getMessage($file_path, $modelId, $context, $question)
+    {
+        $system_template = "
+        Use the following pieces of context to answer the users question. 
+        If you don't know the answer, just say that you don't know, don't try to make up an answer.
+        ----------------
+        {context}
+        ";
+        $systemMessage = '';
+        $prompUser = "Use the following pieces of context to answer the users question. If you don't know the answer, just say that you don't know, don't try to make up an answer.";
+        $userModelData = UserModelData::find($modelId);
+        if(!empty($userModelData->prompt)){
+            $prompUser = $userModelData->prompt . '.';
+        }
+        $systemMessage = "
+        $prompUser        
+        {question}
+            ----------------
+            CONTEXT: 
+            {context}
+            ----------------
+            FINAL ANSWER:";
+        $systemMessage = str_replace("{question}", $question, $systemMessage);
+        $systemMessage = str_replace("{context}", $context, $systemMessage);
+        $system_prompt = str_replace("{context}", $context, $system_template);
+        $delimiter = "```";
+        $contentUser = $delimiter.$question.$delimiter;
+
+        $historyChat = json_decode(file_get_contents($file_path),true);
+        $historyChatSystemMessage[] =  [
+            "role" => "system",
+            "content" => $system_prompt
+        ];
+        $resChat = [];
+        // dd($historyChat);
+        foreach($historyChat as $value) {
+            $resChat[] = [
+                'role' => $value['role'],
+                'content' => $value['content'],
+            ];
+        }
+        $resChat = array_merge($historyChatSystemMessage, $resChat);
+        // dd($resChat);
+        $arrayEnd = end($resChat);
+        if(!empty($arrayEnd['role']) && $arrayEnd['role'] == 'user') {
+            $arrayEnd['content'] = $systemMessage;
+        }
+        return $resChat;
+    }
     
     public function detailChat()
     {
         return view('chat.detail');
     }
 
-    public function convertDataToJsonTo($request){
+    public function convertDataToJsonTo($request)
+    {
         $questions = $request['questions'];
         $answers = $request['answers'];
 
@@ -244,7 +353,8 @@ class TrainingController extends BaseApiController
         return view('training.detail', compact('embedding', 'content'));
     }
 
-    public function createUserFileTrain($modelDataId, $data, $request){
+    public function createUserFileTrain($modelDataId, $data, $request)
+    {
         $jsonContent = json_encode($data['data']['messages'], JSON_PRETTY_PRINT);
         //convert json to jsonl and create file jsonl
         $jsonlContent = $this->convertJsonToJsonl($data['data']['messages']);
@@ -269,7 +379,7 @@ class TrainingController extends BaseApiController
         if(!empty($result['id'])){
             UserFileTrainings::where('id', $userFileTrainingId)->update(['open_ai_file_id' => $response->id]);
             $res = $this->createUserModelDataStatus($userFileTrainingId, $modelDataId, $request, $response->id);
-            dd($res);
+            // dd($res);
             if(!empty($res['message']) && $res['code'] == 305){
                 $response = [
                     'code' => 305,
@@ -327,10 +437,10 @@ class TrainingController extends BaseApiController
             ],
             'suffix' => null,
         ]);
-        dd($fileId, $model, $open_ai_key, $response);
+        // dd($fileId, $model, $open_ai_key, $response);
 
         $result = $response->toArray();
-        dd($result);
+        // dd($result);
         if(!empty($result['id'])){
             UserModelDataStatus::where('id', $userModelDataStatusId)
                 ->update(['openai_job_id' => $result['id'], 'status' => UserModelDataStatus::STATUS_TRAINING]);

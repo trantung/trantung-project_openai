@@ -48,4 +48,5 @@ Route::get('training/detail/{id}', [TrainingController::class, 'detailTraining']
 
 Route::get('chat/form', [TrainingController::class, 'formChat'])->middleware('auth')->name('chat.form');
 Route::get('chat/detail', [TrainingController::class, 'detailChat'])->middleware('auth')->name('chat.detail');
+Route::post('chat', [TrainingController::class, 'chat'])->name('chat.chat');
 
