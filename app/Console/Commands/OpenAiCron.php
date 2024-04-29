@@ -9,7 +9,7 @@ use App\Models\UserModelData;
 use App\Models\UserFileTrainings;
 use App\Models\UserModelEmbedding;
 use App\Models\Embedding;
-use Orhanerday\OpenAi\OpenAi;
+use \OpenAi;
 
 class OpenAiCron extends Command
 {
@@ -72,14 +72,14 @@ class OpenAiCron extends Command
             $fineTrainingData = UserFileTrainings::find($value->user_file_training_id);
             $listJobId[] = $value->openai_job_id;
             $res = $client->fineTuning()->retrieveJob($value->openai_job_id)->toArray();
-            $result = json_decode($res, true);
-            if(!empty($result['fine_tuned_model'])) {
-                $openAiModelId = $result['fine_tuned_model'];
+            // $result = json_decode($res, true);
+            if(!empty($res['fine_tuned_model'])) {
+                $openAiModelId = $res['fine_tuned_model'];
                 //update user_model_data_status tables
                 $value->update([
                     'cron' => UserModelDataStatus::RUN,
                     'status' => UserModelDataStatus::STATUS_COMPLETE,
-                    'token_training' => $result['trained_tokens']
+                    'token_training' => $res['trained_tokens']
                 ]);
                 //update user_model_datas table
                 if($userModelData) {
@@ -96,10 +96,10 @@ class OpenAiCron extends Command
                     'cron' => UserModelDataStatus::NOT_RUN,
                     'status' => UserModelDataStatus::STATUS_TRAINING,
                 ]);
-                if(!empty($result['error']['message'])) {
+                if(!empty($res['error']['message'])) {
                     $userModelData->update([
                         'status' => UserModelData::OPENAI_ERROR,
-                        'note' => $result['error']['message']
+                        'note' => $res['error']['message']
                     ]);
                     $value->update([
                         'cron' => UserModelDataStatus::RUN,
