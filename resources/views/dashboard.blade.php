@@ -28,20 +28,28 @@
                             <tr>
                                 <th id='columnname' class='manage-column column-columnname' scope='col'>ID</th>
                                 <th id='columnname' class='manage-column column-columnname' scope='col'>Name</th>
+                                <th id='columnname' class='manage-column column-columnname' scope='col'>Created Date</th>
                                 <th id='columnname' class='manage-column column-columnname' scope='col'>Action</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse ($data as $value)
                             <tr>
-                                <td class="align-middle">1</td>
-                                <td class="align-middle"><a href="{{ route('chat.detail') }}">Content 1</a></td>
+                                <td class="align-middle">{{ $value->id }}</td>
+                                <td class="align-middle">{{ $value->name }}</td>
+                                <td class="align-middle">{{ $value->created_at }}</td>
                                 <td class="align-middle">
                                     <div class="btn-group" role="group" aria-label="Basic example">
-                                        <a href="" type="button" class="btn btn-secondary">Edit</a>
-                                        <a href="" type="button" class="btn btn-danger">Delete</a>
+                                        <a href="{{ route('chat.detail', ['id'=>$value->id]) }}" type="button" class="btn btn-secondary">Detail</a>
+                                        <a href="{{ route('chat.delete', ['id'=>$value->id]) }}" type="button" class="btn btn-danger">Delete</a>
                                     </div>
                                 </td>
                             </tr>
+                            @empty
+                            <tr>
+                                <td class="text-center" colspan="5">User not found</td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

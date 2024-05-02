@@ -16,7 +16,7 @@
                         {{session('error')}}
                     </div>
                     @endif
-                    <p><a href="{{ route('training.index') }}" class="btn btn-primary">Go Back</a></p>
+                    <p><a href="{{ route('training.index') }}" id="goback" class="btn btn-primary">Go Back</a></p>
  
                     <form action="" method="POST" enctype="multipart/form-data">
                         @csrf
@@ -24,7 +24,7 @@
                             <label class="col-sm-3 col-form-label">Base model:</label>
                             <div class="col-sm-8">
                                 <select name="base_model" id="base_model" class="form-control">
-                                    <option value="turbo">Default</option>
+                                    <option value="">Default</option>
                                 </select>
                             </div>
                         </div>
@@ -103,6 +103,14 @@
 <script src="{{ asset('training_index/training-form.js') }}"></script>
 
 <script>
+    $('#modalAlert').click(function() {
+        $('#modalAlert').modal('hide');
+        window.location.href = "{{ route('training.index') }}";
+    })
+    $('.modal-confirm .close').click(function() {
+        $('#modalAlert').modal('hide');
+        window.location.href = "{{ route('training.index') }}";
+    })
     $('#save_model').click(function() {
         var questions = [];
         var answers = [];
@@ -127,12 +135,12 @@
             document.documentElement.scrollTop = 0;
             return;
         }
-        // if (!isValid || questions.length < 10 || answers.length < 10) {
-        //     alert('Please fill in all the configs you create and there must be at least 10 configs');
-        //     return;
-        // }
+        if (!isValid || questions.length < 10 || answers.length < 10) {
+            alert('Please fill in all the configs you create and there must be at least 10 configs');
+            return;
+        }
         console.log(questions);
-        // $('body').toggleClass('loading');
+        $('body').toggleClass('loading');
         $.ajax({
             url: "{{route('training.store')}}",
             method: 'POST',
@@ -142,31 +150,31 @@
                 base_model: $('#base_model').val(),
                 questions: questions,
                 answers: answers,
-                userName: "{{ Auth::id(); }}"
+                userName: "{{ Auth::user()->name; }}"
             },
             success: function(response) {
-                var data = JSON.parse(response);
-                // console.log(data);
-                // if (data.code == 200) {
-                //     $('#modalAlert .icon-box').html('<i class="fa-solid fa-check"></i>');
-                //     $('#modalAlert .modal-body h4').text('Great!');
-                //     $('#modalAlert .modal-body p').text('Your file has been uploaded successfully.');
-                //     $('#modalAlert .modal-header').css('background', '#47c9a2');
-                //     getDataModelAI(currentPage,  updatePaginationCallbackDataModelAI);
-                // } else {
-                //     $('#modalAlert .icon-box').html('<i class="fa-solid fa-xmark"></i>');
-                //     $('#modalAlert .modal-body h4').text('Ooops!');
-                //     $('#modalAlert .modal-body p').text('Something went wrong. File was not uploaded. ' + data.data.messages);
-                //     $('#modalAlert .modal-header').css('background', '#e85e6c');
-                // }
+                console.log(response);
+                
+                if (response.code == 200) {
+                    $('#modalAlert .icon-box').html('<i class="fa-solid fa-check"></i>');
+                    $('#modalAlert .modal-body h4').text('Great!');
+                    $('#modalAlert .modal-body p').text('Your file has been uploaded successfully.');
+                    $('#modalAlert .modal-header').css('background', '#47c9a2');
+                    // getDataModelAI(currentPage,  updatePaginationCallbackDataModelAI);
+                } else {
+                    $('#modalAlert .icon-box').html('<i class="fa-solid fa-xmark"></i>');
+                    $('#modalAlert .modal-body h4').text('Ooops!');
+                    $('#modalAlert .modal-body p').text('Something went wrong. File was not uploaded. ' + response.data.messages);
+                    $('#modalAlert .modal-header').css('background', '#e85e6c');
+                }
             },
             error: function(xhr, status, error) {
                 alert('An error occurred while saving changes');
             },
             complete: function() {
-                // $('#model_name').val('');
-                // $('body').toggleClass('loading');
-                // $('#modalAlert').modal('show');
+                $('#model_name').val('');
+                $('body').toggleClass('loading');
+                $('#modalAlert').modal('show');
             }
         });
     });

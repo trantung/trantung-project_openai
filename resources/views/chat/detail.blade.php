@@ -2,210 +2,101 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Content Details') }}
+            {{ __('Add New Content') }}
         </h2>
     </x-slot>
+    <style>
+        .msgs_cont .rchat {
+            float: left;
+            clear: both;
+            margin-bottom: 5px;
+            background: linear-gradient(to top right, #11ba91, #0a6e55);
+            padding-left: 12px;
+            border-bottom-left-radius: 20px;
+        }
+
+        .msgs_cont li {
+            padding: 10px;
+            max-width: 70%;
+            margin: 10px 0;
+            background: linear-gradient(15deg, #13547a 0%, #80d0c7 100%);
+            color: #fff;
+            list-style-type: none;
+            border-radius: 10px;
+            color: #f2f2f2;
+            word-wrap: break-word;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .msgs_cont .schat {
+            float: right;
+            clear: both;
+            margin-bottom: 5px;
+            border-bottom-right-radius: 20px;
+        }
+    </style>
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <p><a href="{{ route('dashboard') }}" class="btn btn-primary">Go Back</a></p>
-                    <div class="main_config">
-                        <div class="p-form-cg pt-form-panel model_content" id="model_content1">
-                            <h4>Config 1</h4>
-                            <div class="modelMessagesData" style="border: 1px solid;">
-                                <div class="modelMessageForm col-12">
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Question: How are parents</p>
+                    <div id="__next">
+                        <div class="Toastify"></div>
+                        <div class=" h-screen flex px-2 py-4">
+                            <div class="flex flex-col w-[40%] h-screen justify-start mr-4 pb-6 text-[16px]">
+                                <div class="flex flex-2">
+                                    <select name="category" id="category" style="border-radius: .5rem;border-color: rgb(206 212 218);" class="form-control">
+                                        <option value="">Default</option>
+                                        <option value="1">Cuc 1</option>
+                                        <option value="2">Cuc 2</option>
+                                        <option value="3">Cuc 3</option>
+                                        <option value="4">Cuc 4</option>
+                                    </select>
+                                </div>
+                                <div class="flex flex-2 mt-2">
+                                    <input type="text" placeholder="Fill a name" name="name" id="name" style="border-radius: .5rem;border-color: rgb(206 212 218);" class="form-control">
+                                </div>
+                                <div class="flex flex-1 mt-2">
+                                    <textarea placeholder="Fill a question" id="question" class="flex-1 p-2 bg-white border-[1.5px] border-[#ced4da] rounded-lg resize-none focus:outline-none"></textarea>
+                                </div>
+                                <div class="flex flex-1 mt-2">
+                                    <textarea id="answerAI" placeholder="Fill a answer(For LCAT)" class="flex-1 p-2 bg-white border-[1.5px] border-[#ced4da] rounded-lg resize-none focus:outline-none"></textarea>
+                                </div>
+                                <div class="flex mt-2">
+                                    <button class="mantine-UnstyledButton-root mantine-Button-root bg-primary mantine-dimeg5" type="button" id="chatGpt" data-button="true">
+                                        <div class="mantine-1wpc1xj mantine-Button-inner">
+                                            <span class="mantine-1ryt1ht mantine-Button-label">Chat GPT</span>
                                         </div>
-                                    </div>
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Answer: - The estimated cost for each classroom library is about $100</p>
+                                    </button>
+                                    <!-- <button class="mantine-UnstyledButton-root mantine-Button-root ml-10 bg-primary mantine-dimeg5" type="button" data-button="true">
+                                        <div class="mantine-1wpc1xj mantine-Button-inner">
+                                            <span class="mantine-1ryt1ht mantine-Button-label">Update</span>
                                         </div>
-                                    </div>
+                                    </button> -->
                                 </div>
                             </div>
-                            <h4>Config 2</h4>
-                            <div class="modelMessagesData" style="border: 1px solid;">
-                                <div class="modelMessageForm col-12">
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Question: school teachers</p>
-                                        </div>
-                                    </div>
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Answer: excluding the shelf</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h4>Config 3</h4>
-                            <div class="modelMessagesData" style="border: 1px solid;">
-                                <div class="modelMessageForm col-12">
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Question: and alumni expected to contribute to the BFRP program</p>
-                                        </div>
-                                    </div>
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Answer: basket</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h4>Config 4</h4>
-                            <div class="modelMessagesData" style="border: 1px solid;">
-                                <div class="modelMessageForm col-12">
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Question: How are used books sourced for the BFRP program</p>
-                                        </div>
-                                    </div>
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Answer: or hanger.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h4>Config 5</h4>
-                            <div class="modelMessagesData" style="border: 1px solid;">
-                                <div class="modelMessageForm col-12">
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Question: What is the significance of the baseline survey in the BFRP
-                                                program</p>
-                                        </div>
-                                    </div>
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Answer: - The tangible resources for the classroom library system include
-                                                contributions from
-                                                parents</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h4>Config 6</h4>
-                            <div class="modelMessagesData" style="border: 1px solid;">
-                                <div class="modelMessageForm col-12">
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Question: How is the BFRP program planning to scale up nationally</p>
-                                        </div>
-                                    </div>
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Answer: school teachers</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h4>Config 7</h4>
-                            <div class="modelMessagesData" style="border: 1px solid;">
-                                <div class="modelMessageForm col-12">
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Question: What is the role of the public hearing in the BFRP program</p>
-                                        </div>
-                                    </div>
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Answer: alumni</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h4>Config 8</h4>
-                            <div class="modelMessagesData" style="border: 1px solid;">
-                                <div class="modelMessageForm col-12">
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Question: How does the BFRP program plan to involve urban schools in
-                                                sharing books with rural
-                                                schools</p>
-                                        </div>
-                                    </div>
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Answer: and the donation of used books from urban schools.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h4>Config 9</h4>
-                            <div class="modelMessagesData" style="border: 1px solid;">
-                                <div class="modelMessageForm col-12">
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Question: How does the BFRP program plan to encourage self-replication of
-                                                the classroom
-                                                library system</p>
-                                        </div>
-                                    </div>
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Answer: - Parents are expected to contribute $1 for their children''s
-                                                reading books</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h4>Config 10</h4>
-                            <div class="modelMessagesData" style="border: 1px solid;">
-                                <div class="modelMessageForm col-12">
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Question: What is the role of Mr. Nguyen Quang Thach in the BFRP program
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Answer: school teachers are expected to contribute $1 for students''
-                                                reading books</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h4>Config 11</h4>
-                            <div class="modelMessagesData" style="border: 1px solid;">
-                                <div class="modelMessageForm col-12">
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Question: How has the Books for Rural Areas of Vietnam impacted literacy
-                                                promotion in rural
-                                                Vietnam</p>
-                                        </div>
-                                    </div>
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Answer: and alumni are encouraged to contribute as well.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <h4>Config 12</h4>
-                            <div class="modelMessagesData" style="border: 1px solid;">
-                                <div class="modelMessageForm col-12">
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Question: How does the BFRP program plan to involve Catholic followers in
-                                                Vietnam and
-                                                Vietnamese refugees in donating books</p>
-                                        </div>
-                                    </div>
-                                    <div class="radio">
-                                        <div class="input-group p-has-icon">
-                                            <p>Answer: - Used books are sourced from both governmental and private
-                                                students from
-                                                middle-class families</p>
-                                        </div>
-                                    </div>
+                            <div class="flex-1 justify-center text-black">
+                                <div id="chatMessages" class="msgs_cont border-[1.5px] w-[100%] rounded-lg overflow-auto border-[#ced4da] h-[100%] px-2 py-2 text-[16px]">
+                                    <label for="">Category: 
+                                        @if($question->category_id == 1)
+                                        Cuc 1
+                                        @elseif($question->category_id == 2)
+                                        Cuc 2
+                                        @elseif($question->category_id == 3)
+                                        Cuc 3
+                                        @elseif($question->category_id == 4)
+                                        Cuc 4
+                                        @else
+                                        Default
+                                        @endif
+                                    </label>    
+                                    <p>Name:</p>
+                                    <label for="">{{ $question->name }}</label>
+                                    <p>Question:</p>
+                                    <label for="">{{ $question->question }}</label>
+                                    <p>Answer:</p>
+                                    <pre style="white-space: pre-wrap;">{{ $question->answer }}</pre>
                                 </div>
                             </div>
                         </div>
@@ -214,4 +105,74 @@
             </div>
         </div>
     </div>
+    <div class="modal loadModal"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <script>
+        $('#chatGpt').click(async function() {
+            if ($('#name').val() == '') {
+                alert("Invalid name");
+                $("#name").focus();
+                document.body.scrollTop = 0;
+                document.documentElement.scrollTop = 0;
+                return;
+            }
+            if ($('#question').val() == '') {
+                alert("Invalid question");
+                $("#question").focus();
+                document.body.scrollTop = 0;
+                document.documentElement.scrollTop = 0;
+                return;
+            }
+            $('body').toggleClass('loading');
+            if ($('#category').val() == '') {
+                $.ajax({
+                    url: "{{ route('chat.chat') }}",
+                    method: 'POST',
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        title: $('#name').val(),
+                        question: $('#question').val(),
+                        type: 'detail'
+                    },
+                    success: function(response) {
+                        console.log(response);
+
+                        // $('#answerAI').val(botResponse);
+                        $('#answerAI').val(response);
+                    },
+                    complete: function() {
+                        $('body').toggleClass('loading');
+                    }
+                });
+            } else {
+                try {
+                    const botResponse = await getBotResponseFromChatApiLaravel($('#question').val());
+                    $('body').toggleClass('loading');
+                    $('#answerAI').val(botResponse);
+                } catch (error) {
+                    console.error('Error when loading data:', error);
+                    throw error;
+                }
+            }
+        });
+
+        async function getBotResponseFromChatApiLaravel(question) {
+            try {
+                const response = await $.ajax({
+                    url: "http://ai.microgem.io.vn/api/openai/test/introduction",
+                    method: 'POST',
+                    contentType: 'application/json', // Chỉ định kiểu dữ liệu
+                    data: JSON.stringify({ question: question }), // Chuyển đổi thành chuỗi JSON
+                });
+                return response.data;
+            } catch (error) {
+                console.error('Error when loading data:', error);
+                throw error;
+            }
+        }
+
+    </script>
 </x-app-layout>
