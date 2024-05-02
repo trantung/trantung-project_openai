@@ -45,7 +45,11 @@ Route::get('training/delete/{id}', [TrainingController::class, 'deleteTraining']
 Route::get('training/detail/{id}', [TrainingController::class, 'detailTraining'])->name('training.detail');
 
 Route::get('chat/form', [TrainingController::class, 'formChat'])->middleware('auth')->name('chat.form');
+<<<<<<< HEAD
 Route::get('chat/detail/{id}', [TrainingController::class, 'detailChat'])->middleware('auth')->name('chat.detail');
 Route::get('chat/delete/{id}', [TrainingController::class, 'deleteChat'])->name('chat.delete');
+=======
+Route::get('chat/detail', [TrainingController::class, 'detailChat'])->middleware('auth')->name('chat.detail');
+>>>>>>> 718f9c01ed95ae901cd705caeeb120660a502e21
 Route::post('chat', [TrainingController::class, 'chat'])->name('chat.chat');
 
