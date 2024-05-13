@@ -32,28 +32,35 @@ class ApiController extends Controller
         $topicSentenceData = $this->topicSentence($request);
         $topicSentenceRes = $topicSentenceData['dataResponseChat'];
 
-        $totalToken = $introductionData['totalToken'] + $taskResponseData['totalToken'] + $conclusionData['totalToken'] + $topicSentenceData['totalToken'];
-        $completionTokens = $introductionData['completionTokens'] + $taskResponseData['completionTokens'] + $conclusionData['completionTokens'] + $topicSentenceData['completionTokens'];
-        $promptTokens = $introductionData['promptTokens'] + $taskResponseData['promptTokens'] + $conclusionData['promptTokens'] + $topicSentenceData['promptTokens'];
+        $coherence_cohesionData = $this->topicSentence($request);
+        $coherence_cohesionRes = $coherence_cohesionData['dataResponseChat'];
+
+        $totalToken = $introductionData['totalToken'] + $taskResponseData['totalToken'] + $conclusionData['totalToken'] + $topicSentenceData['totalToken'] + $coherence_cohesionRes['totalToken']; 
+        $completionTokens = $introductionData['completionTokens'] + $taskResponseData['completionTokens'] + $conclusionData['completionTokens'] + $topicSentenceData['completionTokens'] + $coherence_cohesionRes['completionTokens'];
+        $promptTokens = $introductionData['promptTokens'] + $taskResponseData['promptTokens'] + $conclusionData['promptTokens'] + $topicSentenceData['promptTokens'] + $coherence_cohesionRes['promptTokens'];
 
         $response = [
             'introduction' => $introductionRes,
-            'band_task_response' => $taskResponseRes,
             'topic_sentence' => [
                 'topic_sentence' => $topicSentenceRes,
                 'conclusion' => $conclusionRes,
             ],
+            'band_task_response' => $taskResponseRes,
+            'coherence_cohesion_response' => $coherence_cohesionRes,
             'totalToken' => $totalToken,
             'completionTokens' => $completionTokens,
             'promptTokens' => $promptTokens,
         ];
-
+        $title = 'test postman';
+        if(!empty($jsonData['title'])) {
+            $title = $jsonData['title'];
+        }
         $testOpenaiData = [
-            'name' => 'test postman',
+            'name' => $title,
             'topic' => $topic,
             'question' => $question,
             'category_id' => 4,
-            'answer' => $response,
+            'answer' => json_encode($response),
             'total_token' => $totalToken,
             'prompt_token' => $promptTokens,
             'complete_token' => $completionTokens,
@@ -326,6 +333,45 @@ class ApiController extends Controller
         $model = getenv('OPENAI_API_MODEL');
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
+        $system_prompt = "Criterion 'Organize Information logically with clear progression throughout the response.': \n -If the prompt can be followed effortlessly. Cohesion is used in such a way that it very rarely attracts attention, the band=9 \n If the prompt can be followed with ease.Information and ideas are logically sequenced, and cohesion is well managed, the band=8\n-If information and ideas are logically organised, and there is a clear progression throughout the response. (A few lapses may occur, but these are minor.), the band=7\n-If Information and ideas are generally arranged coherently and there is a clear overall progression, the band = 6\n-If the maOrganisation is evident but is not wholly logical and there may be a lack of overall progression. Nevertheless, there is a sense of underlying coherence to the response. The relationship of ideas can be followed but the sentences are not fluently linked to each other, the band=5\n-If Information and ideas are evident but not arranged coherently and there is no clear progression within the response. Relationships between ideas can be unclear and/or inadequately marked, the band=4\n-If There is no apparent logical organisation. Ideas are discernible but difficult to relate to each other, the band=3\n-If There is little relevant message, or the entire response may be off-topic, the band=2\n-If Responses of 20 words or fewer are rated at Band 1, the band=1\nCriterion 'Use cohesive devices including reference and substitution .':\n -If Cohesion is used in such a way that it very rarely attracts attention. Any lapses in coherence or cohesion are minimal, the band=9\n -If Occasional lapses in coherence and cohesion may occur, the band=8\n -If A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies or some over/under use,the band=7\n -If Cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or mechanical due to misuse, overuse or omission. The use of reference and substitution may lack flexibility or clarity and result in some repetition or error, the band=6\n -IfThere may be limited/overuse of cohesive devices with some inaccuracy. The writing may be repetitive due to inadequate and/or inaccurate use of reference and substitution,the band=5\n -If There is some use of basic cohesive devices, which may be inaccurate or repetitive. There is inaccurate use or a lack of substitution or referencing,the band=4\n -If There is minimal use of sequencers or cohesive devices. Those used do not necessarily indicate a logical relationship between ideas. There is difficulty in identifying referencing,the band=3\n -If There is little relevant message, or the entire response may be off-topic. There is little evidence of control of organisational features,the band=2\n -If responses of 20 words or fewer are rated at Band 1 and The content is wholly unrelated to the prompt,the band=1\nCriterion 'Paraphrasing.':\n -If Paragraphing is skilfully managed, the band=9\n -If Paragraphing is used sufficiently and appropriately, the band=8\n -If Paragraphing is generally used effectively to support overall coherence, and the sequencing of ideas within a paragraph is generally logical, the band=7\n -If Paragraphing may not always be logical and/or the central topic may not always be clear, the band=6\n -If Paragraphing may be inadequate or missing, the band=5\n -If There may be no paragraphing and/or no clear main topic within paragraphs, the band=4\n -If Any attempts at paragraphing are unhelpful, the band=3\n -If There is little evidence of control of organisational features, the band=2\n -If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1";
+
+        $chat = $client->chat()->create([
+            'model' => $model,
+           // 'response_format'=>["type"=>"json_object"],
+           'messages' => [
+               [
+                   "role" => "system",
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "\n" . "Please grade the Coherence & Cohesion of my IELTS Writing Task 2 essay based on the following criteria:\n" . $system_prompt . " Provide the score for each criterion and explain with accompanying examples why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, accompanying examples, improvement suggestions"
+               ],
+               [
+                   "role" => "user",
+                   "content" => "Provide the score for each criterion and explain why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, accompanying examples, improvement suggestions.. This is my IELTS Writing Task 2 essay:\n" . $question
+               ],
+
+            ],
+           'temperature' => 0,
+           'max_tokens' => 1000
+        ]);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $totalToken = $chat->usage->totalTokens;
+        $res = [
+            'dataResponseChat' => $dataResponseChat,
+            'totalToken' => $totalToken,
+            'completionTokens' => $chat->usage->completionTokens,
+            'promptTokens' => $chat->usage->promptTokens,
+        ];
+        return $res;
+    }
+
+    public function coherenceCohesion($request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        // $model = 'gpt-4-turbo';
+        $model = getenv('OPENAI_API_MODEL');
+        $question = $jsonData['question'];
+        $topic = $jsonData['topic'];
         $system_prompt = "Criterion 'Address all parts of the question.': \n -If the prompt is appropriately addressed and explored in depth, the band=9 \n If the prompt is appropriately and sufficiently addressed, the band=8\n-If the main parts of the prompt are appropriately addressed, the band=7\n-If the main parts of the prompt are addressed (though some may be more fully covered than others) and an appropriate format is used, the band = 6\n-If the main parts of the prompt are incompletely addressed and the format may be inappropriate in places, the band=5\n-If the prompt is tackled in a minimal way, or the answer is tangential, possibly due to some misunderstanding of the prompt and the format may be inappropriate, the band=4\n-If No part of the prompt is adequately addressed, or the prompt has been misunderstood, the band=3\n-If the content is barely related to the prompt, the band=2\n-If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1\nCriterion 'Present a clear and developed position throughout.':\n -If a clear and fully developed position is presented which directly answers the question/s, the band=9\n -If a clear and well-developed position is presented in response to the question/s, the band=8\n -If aclear and developed position is presented,the band=7\n -If a position is presented that is directly relevant to the prompt,although the conclusions drawn may be unclear, unjustified or repetitive, the band=6\n -If the writer expresses a position, but the development is not always clear,the band=5\n -If a position is discernible, but the reader has to read carefully to find it,the band=4\n -If no relevant position can be identified, and/or there is little direct response to the question/s,the band=3\n -If no position can be identified,the band=2\n -If responses of 20 words or fewer are rated at Band 1 and The content is wholly unrelated to the prompt,the band=1\nCriterion 'Present, develop, support ideas.':\n -If Ideas are relevant, fully extended and well supported.Any lapses in content or support are extremely rare, the band=9\n -If Ideas are relevant, well extended and supported.There may be occasional omissions or lapses in content, the band=8\n -If Main ideas are extended and supported but there may be a tendency to over-generalise or there may be a lack of focus and precision in supporting ideas/material, the band=7\n -If Main ideas are relevant, but some may be insufficiently developed or may lack clarity, while some supporting arguments and evidence may be less relevant or inadequate, the band=6\n -If Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail. There may be some repetition, the band=5\n -If Main ideas are difficult to identify and such ideas that are identifiable may lack relevance, clarity and or support. Large parts of the response may be repetitive, the band=4\n -If There are few ideas, and these may be irrelevant or insufficiently developed, the band=3\n -If There may be glimpses of one or two ideas without development, the band=2\n -If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1";
 
         $chat = $client->chat()->create([
@@ -357,6 +403,7 @@ class ApiController extends Controller
         ];
         return $res;
     }
+
     public function test(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
@@ -384,8 +431,6 @@ class ApiController extends Controller
         $system_prompt = "Criterion 'Address all parts of the question.': \n -If the prompt is appropriately addressed and explored in depth, the band=9 \n If the prompt is appropriately and sufficiently addressed, the band=8\n-If the main parts of the prompt are appropriately addressed, the band=7\n-If the main parts of the prompt are addressed (though some may be more fully covered than others) and an appropriate format is used, the band = 6\n-If the main parts of the prompt are incompletely addressed and the format may be inappropriate in places, the band=5\n-If the prompt is tackled in a minimal way, or the answer is tangential, possibly due to some misunderstanding of the prompt and the format may be inappropriate, the band=4\n-If No part of the prompt is adequately addressed, or the prompt has been misunderstood, the band=3\n-If the content is barely related to the prompt, the band=2\n-If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1\nCriterion 'Present a clear and developed position throughout.':\n -If a clear and fully developed position is presented which directly answers the question/s, the band=9\n -If a clear and well-developed position is presented in response to the question/s, the band=8\n -If aclear and developed position is presented,the band=7\n -If a position is presented that is directly relevant to the prompt,although the conclusions drawn may be unclear, unjustified or repetitive, the band=6\n -If the writer expresses a position, but the development is not always clear,the band=5\n -If a position is discernible, but the reader has to read carefully to find it,the band=4\n -If no relevant position can be identified, and/or there is little direct response to the question/s,the band=3\n -If no position can be identified,the band=2\n -If responses of 20 words or fewer are rated at Band 1 and The content is wholly unrelated to the prompt,the band=1\nCriterion 'Present, develop, support ideas.':\n -If Ideas are relevant, fully extended and well supported.Any lapses in content or support are extremely rare, the band=9\n -If Ideas are relevant, well extended and supported.There may be occasional omissions or lapses in content, the band=8\n -If Main ideas are extended and supported but there may be a tendency to over-generalise or there may be a lack of focus and precision in supporting ideas/material, the band=7\n -If Main ideas are relevant, but some may be insufficiently developed or may lack clarity, while some supporting arguments and evidence may be less relevant or inadequate, the band=6\n -If Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail. There may be some repetition, the band=5\n -If Main ideas are difficult to identify and such ideas that are identifiable may lack relevance, clarity and or support. Large parts of the response may be repetitive, the band=4\n -If There are few ideas, and these may be irrelevant or insufficiently developed, the band=3\n -If There may be glimpses of one or two ideas without development, the band=2\n -If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1";
 
         $userContent = str_replace("{context}", $system_prompt, $userContent);
-        // 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
-        // ft:gpt-3.5-turbo-0613:pythaverse-space:datatrain12-12:8UoNA0Dc
 
         $chat = $client->chat()->create([
             'model' => $model,

@@ -48,4 +48,5 @@ Route::get('chat/form', [TrainingController::class, 'formChat'])->middleware('au
 Route::get('chat/detail/{id}', [TrainingController::class, 'detailChat'])->middleware('auth')->name('chat.detail');
 Route::get('chat/delete/{id}', [TrainingController::class, 'deleteChat'])->name('chat.delete');
 Route::post('chat', [TrainingController::class, 'chat'])->name('chat.chat');
+Route::post('chat/importJson', [TrainingController::class, 'readJsonFile'])->name('chat.importJson');
 

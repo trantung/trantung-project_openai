@@ -34,6 +34,15 @@
                                 <input type="text" required="" class="form-control model_name" id="model_name" name="model_name" placeholder="Model name">
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Import KU file( .json) :</label>
+                            <div class="col-sm-8">
+                                <input type="file" class="form-control training_json" id="training_json" name="training_json" accept=".json">
+                            </div>
+                            <div class="col-sm-1">
+                                <input type="button" class="btn btn-primary" id="importFileJson" value="Submit">
+                            </div>
+                        </div>
                         <div class="form-group form-group-width model_config">
                             <label for="vote-icon">Model config
                                 <button type="button" class="btn btn-primary btn-sm add_quickly">Add quickly</button>
@@ -178,4 +187,65 @@
             }
         });
     });
+
+    $('#importFileJson').click(function() {
+        var submitButton = document.getElementById('importFileJson');
+        var file = $('#training_json')[0].files[0];
+        // var closeButton = $('#closeButton');
+        if (!file) {
+            alert('Please select a file to import.');
+        } else {
+            $('body').toggleClass('loading');
+            $("#importFileJson").prop("disabled", true);
+            sendImportRequestJson()
+                .then(function(response) {
+                    var data = JSON.parse(response);
+                    console.log(data.data.messages);
+                    if (data.code == 200) {
+                        setDataToTextAreas(data.data.messages);
+                    } else {
+                        $('#modalAlert .icon-box').html('<i class="fa-solid fa-xmark"></i>');
+                        $('#modalAlert .modal-body h4').text('Ooops!');
+                        $('#modalAlert .modal-body p').text('Something went wrong. File was not uploaded. ' + data.data.messages);
+                        $('#modalAlert .modal-header').css('background', '#e85e6c');
+                        $('#modalAlert').modal('show');
+                    }
+                    // setDataToTextAreas(data)
+                })
+                .catch(function(error) {
+                    $("#importFileJson").prop("disabled", false);
+                })
+                .finally(function() {
+                    $("#importFileJson").prop("disabled", false);
+                });
+        }
+
+    });
+
+    function sendImportRequestJson() {
+        return new Promise(function(resolve, reject) {
+            var formData = new FormData();
+            formData.append('import_file', $('#training_json')[0].files[0]);
+            formData.append('_token', "{{ csrf_token() }}");
+            $.ajax({
+                url: "{{route('chat.importJson')}}",
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                xhr: function() {
+                    var xhr = new window.XMLHttpRequest();
+                    return xhr;
+                },
+                success: function(response) {
+                    resolve(response);
+                    $('body').toggleClass('loading');
+                },
+                error: function(xhr, status, error) {
+                    reject(error);
+                    $('body').toggleClass('loading');
+                }
+            });
+        });
+    }
 </script>

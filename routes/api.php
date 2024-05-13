@@ -18,3 +18,5 @@ Route::post("openai/test/topic_sentence", [App\Http\Controllers\ApiTestControlle
 Route::post("openai/test/conclusion", [App\Http\Controllers\ApiTestController::class,'conclusion']);
 //cuc 3: band
 Route::post("openai/test/band/task_response", [App\Http\Controllers\ApiTestController::class,'bandTaskResponse']);
+//cuc 4 Coherence & Cohesion
+Route::post("openai/test/band/coherence_cohesion", [App\Http\Controllers\ApiTestController::class,'coherenceCohesion']);

@@ -64,7 +64,11 @@
                                     <textarea placeholder="Fill a question" id="question" class="flex-1 p-2 bg-white border-[1.5px] border-[#ced4da] rounded-lg resize-none focus:outline-none"></textarea>
                                 </div>
                                 <div class="flex flex-1 mt-2">
-                                    <textarea id="answerAI" placeholder="Fill a answer(For LCAT)" class="flex-1 p-2 bg-white border-[1.5px] border-[#ced4da] rounded-lg resize-none focus:outline-none"></textarea>
+                                    <label for="">Answer</label>
+                                    <div id="answerAI">
+
+                                    </div>
+                                    <!-- <textarea id="answerAI" placeholder="Fill a answer(For LCAT)" class="flex-1 p-2 bg-white border-[1.5px] border-[#ced4da] rounded-lg resize-none focus:outline-none"></textarea> -->
                                 </div>
                                 <div class="flex mt-2">
                                     <button class="mantine-UnstyledButton-root mantine-Button-root bg-primary mantine-dimeg5" type="button" id="chatGpt" data-button="true">
@@ -101,7 +105,7 @@
                                     <p>Question:</p>
                                     <label for="">{{ $question->question }}</label>
                                     <p>Answer:</p>
-                                    <pre style="white-space: pre-wrap;">{{ $question->answer }}</pre>
+                                    <pre style="white-space: pre-wrap;">{!! json_encode(json_decode($question->answer), JSON_PRETTY_PRINT) !!}</pre>
                                 </div>
                             </div>
                         </div>
@@ -170,10 +174,29 @@
                 try {
                     const botResponse = await getBotResponseFromChatApiLaravel($('#question').val(), url);
                     $('body').toggleClass('loading');
-                    var dataAsString = JSON.stringify(botResponse);
-                    console.log(dataAsString);
-                    const text2WithoutBackslash = dataAsString.replace(/\\/g, '');
-                    $('#answerAI').val(text2WithoutBackslash);
+
+                    // Convert JavaScript object to JSON string
+                    // const jsonString = JSON.stringify(botResponse, null, 2).replace(/\n/g, '<br>').replace(/\s/g, '&nbsp;');
+                    // console.log(jsonString);
+                    const jsonString = JSON.stringify(botResponse, null, 2);
+
+                    // Remove backslashes from the JSON string
+                    // const jsonStringWithoutBackslash = jsonString.replace(/\\n/g, '\n');
+
+                    // Create a new div to display the JSON string
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.classList.add('bot-inbox', 'inbox');
+                    botMessageDiv.innerHTML = `
+                        <div class="wrap" style="height: 300px;overflow: auto;">
+                            <pre style="white-space: pre-wrap;">${jsonString}</pre>
+                        </div>
+                    `;
+
+                    const answerAI = document.getElementById('answerAI');
+
+                    answerAI.innerHTML = '';
+
+                    answerAI.appendChild(botMessageDiv);
                 } catch (error) {
                     console.error('Error when loading data:', error);
                     throw error;

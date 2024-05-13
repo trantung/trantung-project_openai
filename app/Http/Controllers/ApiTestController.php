@@ -290,10 +290,46 @@ class ApiTestController extends Controller
            'temperature' => 0,
            'max_tokens' => 1000
         ]);
-        dd($chat);
+        // dd($chat);
         $dataResponseChat = $chat->choices[0]->message->content;
         return $dataResponseChat;
     }
+
+    public function coherenceCohesion(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        // $model = 'gpt-4-turbo';
+        $model = getenv('OPENAI_API_MODEL');
+        $question = $jsonData['question'];
+        $topic = $jsonData['topic'];
+        $system_prompt = "Criterion 'Organize Information logically with clear progression throughout the response.': \n -If the prompt can be followed effortlessly. Cohesion is used in such a way that it very rarely attracts attention, the band=9 \n If the prompt can be followed with ease.Information and ideas are logically sequenced, and cohesion is well managed, the band=8\n-If information and ideas are logically organised, and there is a clear progression throughout the response. (A few lapses may occur, but these are minor.), the band=7\n-If Information and ideas are generally arranged coherently and there is a clear overall progression, the band = 6\n-If the maOrganisation is evident but is not wholly logical and there may be a lack of overall progression. Nevertheless, there is a sense of underlying coherence to the response. The relationship of ideas can be followed but the sentences are not fluently linked to each other, the band=5\n-If Information and ideas are evident but not arranged coherently and there is no clear progression within the response. Relationships between ideas can be unclear and/or inadequately marked, the band=4\n-If There is no apparent logical organisation. Ideas are discernible but difficult to relate to each other, the band=3\n-If There is little relevant message, or the entire response may be off-topic, the band=2\n-If Responses of 20 words or fewer are rated at Band 1, the band=1\nCriterion 'Use cohesive devices including reference and substitution .':\n -If Cohesion is used in such a way that it very rarely attracts attention. Any lapses in coherence or cohesion are minimal, the band=9\n -If Occasional lapses in coherence and cohesion may occur, the band=8\n -If A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies or some over/under use,the band=7\n -If Cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or mechanical due to misuse, overuse or omission. The use of reference and substitution may lack flexibility or clarity and result in some repetition or error, the band=6\n -IfThere may be limited/overuse of cohesive devices with some inaccuracy. The writing may be repetitive due to inadequate and/or inaccurate use of reference and substitution,the band=5\n -If There is some use of basic cohesive devices, which may be inaccurate or repetitive. There is inaccurate use or a lack of substitution or referencing,the band=4\n -If There is minimal use of sequencers or cohesive devices. Those used do not necessarily indicate a logical relationship between ideas. There is difficulty in identifying referencing,the band=3\n -If There is little relevant message, or the entire response may be off-topic. There is little evidence of control of organisational features,the band=2\n -If responses of 20 words or fewer are rated at Band 1 and The content is wholly unrelated to the prompt,the band=1\nCriterion 'Paraphrasing.':\n -If Paragraphing is skilfully managed, the band=9\n -If Paragraphing is used sufficiently and appropriately, the band=8\n -If Paragraphing is generally used effectively to support overall coherence, and the sequencing of ideas within a paragraph is generally logical, the band=7\n -If Paragraphing may not always be logical and/or the central topic may not always be clear, the band=6\n -If Paragraphing may be inadequate or missing, the band=5\n -If There may be no paragraphing and/or no clear main topic within paragraphs, the band=4\n -If Any attempts at paragraphing are unhelpful, the band=3\n -If There is little evidence of control of organisational features, the band=2\n -If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1";
+
+        $chat = $client->chat()->create([
+            'model' => $model,
+           // 'response_format'=>["type"=>"json_object"],
+           'messages' => [
+               [
+                   "role" => "system",
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "\n" . "Please grade the Coherence & Cohesion of my IELTS Writing Task 2 essay based on the following criteria:\n" . $system_prompt . " Provide the score for each criterion and explain with accompanying examples why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, accompanying examples, improvement suggestions"
+               ],
+               [
+                   "role" => "user",
+                   "content" => "Provide the score for each criterion and explain why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, accompanying examples, improvement suggestions.. This is my IELTS Writing Task 2 essay:\n" . $question
+               ],
+
+            ],
+           'temperature' => 0,
+           'max_tokens' => 1000
+        ]);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        // $dataResponseChat = json_decode($dataResponseChat);
+        dd($dataResponseChat);
+        return $this->responseSuccess(200, $dataResponseChat);
+        // return $dataResponseChat;
+    }
+
     public function test(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);

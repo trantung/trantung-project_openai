@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
 use \OpenAI;
 use App\Models\Embedding;
 use Storage;
@@ -25,14 +25,14 @@ class TrainingController extends BaseApiController
         $this->middleware('auth')->only('formChat');
         $this->middleware('auth')->only('detailChat');
     }
-    
+
     public function index()
     {
         // $data = DB::connection('pgsql')->table('embeddings')->paginate(10);
         $data = UserModelData::paginate(10);
         return view('training.index', compact('data'));
     }
- 
+
     public function create()
     {
         return view('training.form');
@@ -47,39 +47,37 @@ class TrainingController extends BaseApiController
     public function store(Request $request)
     {
         $data = $this->convertDataToJsonTo($request);
-        if($data['code'] != 200){
+        if ($data['code'] != 200) {
             return $this->responseError(422, $this->convertDataToJsonTo($request)['data']['messages']);
         }
 
         $modelCode = $this->createSlug($request['model_name']);
         $checkExist = UserModelData::where('model_code', $modelCode)->first();
-        if($checkExist){
-            return $this->responseError(412,'Model name is exist');
+        if ($checkExist) {
+            return $this->responseError(412, 'Model name is exist');
         }
         $user = Auth::user();
 
         $message = $data['data']['messages'];
         $resultQuestion = $topicBaseOn = '';
-        foreach($message as $value)
-        {
-            foreach($value['messages'] as $v)
-            {
-                if($v['role'] == 'user') {
+        foreach ($message as $value) {
+            foreach ($value['messages'] as $v) {
+                if ($v['role'] == 'user') {
                     $resultQuestion = $resultQuestion . ' ' . $v['content'];
                 }
             }
         }
 
         $topicRelate = $this->getTopicRelate($resultQuestion);
-        if(!empty($request['base_model'])) {
+        if (!empty($request['base_model'])) {
             $baseOnId = $request['base_model'];
             $checkBaseOnId = UserModelData::find($baseOnId);
-            if(!$checkBaseOnId) {
-                return $this->responseError(412,'Model name is exist');
+            if (!$checkBaseOnId) {
+                return $this->responseError(412, 'Model name is exist');
             }
             $topicBaseOn = $checkBaseOnId->topic_detail;
         }
-        $topicDetail = $topicRelate . ',' .$topicBaseOn;
+        $topicDetail = $topicRelate . ',' . $topicBaseOn;
         $modelDataId = UserModelData::create([
             'username' => $user->name,
             'model_name' => $request['model_name'],
@@ -94,27 +92,82 @@ class TrainingController extends BaseApiController
 
         // $message = $jsonData['content'];
         $res = $this->createUserFileTrain($modelDataId, $data, $request);
-        if(!empty($res['message']) && $res['code'] == 305){
+        if (!empty($res['message']) && $res['code'] == 305) {
             return $this->responseError(412, $res['message']);
         }
-        if($res == true) {
+        if ($res == true) {
             $messages = array(
-                'messages' =>'create is successful',
+                'messages' => 'create is successful',
                 'model_data_id' => $modelDataId
             );
             return $this->responseSuccess(200, $messages);
         }
         return $this->responseError(305, 'Create is error');
     }
-    
-    
+
+
     public function formChat()
     {
         return view('chat.form');
     }
 
-    public function chat(Request $request){
-        if($request['type'] == 'detail'){
+    public function readJsonFile(Request $request)
+    {
+        $tmpFilePath = $_FILES['import_file']['tmp_name'];
+        $jsonContent = file_get_contents($tmpFilePath);
+        $jsonData = json_decode($jsonContent, true);
+        $messages = array();
+        if ($jsonData !== null) {
+            foreach ($jsonData as $item) {
+                $userContent = '';
+                $assistantContent = '';
+                foreach ($item['messages'] as $message) {
+                    if ($message['role'] === 'user') {
+                        $userContent = trim(preg_replace('/\s\s+/', ' ', $message['content']));
+                    } elseif ($message['role'] === 'assistant') {
+                        $assistantContent = trim(preg_replace('/\s\s+/', ' ', $message['content']));
+                    }
+                }
+                $messages[] = [
+                    "messages" => [
+                        [
+                            "role" => "system",
+                            "content" => "Use the following pieces of context to answer the user's question. If you don't know the answer, just say that you don't know, don't try to make up an answer."
+                        ],
+                        [
+                            "role" => "user",
+                            "content" => str_replace('\\', "'", $userContent)
+                        ],
+                        [
+                            "role" => "assistant",
+                            "content" => str_replace('\\', "'", $assistantContent)
+                        ]
+                    ]
+                ];
+            }
+            $arr = [
+                'code' => 200,
+                'data' => [
+                    'messages' => $messages
+                ]
+            ];
+            echo json_encode($arr);
+            // echo json_encode($messages);
+        } else {
+            $arr = [
+                'code' => 305,
+                'data' => [
+                    'messages' => 'Failed to decode JSON or invalid JSON format'
+                ]
+            ];
+            echo json_encode($arr);
+            exit;
+        }
+    }
+
+    public function chat(Request $request)
+    {
+        if ($request['type'] == 'detail') {
             $open_ai_key = getenv('OPENAI_API_KEY');
             $client = OpenAI::client($open_ai_key);
             $response = $client->chat()->create([
@@ -127,7 +180,14 @@ class TrainingController extends BaseApiController
             return $response->choices[0]->message->content;
         }
 
-        if($request['type'] == 0){
+        $data = [
+            'name' => $request['title'],
+            'question' => $request['question'],
+            'category_id' => $request['type'],
+            'topic' => $request['topic']
+        ];
+
+        if ($request['type'] == 0) {
             $open_ai_key = getenv('OPENAI_API_KEY');
             $client = OpenAI::client($open_ai_key);
             $response = $client->chat()->create([
@@ -137,13 +197,8 @@ class TrainingController extends BaseApiController
                     ['role' => 'user', 'content' => $request['question']],
                 ],
             ]);
-            $questionTable = TestOpenai::create([
-                'name' => $request['title'],
-                'question' => $request['question'],
-                'answer' => $response->choices[0]->message->content,
-                'category_id' => $request['type'],
-                'topic' => $request['topic']
-            ])->id;
+            $data['answer'] = $response->choices[0]->message->content;
+            $questionTable = TestOpenai::create($data)->id;
             // return $response->choices[0]->message->content;
             $response = [
                 'id' => $questionTable,
@@ -151,15 +206,10 @@ class TrainingController extends BaseApiController
             ];
             return $this->responseError(200, $response);
         }
-        
-        if($request['type'] == 1 || $request['type'] == 2 || $request['type'] == 3 || $request['type'] == 4){
-            $questionTable = TestOpenai::create([
-                'name' => $request['title'],
-                'question' => $request['question'],
-                'answer' => $request['answer'],
-                'category_id' => $request['type'],
-                'topic' => $request['topic']
-            ])->id;
+
+        if ($request['type'] == 1 || $request['type'] == 2 || $request['type'] == 3) {
+            $data['answer'] = $request['answer'];
+            $questionTable = TestOpenai::create($data)->id;
 
             // return $request['answer'];
             return $this->responseError(200, $questionTable);
@@ -235,7 +285,7 @@ class TrainingController extends BaseApiController
         $systemMessage = '';
         $prompUser = "Use the following pieces of context to answer the users question. If you don't know the answer, just say that you don't know, don't try to make up an answer.";
         $userModelData = UserModelData::find($modelId);
-        if(!empty($userModelData->prompt)){
+        if (!empty($userModelData->prompt)) {
             $prompUser = $userModelData->prompt . '.';
         }
         $systemMessage = "
@@ -250,16 +300,16 @@ class TrainingController extends BaseApiController
         $systemMessage = str_replace("{context}", $context, $systemMessage);
         $system_prompt = str_replace("{context}", $context, $system_template);
         $delimiter = "```";
-        $contentUser = $delimiter.$question.$delimiter;
+        $contentUser = $delimiter . $question . $delimiter;
 
-        $historyChat = json_decode(file_get_contents($file_path),true);
+        $historyChat = json_decode(file_get_contents($file_path), true);
         $historyChatSystemMessage[] =  [
             "role" => "system",
             "content" => $system_prompt
         ];
         $resChat = [];
         // dd($historyChat);
-        foreach($historyChat as $value) {
+        foreach ($historyChat as $value) {
             $resChat[] = [
                 'role' => $value['role'],
                 'content' => $value['content'],
@@ -268,12 +318,12 @@ class TrainingController extends BaseApiController
         $resChat = array_merge($historyChatSystemMessage, $resChat);
         // dd($resChat);
         $arrayEnd = end($resChat);
-        if(!empty($arrayEnd['role']) && $arrayEnd['role'] == 'user') {
+        if (!empty($arrayEnd['role']) && $arrayEnd['role'] == 'user') {
             $arrayEnd['content'] = $systemMessage;
         }
         return $resChat;
     }
-    
+
     public function detailChat($id)
     {
         $question = TestOpenai::where('id', $id)->first();
@@ -303,7 +353,7 @@ class TrainingController extends BaseApiController
         $messages = array();
 
         if (count($questions) > 0) {
-            if(count($questions) < 10 || count($answers) < 10){
+            if (count($questions) < 10 || count($answers) < 10) {
                 $arr = [
                     'code' => 305,
                     'data' => [
@@ -311,11 +361,11 @@ class TrainingController extends BaseApiController
                     ]
                 ];
                 return $arr;
-            }else{
+            } else {
                 foreach ($questions as $index => $question) {
                     $questionContent = str_replace(['\\', '"'], ["'", '\"'], trim(preg_replace('/\s\s+/', ' ', $question)));
                     $answerContent = str_replace(['\\', '"'], ["'", '\"'], trim(preg_replace('/\s\s+/', ' ', $answers[$index])));
-                
+
                     $message = array(
                         "messages" => array(
                             array(
@@ -374,7 +424,7 @@ class TrainingController extends BaseApiController
         $embedding = UserModelData::find($id);
         $data = UserFileTrainings::where('user_model_data_id', $id)->first();
         $content = [];
-        if(!empty($data)){
+        if (!empty($data)) {
             $content = json_decode($data['content']);
         }
         
@@ -406,7 +456,7 @@ class TrainingController extends BaseApiController
         //convert json to jsonl and create file jsonl
         $jsonlContent = $this->convertJsonToJsonl($data['data']['messages']);
         $user = Auth::user();
-        $filename = $modelDataId . '_' .time();
+        $filename = $modelDataId . '_' . time();
         $userFileTrainingId = UserFileTrainings::create([
             'user_model_data_id' => $modelDataId,
             'username' => $user->name,
@@ -414,8 +464,8 @@ class TrainingController extends BaseApiController
             'file_id' => $filename,
             'content' => $jsonContent,
         ])->id;
-        Storage::disk('local')->put('/training/'. $user->name . '/' . $filename . '.jsonl', $jsonlContent);
-        $file_path = storage_path('app/training/'. $user->name . '/' . $filename . '.jsonl');
+        Storage::disk('local')->put('/training/' . $user->name . '/' . $filename . '.jsonl', $jsonlContent);
+        $file_path = storage_path('app/training/' . $user->name . '/' . $filename . '.jsonl');
         $open_ai_key = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($open_ai_key);
         $response = $client->files()->upload([
@@ -423,23 +473,23 @@ class TrainingController extends BaseApiController
             'file' => fopen($file_path, 'r'),
         ]);
         $result = $response->toArray();
-        if(!empty($result['id'])){
+        if (!empty($result['id'])) {
             UserFileTrainings::where('id', $userFileTrainingId)->update(['open_ai_file_id' => $response->id]);
             $res = $this->createUserModelDataStatus($userFileTrainingId, $modelDataId, $request, $response->id);
             // dd($res);
-            if(!empty($res['message']) && $res['code'] == 305){
+            if (!empty($res['message']) && $res['code'] == 305) {
                 $response = [
                     'code' => 305,
                     'message' => $res['message']
                 ];
                 return $response;
             }
-            if($res == true) {
+            if ($res == true) {
                 return true;
             }
-        }else{
+        } else {
             $userModelData = UserModelData::find($modelDataId);
-            if(!empty($userModelData)){
+            if (!empty($userModelData)) {
                 $userModelData->update([
                     'status' => UserModelData::OPENAI_ERROR,
                     'note' => $result['error']['message']
@@ -466,14 +516,14 @@ class TrainingController extends BaseApiController
             'cron' => UserModelDataStatus::NOT_RUN,
         ])->id;
         $model = 'gpt-3.5-turbo-0125';
-        if(!empty($jsonData['base_model'])){
+        if (!empty($jsonData['base_model'])) {
             $userModelData = UserModelData::find($jsonData['base_model']);
-            if(!$userModelData) {
+            if (!$userModelData) {
                 return $this->responseError(404, 'Not found');
             }
             $model = $userModelData->model_ai_id;
         }
-        
+
         $open_ai_key = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($open_ai_key);
         $response = $client->fineTuning()->createJob([
@@ -485,16 +535,16 @@ class TrainingController extends BaseApiController
             ],
             'suffix' => null,
         ]);
-        
+
         $result = $response->toArray();
         // dd($result);
-        if(!empty($result['id'])){
+        if (!empty($result['id'])) {
             UserModelDataStatus::where('id', $userModelDataStatusId)
                 ->update(['openai_job_id' => $result['id'], 'status' => UserModelDataStatus::STATUS_TRAINING]);
             return true;
-        }else{
+        } else {
             $userModelData = UserModelData::find($modelDataId);
-            if(!empty($userModelData)){
+            if (!empty($userModelData)) {
                 $userModelData->update([
                     'status' => UserModelData::OPENAI_ERROR,
                     'note' => $result['error']['message']
@@ -516,17 +566,17 @@ class TrainingController extends BaseApiController
         $open_ai_key = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($open_ai_key);
         $chat = $client->chat()->create([
-           'model' => $model,
-           'messages' => [
-               [
-                   "role" => "user",
-                   "content" => "Please help me identify the shortest possible topics separated by commas from the following list of questions: \n" . $resultQuestion
-               ],
+            'model' => $model,
+            'messages' => [
+                [
+                    "role" => "user",
+                    "content" => "Please help me identify the shortest possible topics separated by commas from the following list of questions: \n" . $resultQuestion
+                ],
             ],
-           'temperature' => 0,
-           'max_tokens' => 1000
+            'temperature' => 0,
+            'max_tokens' => 1000
         ]);
-        if(!empty($chat->error)) {
+        if (!empty($chat->error)) {
             return '';
         }
         return $chat->choices[0]->message->content;

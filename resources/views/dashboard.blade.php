@@ -28,6 +28,9 @@
                             <tr>
                                 <th id='columnname' class='manage-column column-columnname' scope='col'>ID</th>
                                 <th id='columnname' class='manage-column column-columnname' scope='col'>Name</th>
+                                <th id='columnname' class='manage-column column-columnname' scope='col'>Prompt token</th>
+                                <th id='columnname' class='manage-column column-columnname' scope='col'>Complete token</th>
+                                <th id='columnname' class='manage-column column-columnname' scope='col'>Total token</th>
                                 <th id='columnname' class='manage-column column-columnname' scope='col'>Created Date</th>
                                 <th id='columnname' class='manage-column column-columnname' scope='col'>Action</th>
                             </tr>
@@ -37,6 +40,9 @@
                             <tr>
                                 <td class="align-middle">{{ $value->id }}</td>
                                 <td class="align-middle">{{ $value->name }}</td>
+                                <td class="align-middle">{{ $value->prompt_token }}</td>
+                                <td class="align-middle">{{ $value->complete_token }}</td>
+                                <td class="align-middle">{{ $value->total_token }}</td>
                                 <td class="align-middle">{{ $value->created_at }}</td>
                                 <td class="align-middle">
                                     <div class="btn-group" role="group" aria-label="Basic example">
