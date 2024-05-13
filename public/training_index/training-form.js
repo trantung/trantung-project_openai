@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 function createOnchangeHandler(select) {
     return function() {
         console.log("hello");
@@ -290,6 +289,6 @@ function setDataToTextAreas(data) {
         }
     });
 
-    updateCharacterCount(); // G?i updateCharacterCount() sau khi vòng l?p dã hoàn thành
+    updateCharacterCount(); // G?i updateCharacterCount() sau khi vï¿½ng l?p dï¿½ hoï¿½n thï¿½nh
     console.log(dataIndex);
 }

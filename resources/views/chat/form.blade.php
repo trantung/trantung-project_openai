@@ -51,7 +51,7 @@
                                         <option value="1">Cuc 1</option>
                                         <option value="2">Cuc 2</option>
                                         <option value="3">Cuc 3</option>
-                                        <option value="4">Cuc 4</option>
+                                        <option value="4">All</option>
                                     </select>
                                 </div>
                                 <div class="flex flex-2 mt-2">
@@ -132,32 +132,53 @@
                     }
                 });
             } else {
+                let url = '';
+                if($('#category').val() == 1){
+                    url = "http://ai.microgem.io.vn/api/openai/test/introduction";
+                }
+                if($('#category').val() == 2){
+                    url = "http://ai.microgem.io.vn/api/openai/test/topic_sentence";
+                }
+                if($('#category').val() == 3){
+                    url = "http://ai.microgem.io.vn/api/openai/test/band/task_response";
+                }
+                if($('#category').val() == 4){
+                    url = "http://ai.microgem.io.vn/api/ielts/write_task_2";
+                }
                 try {
-                    const botResponse = await getBotResponseFromChatApiLaravel($('#question').val());
-                    $.ajax({
-                        url: "{{ route('chat.chat') }}",
-                        method: 'POST',
-                        data: {
-                            _token: "{{ csrf_token() }}",
-                            title: $('#name').val(),
-                            question: $('#question').val(),
-                            answer: botResponse,
-                            type: $('#category').val(),
-                            topic: $('#topic').val()
-                        },
-                        success: function(response) {
-                            console.log(response);
-                            if(response.code == 200){
-                                var url = "http://ai.microgem.io.vn/chat/detail/" + response.data.messages;
-                                window.location.href = url;
+                    const botResponse = await getBotResponseFromChatApiLaravel($('#question').val(), url);
+                    const jsonString = JSON.stringify(botResponse, null, 2);
+                    // const text2WithoutBackslash = dataAsString.replace(/\\/g, '');
+                    if($('#category').val() != 4){
+                        $.ajax({
+                            url: "{{ route('chat.chat') }}",
+                            method: 'POST',
+                            data: {
+                                _token: "{{ csrf_token() }}",
+                                title: $('#name').val(),
+                                question: $('#question').val(),
+                                answer: jsonString,
+                                type: $('#category').val(),
+                                topic: $('#topic').val()
+                            },
+                            success: function(response) {
+                                console.log(response);
+                                if(response.code == 200){
+                                    var url = "http://ai.microgem.io.vn/chat/detail/" + response.data.messages;
+                                    window.location.href = url;
+                                }
+                                // $('#answerAI').val(botResponse);
+                            },
+                            complete: function() {
+                                $('body').toggleClass('loading');
                             }
-                            // $('#answerAI').val(botResponse);
-                        },
-                        complete: function() {
-                            $('body').toggleClass('loading');
-                        }
-                    });
-                    $('#answerAI').val(botResponse);
+                        });
+                    }
+
+                    if($('#category').val() == 4){
+                        alert('Successfully');
+                        window.location.href = "http://ai.microgem.io.vn/dashboard";
+                    }
                 } catch (error) {
                     console.error('Error when loading data:', error);
                     throw error;
@@ -165,13 +186,18 @@
             }
         });
 
-        async function getBotResponseFromChatApiLaravel(question) {
+        async function getBotResponseFromChatApiLaravel(question, url) {
             try {
+                var data = { 
+                    question: question, 
+                    topic: $('#topic').val(),
+                    title: $('#name').val(),
+                }
                 const response = await $.ajax({
-                    url: "http://ai.microgem.io.vn/api/openai/test/introduction",
+                    url: url,
                     method: 'POST',
-                    contentType: 'application/json', // Chỉ định kiểu dữ liệu
-                    data: JSON.stringify({ question: question }), // Chuyển đổi thành chuỗi JSON
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
                 });
                 return response.data;
             } catch (error) {

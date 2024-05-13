@@ -21,7 +21,7 @@ class HomeController extends Controller
 
     public function index1()
     {
-        $data = TestOpenai::paginate(10);
+        $data = TestOpenai::orderBy('id', 'DESC')->paginate(10);
         return view('dashboard', compact('data'));
     }
 }
