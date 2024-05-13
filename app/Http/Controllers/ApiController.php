@@ -216,7 +216,8 @@ class ApiController extends Controller
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
         // $dataResponseChat = json_decode($dataResponseChat);
-        dd($dataResponseChat);
+        return $this->responseSuccess(200, $dataResponseChat);
+        // dd($dataResponseChat);
         $response = [
             'Introduction' => $dataResponseChat->Introduction,
             'Comments' => [

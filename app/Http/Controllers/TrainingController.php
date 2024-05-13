@@ -114,21 +114,56 @@ class TrainingController extends BaseApiController
     }
 
     public function chat(Request $request){
-        $open_ai_key = getenv('OPENAI_API_KEY');
-        $client = OpenAI::client($open_ai_key);
-        $response = $client->chat()->create([
-            'model' => 'gpt-3.5-turbo-0125',
-            'messages' => [
-                ['role' => 'system', 'content' => $request['title']],
-                ['role' => 'user', 'content' => $request['question']],
-            ],
-        ]);
-        $questionTable = Question::create([
-            'name' => $request['title'],
-            'question' => $request['question'],
-            'answer' => $response->choices[0]->message->content
-        ])->id;
-        return $response->choices[0]->message->content;
+        if($request['type'] == 'detail'){
+            $open_ai_key = getenv('OPENAI_API_KEY');
+            $client = OpenAI::client($open_ai_key);
+            $response = $client->chat()->create([
+                'model' => 'gpt-3.5-turbo-0125',
+                'messages' => [
+                    ['role' => 'system', 'content' => $request['title']],
+                    ['role' => 'user', 'content' => $request['question']],
+                ],
+            ]);
+            return $response->choices[0]->message->content;
+        }
+
+        if($request['type'] == 0){
+            $open_ai_key = getenv('OPENAI_API_KEY');
+            $client = OpenAI::client($open_ai_key);
+            $response = $client->chat()->create([
+                'model' => 'gpt-3.5-turbo-0125',
+                'messages' => [
+                    ['role' => 'system', 'content' => $request['title']],
+                    ['role' => 'user', 'content' => $request['question']],
+                ],
+            ]);
+            $questionTable = TestOpenai::create([
+                'name' => $request['title'],
+                'question' => $request['question'],
+                'answer' => $response->choices[0]->message->content,
+                'category_id' => $request['type'],
+                'topic' => $request['topic']
+            ])->id;
+            // return $response->choices[0]->message->content;
+            $response = [
+                'id' => $questionTable,
+                'answer' => $response->choices[0]->message->content
+            ];
+            return $this->responseError(200, $response);
+        }
+        
+        if($request['type'] == 1 || $request['type'] == 2 || $request['type'] == 3 || $request['type'] == 4){
+            $questionTable = TestOpenai::create([
+                'name' => $request['title'],
+                'question' => $request['question'],
+                'answer' => $request['answer'],
+                'category_id' => $request['type'],
+                'topic' => $request['topic']
+            ])->id;
+
+            // return $request['answer'];
+            return $this->responseError(200, $questionTable);
+        }
     }
 
     // public function chat(Request $request)
@@ -241,20 +276,20 @@ class TrainingController extends BaseApiController
     
     public function detailChat($id)
     {
-        $question = Question::where('id', $id)->first();
+        $question = TestOpenai::where('id', $id)->first();
         return view('chat.detail', compact('question'));
     }
 
     public function deleteChat($id)
     {
         // $embedding = DB::connection('pgsql')->table('embeddings')->find($id);
-        $question = Question::find($id);
+        $question = TestOpenai::find($id);
         if (!$question) {
             session()->flash('error', 'Data Not Found');
             return redirect(route('dashboard'));
         }
 
-        Question::where('id', $id)->delete();
+        TestOpenai::where('id', $id)->delete();
 
         session()->flash('success', 'Data Deleted Successfully');
         return redirect(route('dashboard'));

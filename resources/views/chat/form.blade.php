@@ -43,10 +43,10 @@
                     <p><a href="{{ route('dashboard') }}" class="btn btn-primary">Go Back</a></p>
                     <div id="__next">
                         <div class="Toastify"></div>
-                        <div class="w-screen h-screen flex px-2 py-4">
-                            <div class="flex flex-col w-[40%] h-screen justify-start mr-4 pb-6 text-[16px]">
+                        <div class=" h-screen flex px-2 py-4">
+                            <div class="flex flex-col w-[100%] h-screen justify-start mr-4 pb-6 text-[16px]">
                                 <div class="flex flex-2">
-                                    <select name="" id="" style="border-radius: .5rem;border-color: rgb(206 212 218);" class="form-control">
+                                    <select name="category" id="category" style="border-radius: .5rem;border-color: rgb(206 212 218);" class="form-control">
                                         <option value="">Default</option>
                                         <option value="1">Cuc 1</option>
                                         <option value="2">Cuc 2</option>
@@ -57,12 +57,15 @@
                                 <div class="flex flex-2 mt-2">
                                     <input type="text" placeholder="Fill a name" name="name" id="name" style="border-radius: .5rem;border-color: rgb(206 212 218);" class="form-control">
                                 </div>
+                                <div class="flex flex-2 mt-2">
+                                    <input type="text" placeholder="Fill a topic" name="topic" id="topic" style="border-radius: .5rem;border-color: rgb(206 212 218);" class="form-control">
+                                </div>
                                 <div class="flex flex-1 mt-2">
                                     <textarea placeholder="Fill a question" id="question" class="flex-1 p-2 bg-white border-[1.5px] border-[#ced4da] rounded-lg resize-none focus:outline-none"></textarea>
                                 </div>
-                                <div class="flex flex-1 mt-2">
-                                    <textarea id="answerAI" style="pointer-events: none;" placeholder="Fill a answer(For LCAT)" class="flex-1 p-2 bg-white border-[1.5px] border-[#ced4da] rounded-lg resize-none focus:outline-none"></textarea>
-                                </div>
+                                <!-- <div class="flex flex-1 mt-2">
+                                    <textarea id="answerAI" placeholder="Fill a answer(For LCAT)" class="flex-1 p-2 bg-white border-[1.5px] border-[#ced4da] rounded-lg resize-none focus:outline-none"></textarea>
+                                </div> -->
                                 <div class="flex mt-2">
                                     <button class="mantine-UnstyledButton-root mantine-Button-root bg-primary mantine-dimeg5" type="button" id="chatGpt" data-button="true">
                                         <div class="mantine-1wpc1xj mantine-Button-inner">
@@ -71,18 +74,24 @@
                                     </button>
                                 </div>
                             </div>
+                            <!-- <div class="flex-1 justify-center text-black">
+                                <div id="chatMessages" class="msgs_cont border-[1.5px] w-[60%] rounded-lg overflow-auto border-[#ced4da] h-[100%] px-2 py-2 text-[16px]">
+                                    
+                                </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <div class="modal loadModal"></div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
     <script>
-        $('#chatGpt').click(function() {
+        $('#chatGpt').click(async function() {
             if ($('#name').val() == '') {
                 alert("Invalid name");
                 $("#name").focus();
@@ -97,20 +106,79 @@
                 document.documentElement.scrollTop = 0;
                 return;
             }
-            $.ajax({
-                url: "{{ route('chat.chat') }}",
-                method: 'POST',
-                data: {
-                    _token: "{{ csrf_token() }}",
-                    title: $('#name').val(),
-                    question: $('#question').val(),
-                    type: 'removeselect_searchtext'
-                },
-                success: function(response) {
-                    console.log(response);
-                    $('#answerAI').val(response);
+            $('body').toggleClass('loading');
+            if ($('#category').val() == '') {
+                $.ajax({
+                    url: "{{ route('chat.chat') }}",
+                    method: 'POST',
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        title: $('#name').val(),
+                        question: $('#question').val(),
+                        type: $('#category').val(),
+                        topic: $('#topic').val()
+                    },
+                    success: function(response) {
+                        console.log(response);
+                        if(response.code == 200){
+                            var url = "http://ai.microgem.io.vn/chat/detail/" + response.data.messages.id;
+                            window.location.href = url;
+                        }
+                        // $('#answerAI').val(botResponse);
+                        // $('#answerAI').val(response);
+                    },
+                    complete: function() {
+                        $('body').toggleClass('loading');
+                    }
+                });
+            } else {
+                try {
+                    const botResponse = await getBotResponseFromChatApiLaravel($('#question').val());
+                    $.ajax({
+                        url: "{{ route('chat.chat') }}",
+                        method: 'POST',
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            title: $('#name').val(),
+                            question: $('#question').val(),
+                            answer: botResponse,
+                            type: $('#category').val(),
+                            topic: $('#topic').val()
+                        },
+                        success: function(response) {
+                            console.log(response);
+                            if(response.code == 200){
+                                var url = "http://ai.microgem.io.vn/chat/detail/" + response.data.messages;
+                                window.location.href = url;
+                            }
+                            // $('#answerAI').val(botResponse);
+                        },
+                        complete: function() {
+                            $('body').toggleClass('loading');
+                        }
+                    });
+                    $('#answerAI').val(botResponse);
+                } catch (error) {
+                    console.error('Error when loading data:', error);
+                    throw error;
                 }
-            });
+            }
         });
+
+        async function getBotResponseFromChatApiLaravel(question) {
+            try {
+                const response = await $.ajax({
+                    url: "http://ai.microgem.io.vn/api/openai/test/introduction",
+                    method: 'POST',
+                    contentType: 'application/json', // Chỉ định kiểu dữ liệu
+                    data: JSON.stringify({ question: question }), // Chuyển đổi thành chuỗi JSON
+                });
+                return response.data;
+            } catch (error) {
+                console.error('Error when loading data:', error);
+                throw error;
+            }
+        }
+
     </script>
 </x-app-layout>
