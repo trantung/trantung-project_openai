@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Storage;
 use \OpenAI;
 use Illuminate\Http\Request;
+use App\Models\TestOpenai;
 
 class ApiController extends Controller
 {
@@ -17,6 +18,7 @@ class ApiController extends Controller
         // $model = 'gpt-4-turbo';
         $model = getenv('OPENAI_API_MODEL');
         $question = $jsonData['question'];
+        $topic = $jsonData['topic'];
 
         $introductionData = $this->introduction($request);
         $introductionRes = $introductionData['dataResponseChat'];
@@ -45,6 +47,18 @@ class ApiController extends Controller
             'completionTokens' => $completionTokens,
             'promptTokens' => $promptTokens,
         ];
+
+        $testOpenaiData = [
+            'name' => 'test postman',
+            'topic' => $topic,
+            'question' => $question,
+            'category_id' => 4,
+            'answer' => $response,
+            'total_token' => $totalToken,
+            'prompt_token' => $promptTokens,
+            'complete_token' => $completionTokens,
+        ];
+        TestOpenai::create($testOpenaiData);
         return $this->responseSuccess(200, $response);
     }
 
