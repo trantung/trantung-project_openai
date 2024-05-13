@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <link href="{{ asset('training_index/training-form.css') }}" rel="stylesheet">
 <x-app-layout>
     <x-slot name="header">
@@ -180,4 +179,3 @@
         });
     });
 </script>
-

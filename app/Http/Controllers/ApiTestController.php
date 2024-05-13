@@ -7,7 +7,7 @@ use Storage;
 use \OpenAI;
 use Illuminate\Http\Request;
 
-class ApiController extends Controller
+class ApiTestController extends Controller
 {
     public function ieltsWriteTask2(Request $request)
     {
@@ -15,35 +15,13 @@ class ApiController extends Controller
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
         // $model = 'gpt-4-turbo';
-        $model = getenv('OPENAI_API_MODEL');
+        $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
         $question = $jsonData['question'];
-
-        $introductionData = $this->introduction($request);
-        $introductionRes = $introductionData['dataResponseChat'];
-
-        $taskResponseData = $this->bandTaskResponse($request);
-        $taskResponseRes = $taskResponseData['dataResponseChat'];
-
-        $conclusionData = $this->conclusion($request);
-        $conclusionRes = $conclusionData['dataResponseChat'];
-
-        $topicSentenceData = $this->topicSentence($request);
-        $topicSentenceRes = $topicSentenceData['dataResponseChat'];
-
-        $totalToken = $introductionData['totalToken'] + $taskResponseData['totalToken'] + $conclusionData['totalToken'] + $topicSentenceData['totalToken'];
-        $completionTokens = $introductionData['completionTokens'] + $taskResponseData['completionTokens'] + $conclusionData['completionTokens'] + $topicSentenceData['completionTokens'];
-        $promptTokens = $introductionData['promptTokens'] + $taskResponseData['promptTokens'] + $conclusionData['promptTokens'] + $topicSentenceData['promptTokens'];
-
+        $introduction = $this->introduction($request);
+        $task_response = $this->bandTaskResponse($request);
         $response = [
-            'introduction' => $introductionRes,
-            'band_task_response' => $taskResponseRes,
-            'topic_sentence' => [
-                'topic_sentence' => $topicSentenceRes,
-                'conclusion' => $conclusionRes,
-            ],
-            'totalToken' => $totalToken,
-            'completionTokens' => $completionTokens,
-            'promptTokens' => $promptTokens,
+            'introduction' => $introduction,
+            'band_task_response' => $task_response,
         ];
         return $this->responseSuccess(200, $response);
     }
@@ -106,13 +84,15 @@ class ApiController extends Controller
         return null;
     }
 
-    public function conclusion($request)
+    public function conclusion(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
-        $model = getenv('OPENAI_API_MODEL');
+        // $model = 'gpt-4-turbo';
+        $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
         $question = $jsonData['question'];
+
         $chat = $client->chat()->create([
             'model' => $model,
            'response_format'=>["type"=>"json_object"],
@@ -128,7 +108,7 @@ class ApiController extends Controller
 
             ],
            'temperature' => 0,
-           'max_tokens' => 1000
+           'max_tokens' => 2000
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
         $dataResponseChat = json_decode($dataResponseChat);
@@ -141,16 +121,7 @@ class ApiController extends Controller
             'Improvements' => $dataResponseChat->Comments->Improvements,
             'Overall' => implode("\n", $dataResponseChat->Comments->Overall),
         ];
-        $totalToken = $chat->usage->totalTokens;
-        $res = [
-            'dataResponseChat' => $response,
-            'totalToken' => $totalToken,
-            'completionTokens' => $chat->usage->completionTokens,
-            'promptTokens' => $chat->usage->promptTokens,
-            'completionTokens' => $chat->usage->completionTokens,
-            'promptTokens' => $chat->usage->promptTokens,
-        ];
-        return $res;
+        return $this->responseSuccess(200, $response);
     }
 
     public function getComment($data)
@@ -172,7 +143,7 @@ class ApiController extends Controller
         return $res;
     }
 
-    public function topicSentence($request)
+    public function topicSentence(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
@@ -215,14 +186,7 @@ class ApiController extends Controller
             ],
             'improvements' => $improvements,
         ];
-        $totalToken = $chat->usage->totalTokens;
-        $res = [
-            'dataResponseChat' => $response,
-            'totalToken' => $totalToken,
-            'completionTokens' => $chat->usage->completionTokens,
-            'promptTokens' => $chat->usage->promptTokens,
-        ];
-        return $res;
+        return $this->responseSuccess(200, $response);
     }
 
     public function introductionTest(Request $request)
@@ -231,8 +195,7 @@ class ApiController extends Controller
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
         // $model = 'gpt-4-turbo';
-        $model = getenv('OPENAI_API_MODEL');
-        $yourApiKey = getenv('OPENAI_API_KEY');
+        $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
         $question = $jsonData['question'];
 
         $chat = $client->chat()->create([
@@ -273,7 +236,7 @@ class ApiController extends Controller
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
         // $model = 'gpt-4-turbo';
-        $model = getenv('OPENAI_API_MODEL');
+        $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
         $question = $jsonData['question'];
         $chat = $client->chat()->create([
             'model' => $model,
@@ -293,23 +256,17 @@ class ApiController extends Controller
            'max_tokens' => 1000
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
-        $totalToken = $chat->usage->totalTokens;
-        $res = [
-            'dataResponseChat' => $dataResponseChat,
-            'totalToken' => $totalToken,
-            'completionTokens' => $chat->usage->completionTokens,
-            'promptTokens' => $chat->usage->promptTokens,
-        ];
-        return $res;
+        
+        return $dataResponseChat;
     }
 
-    public function bandTaskResponse($request)
+    public function bandTaskResponse(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
         // $model = 'gpt-4-turbo';
-        $model = getenv('OPENAI_API_MODEL');
+        $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
         $system_prompt = "Criterion 'Address all parts of the question.': \n -If the prompt is appropriately addressed and explored in depth, the band=9 \n If the prompt is appropriately and sufficiently addressed, the band=8\n-If the main parts of the prompt are appropriately addressed, the band=7\n-If the main parts of the prompt are addressed (though some may be more fully covered than others) and an appropriate format is used, the band = 6\n-If the main parts of the prompt are incompletely addressed and the format may be inappropriate in places, the band=5\n-If the prompt is tackled in a minimal way, or the answer is tangential, possibly due to some misunderstanding of the prompt and the format may be inappropriate, the band=4\n-If No part of the prompt is adequately addressed, or the prompt has been misunderstood, the band=3\n-If the content is barely related to the prompt, the band=2\n-If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1\nCriterion 'Present a clear and developed position throughout.':\n -If a clear and fully developed position is presented which directly answers the question/s, the band=9\n -If a clear and well-developed position is presented in response to the question/s, the band=8\n -If aclear and developed position is presented,the band=7\n -If a position is presented that is directly relevant to the prompt,although the conclusions drawn may be unclear, unjustified or repetitive, the band=6\n -If the writer expresses a position, but the development is not always clear,the band=5\n -If a position is discernible, but the reader has to read carefully to find it,the band=4\n -If no relevant position can be identified, and/or there is little direct response to the question/s,the band=3\n -If no position can be identified,the band=2\n -If responses of 20 words or fewer are rated at Band 1 and The content is wholly unrelated to the prompt,the band=1\nCriterion 'Present, develop, support ideas.':\n -If Ideas are relevant, fully extended and well supported.Any lapses in content or support are extremely rare, the band=9\n -If Ideas are relevant, well extended and supported.There may be occasional omissions or lapses in content, the band=8\n -If Main ideas are extended and supported but there may be a tendency to over-generalise or there may be a lack of focus and precision in supporting ideas/material, the band=7\n -If Main ideas are relevant, but some may be insufficiently developed or may lack clarity, while some supporting arguments and evidence may be less relevant or inadequate, the band=6\n -If Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail. There may be some repetition, the band=5\n -If Main ideas are difficult to identify and such ideas that are identifiable may lack relevance, clarity and or support. Large parts of the response may be repetitive, the band=4\n -If There are few ideas, and these may be irrelevant or insufficiently developed, the band=3\n -If There may be glimpses of one or two ideas without development, the band=2\n -If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1";
@@ -333,15 +290,9 @@ class ApiController extends Controller
            'temperature' => 0,
            'max_tokens' => 1000
         ]);
+        dd($chat);
         $dataResponseChat = $chat->choices[0]->message->content;
-        $totalToken = $chat->usage->totalTokens;
-        $res = [
-            'dataResponseChat' => $dataResponseChat,
-            'totalToken' => $totalToken,
-            'completionTokens' => $chat->usage->completionTokens,
-            'promptTokens' => $chat->usage->promptTokens,
-        ];
-        return $res;
+        return $dataResponseChat;
     }
     public function test(Request $request)
     {
@@ -350,7 +301,7 @@ class ApiController extends Controller
         $client = OpenAI::client($yourApiKey);
         // $model = 'gpt-4-turbo';
         // $model = 'gpt-3.5-turbo';
-        $model = getenv('OPENAI_API_MODEL');
+        $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
 

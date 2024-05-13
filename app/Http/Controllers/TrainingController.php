@@ -16,7 +16,6 @@ use App\Models\UserFileTrainings;
 use App\Models\Question;
 use App\Models\TestOpenai;
 
-
 class TrainingController extends BaseApiController
 {
     public function __construct()
@@ -97,7 +96,6 @@ class TrainingController extends BaseApiController
         $res = $this->createUserFileTrain($modelDataId, $data, $request);
         if(!empty($res['message']) && $res['code'] == 305){
             return $this->responseError(412, $res['message']);
-
         }
         if($res == true) {
             $messages = array(
@@ -143,7 +141,8 @@ class TrainingController extends BaseApiController
                 'name' => $request['title'],
                 'question' => $request['question'],
                 'answer' => $response->choices[0]->message->content,
-                'category_id' => $request['type']
+                'category_id' => $request['type'],
+                'topic' => $request['topic']
             ])->id;
             // return $response->choices[0]->message->content;
             $response = [
@@ -158,13 +157,72 @@ class TrainingController extends BaseApiController
                 'name' => $request['title'],
                 'question' => $request['question'],
                 'answer' => $request['answer'],
-                'category_id' => $request['type']
+                'category_id' => $request['type'],
+                'topic' => $request['topic']
             ])->id;
 
             // return $request['answer'];
             return $this->responseError(200, $questionTable);
         }
     }
+
+    // public function chat(Request $request)
+    // {
+    //     // $filename = time() .'_history';
+    //     $filename = 'test_history';
+
+    //     $file_path = storage_path('app/chat/' . $filename . '.json');
+
+    //     if( ! file_exists($file_path) ) {
+    //         $historyChat[] = [
+    //             'username' => Auth::user()->name,
+    //             // 'model_id' => $modelId,
+    //             'role' => 'user',
+    //             'content' => $request['question'],
+    //             'time' => time(),
+    //         ];
+    //         Storage::disk('local')->put('/chat/' . $filename . '.json', json_encode($historyChat));
+    //     }else{
+    //         $historyChat = json_decode(file_get_contents($file_path),true);
+    //         $arrayUserQuestion[] = [
+    //             'username' => Auth::user()->name,
+    //             // 'model_id' => $modelId,
+    //             'role' => 'user',
+    //             'content' => $request['question'],
+    //             'time' => time(),
+    //         ];
+    //         $historyChat = array_merge($historyChat, $arrayUserQuestion);
+    //         Storage::disk('local')->put('/chat/' . $filename . '.json', json_encode($historyChat));
+    //     }
+
+    //     $resChat = [];
+    //     foreach($historyChat as $value) {
+    //         $resChat[] = [
+    //             'role' => $value['role'],
+    //             'content' => $value['content'],
+    //         ];
+    //     }
+
+    //     $open_ai_key = getenv('OPENAI_API_KEY');
+    //     $client = OpenAI::client($open_ai_key);
+    //     $response = $client->chat()->create([
+    //         'model' => 'gpt-3.5-turbo',
+    //         'messages' => $resChat
+    //     ]);
+
+    //     $dataUpdateFileContent[] = [
+    //         'username' => 'assistant_chat_bot',
+    //         // 'model_id' => $modelId,
+    //         'role' => 'assistant',
+    //         'content' => $response->choices[0]->message->content,
+    //         'to' => Auth::user()->name,
+    //         'time' => time(),
+    //     ];
+    //     $contentFile = array_merge($historyChat, $dataUpdateFileContent);
+    //     Storage::disk('local')->put('/chat/' . $filename . '.json', json_encode($contentFile));
+
+    //     return $response->choices[0]->message->content;
+    // }
 
     public function getMessage($file_path, $modelId, $context, $question)
     {
@@ -319,6 +377,26 @@ class TrainingController extends BaseApiController
         if(!empty($data)){
             $content = json_decode($data['content']);
         }
+        
+        // foreach($content as $value){
+        //     $userContent = '';
+        //     $assistantContent = '';
+        //     if(!empty($value->messages)){
+        //         foreach ($value->messages as $message) {
+        //             if ($message->role === 'user' && !empty($message->content)) {
+        //                 $userContent = $message->content;
+        //             } elseif ($message->role === 'assistant' && !empty($message->content)) {
+        //                 $assistantContent = $message->content;
+        //             }
+        //         }  
+        //     } 
+        //     // if ($value->role === 'user' && !empty($value->content)) {
+        //     //     $userContent = $value->content;
+        //     // } elseif ($value->role === 'assistant' && !empty($value->content)) {
+        //     //     $assistantContent = $value->content;
+        //     // }
+        //     dd($userContent, $assistantContent);
+        // }
         return view('training.detail', compact('embedding', 'content'));
     }
 
@@ -395,6 +473,7 @@ class TrainingController extends BaseApiController
             }
             $model = $userModelData->model_ai_id;
         }
+        
         $open_ai_key = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($open_ai_key);
         $response = $client->fineTuning()->createJob([
@@ -406,6 +485,7 @@ class TrainingController extends BaseApiController
             ],
             'suffix' => null,
         ]);
+        
         $result = $response->toArray();
         // dd($result);
         if(!empty($result['id'])){

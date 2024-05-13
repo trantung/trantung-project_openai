@@ -51,11 +51,14 @@
                                         <option value="1">Cuc 1</option>
                                         <option value="2">Cuc 2</option>
                                         <option value="3">Cuc 3</option>
-                                        <option value="4">Cuc 4</option>
+                                        <option value="4">All</option>
                                     </select>
                                 </div>
                                 <div class="flex flex-2 mt-2">
                                     <input type="text" placeholder="Fill a name" name="name" id="name" style="border-radius: .5rem;border-color: rgb(206 212 218);" class="form-control">
+                                </div>
+                                <div class="flex flex-2 mt-2">
+                                    <input type="text" placeholder="Fill a topic" name="topic" id="topic" style="border-radius: .5rem;border-color: rgb(206 212 218);" class="form-control">
                                 </div>
                                 <div class="flex flex-1 mt-2">
                                     <textarea placeholder="Fill a question" id="question" class="flex-1 p-2 bg-white border-[1.5px] border-[#ced4da] rounded-lg resize-none focus:outline-none"></textarea>
@@ -86,13 +89,15 @@
                                         @elseif($question->category_id == 3)
                                         Cuc 3
                                         @elseif($question->category_id == 4)
-                                        Cuc 4
+                                        All
                                         @else
                                         Default
                                         @endif
                                     </label>    
                                     <p>Name:</p>
                                     <label for="">{{ $question->name }}</label>
+                                    <p>Topic:</p>
+                                    <label for="">{{ $question->topic }}</label>
                                     <p>Question:</p>
                                     <label for="">{{ $question->question }}</label>
                                     <p>Answer:</p>
@@ -135,7 +140,8 @@
                         _token: "{{ csrf_token() }}",
                         title: $('#name').val(),
                         question: $('#question').val(),
-                        type: 'detail'
+                        type: 'detail',
+                        topic: $('#topic').val()
                     },
                     success: function(response) {
                         console.log(response);
@@ -148,10 +154,26 @@
                     }
                 });
             } else {
+                let url = '';
+                if($('#category').val() == 1){
+                    url = "http://ai.microgem.io.vn/api/openai/test/introduction";
+                }
+                if($('#category').val() == 2){
+                    url = "http://ai.microgem.io.vn/api/openai/test/topic_sentence";
+                }
+                if($('#category').val() == 3){
+                    url = "http://ai.microgem.io.vn/api/openai/test/band/task_response";
+                }
+                if($('#category').val() == 4){
+                    url = "http://ai.microgem.io.vn/api/ielts/write_task_2";
+                }
                 try {
-                    const botResponse = await getBotResponseFromChatApiLaravel($('#question').val());
+                    const botResponse = await getBotResponseFromChatApiLaravel($('#question').val(), url);
                     $('body').toggleClass('loading');
-                    $('#answerAI').val(botResponse);
+                    var dataAsString = JSON.stringify(botResponse);
+                    console.log(dataAsString);
+                    const text2WithoutBackslash = dataAsString.replace(/\\/g, '');
+                    $('#answerAI').val(text2WithoutBackslash);
                 } catch (error) {
                     console.error('Error when loading data:', error);
                     throw error;
@@ -159,13 +181,18 @@
             }
         });
 
-        async function getBotResponseFromChatApiLaravel(question) {
+        async function getBotResponseFromChatApiLaravel(question, url) {
             try {
+                var data = { 
+                    question: question, 
+                    topic: $('#topic').val(),
+                    title: $('#name').val(),
+                }
                 const response = await $.ajax({
-                    url: "http://ai.microgem.io.vn/api/openai/test/introduction",
+                    url: url,
                     method: 'POST',
-                    contentType: 'application/json', // Chỉ định kiểu dữ liệu
-                    data: JSON.stringify({ question: question }), // Chuyển đổi thành chuỗi JSON
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
                 });
                 return response.data;
             } catch (error) {

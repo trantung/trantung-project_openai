@@ -8,15 +8,13 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post("openai/test", [App\Http\Controllers\ApiController::class,'test']);
+//all
+Route::post("/ielts/write_task_2", [App\Http\Controllers\ApiController::class,'ieltsWriteTask2']);
 
-Route::post("openai/ielts/write_task_2", [App\Http\Controllers\ApiController::class,'ieltsWriteTask2']);
-
-Route::post("openai/sentence_1", [App\Http\Controllers\ApiController::class,'test']);
-//c?c 2: introduction
+//cuc 1: introduction
 Route::post("openai/test/introduction", [App\Http\Controllers\ApiController::class,'introductionTest']);
-
-Route::post("openai/test/introduction", [App\Http\Controllers\ApiController::class,'introductionTest']);
-//topic sentence
-Route::post("openai/topic_sentence", [App\Http\Controllers\ApiController::class,'topicSentence']);
-//band
-Route::post("openai/test/band/task_response", [App\Http\Controllers\ApiController::class,'bandTaskResponseTest']);
+//cuc 2: topic sentence
+Route::post("openai/test/topic_sentence", [App\Http\Controllers\ApiTestController::class,'topicSentence']);
+Route::post("openai/test/conclusion", [App\Http\Controllers\ApiTestController::class,'conclusion']);
+//cuc 3: band
+Route::post("openai/test/band/task_response", [App\Http\Controllers\ApiTestController::class,'bandTaskResponse']);
