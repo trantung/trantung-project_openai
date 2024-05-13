@@ -329,7 +329,7 @@ class ApiController extends Controller
         return $res;
     }
 
-    public function bandTaskResponse($request)
+    public function coherenceCohesion($request)
     {
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
@@ -368,7 +368,7 @@ class ApiController extends Controller
         return $res;
     }
 
-    public function coherenceCohesion($request)
+    public function bandTaskResponse($request)
     {
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
