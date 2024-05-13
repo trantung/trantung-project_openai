@@ -377,6 +377,26 @@ class TrainingController extends BaseApiController
         if(!empty($data)){
             $content = json_decode($data['content']);
         }
+        
+        // foreach($content as $value){
+        //     $userContent = '';
+        //     $assistantContent = '';
+        //     if(!empty($value->messages)){
+        //         foreach ($value->messages as $message) {
+        //             if ($message->role === 'user' && !empty($message->content)) {
+        //                 $userContent = $message->content;
+        //             } elseif ($message->role === 'assistant' && !empty($message->content)) {
+        //                 $assistantContent = $message->content;
+        //             }
+        //         }  
+        //     } 
+        //     // if ($value->role === 'user' && !empty($value->content)) {
+        //     //     $userContent = $value->content;
+        //     // } elseif ($value->role === 'assistant' && !empty($value->content)) {
+        //     //     $assistantContent = $value->content;
+        //     // }
+        //     dd($userContent, $assistantContent);
+        // }
         return view('training.detail', compact('embedding', 'content'));
     }
 
