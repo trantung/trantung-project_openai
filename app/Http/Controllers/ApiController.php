@@ -32,12 +32,12 @@ class ApiController extends Controller
         $topicSentenceData = $this->topicSentence($request);
         $topicSentenceRes = $topicSentenceData['dataResponseChat'];
 
-        $coherence_cohesionData = $this->topicSentence($request);
+        $coherence_cohesionData = $this->coherenceCohesion($request);
         $coherence_cohesionRes = $coherence_cohesionData['dataResponseChat'];
 
-        $totalToken = $introductionData['totalToken'] + $taskResponseData['totalToken'] + $conclusionData['totalToken'] + $topicSentenceData['totalToken'] + $coherence_cohesionRes['totalToken']; 
-        $completionTokens = $introductionData['completionTokens'] + $taskResponseData['completionTokens'] + $conclusionData['completionTokens'] + $topicSentenceData['completionTokens'] + $coherence_cohesionRes['completionTokens'];
-        $promptTokens = $introductionData['promptTokens'] + $taskResponseData['promptTokens'] + $conclusionData['promptTokens'] + $topicSentenceData['promptTokens'] + $coherence_cohesionRes['promptTokens'];
+        $totalToken = $introductionData['totalToken'] + $taskResponseData['totalToken'] + $conclusionData['totalToken'] + $topicSentenceData['totalToken'] + $coherence_cohesionData['totalToken']; 
+        $completionTokens = $introductionData['completionTokens'] + $taskResponseData['completionTokens'] + $conclusionData['completionTokens'] + $topicSentenceData['completionTokens'] + $coherence_cohesionData['completionTokens'];
+        $promptTokens = $introductionData['promptTokens'] + $taskResponseData['promptTokens'] + $conclusionData['promptTokens'] + $topicSentenceData['promptTokens'] + $coherence_cohesionData['promptTokens'];
 
         $response = [
             'introduction' => $introductionRes,
@@ -65,8 +65,13 @@ class ApiController extends Controller
             'prompt_token' => $promptTokens,
             'complete_token' => $completionTokens,
         ];
-        TestOpenai::create($testOpenaiData);
-        return $this->responseSuccess(200, $response);
+        if(!empty($jsonData['type']) && $jsonData['type'] == 'detail') {
+            return $this->responseSuccess(200, $response);
+        }else {
+            TestOpenai::create($testOpenaiData);
+            return $this->responseSuccess(200, $response);
+        }
+        
     }
 
     public function getDataFromRequest($request)

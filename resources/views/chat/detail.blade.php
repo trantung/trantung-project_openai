@@ -210,6 +210,7 @@
                     question: question, 
                     topic: $('#topic').val(),
                     title: $('#name').val(),
+                    type: 'detail',
                 }
                 const response = await $.ajax({
                     url: url,

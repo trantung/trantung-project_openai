@@ -170,8 +170,9 @@ class TrainingController extends BaseApiController
         if ($request['type'] == 'detail') {
             $open_ai_key = getenv('OPENAI_API_KEY');
             $client = OpenAI::client($open_ai_key);
+            $model = getenv('OPENAI_API_MODEL');
             $response = $client->chat()->create([
-                'model' => 'gpt-3.5-turbo-0125',
+                'model' => $model,
                 'messages' => [
                     ['role' => 'system', 'content' => $request['title']],
                     ['role' => 'user', 'content' => $request['question']],
