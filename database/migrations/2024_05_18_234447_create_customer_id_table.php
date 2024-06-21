@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('app_users', function (Blueprint $table) {
+        Schema::create('customer_id', function (Blueprint $table) {
             $table->id();
             $table->text('topic')->nullable();
             $table->text('question')->nullable();
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('app_users');
+        Schema::dropIfExists('customer_id');
     }
 };

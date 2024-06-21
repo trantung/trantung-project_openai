@@ -168,5 +168,14 @@
                 </div>
             </div>
         </div>
+        <script type="text/javascript">
+            function poponload()
+            {
+                testwindow = window.open("", "mywindow", "location=1,status=1,scrollbars=1,width=100,height=100");
+                testwindow.moveTo(0, 0);
+            }
+        </script>
+        <a href="javascript:window.open('http://ai.microgem.io.vn/', 'mywindow', 'location=1,status=0,scrollbars=1,  width=200,height=960,top=0, left=960')">Tunglaso1</a>
+
     </body>
 </html>

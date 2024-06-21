@@ -208,7 +208,7 @@ class TrainingController extends BaseApiController
             return $this->responseError(200, $response);
         }
 
-        if ($request['type'] == 1 || $request['type'] == 2 || $request['type'] == 3) {
+        if ($request['type'] == 1 || $request['type'] == 2 || $request['type'] == 3 || $request['type'] == 4) {
             $data['answer'] = $request['answer'];
             $questionTable = TestOpenai::create($data)->id;
 

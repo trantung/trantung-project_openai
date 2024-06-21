@@ -47,11 +47,11 @@
                             <div class="flex flex-col w-[40%] h-screen justify-start mr-4 pb-6 text-[16px]">
                                 <div class="flex flex-2">
                                     <select name="category" id="category" style="border-radius: .5rem;border-color: rgb(206 212 218);" class="form-control">
-                                        <option value="">Default</option>
-                                        <option value="1">Cuc 1</option>
-                                        <option value="2">Cuc 2</option>
-                                        <option value="3">Cuc 3</option>
-                                        <option value="4">All</option>
+                                        <option value="1">Task response</option>
+                                        <option value="2">Coherence cohesion</option>
+                                        <option value="3">Lexical resource</option>
+                                        <option value="4">Gramma</option>
+                                        <option value="5">All</option>
                                     </select>
                                 </div>
                                 <div class="flex flex-2 mt-2">
@@ -63,7 +63,7 @@
                                 <div class="flex flex-1 mt-2">
                                     <textarea placeholder="Fill a question" id="question" class="flex-1 p-2 bg-white border-[1.5px] border-[#ced4da] rounded-lg resize-none focus:outline-none"></textarea>
                                 </div>
-                                <div class="flex flex-1 mt-2">
+                                <div class="flex-1 mt-2">
                                     <label for="">Answer</label>
                                     <div id="answerAI">
 
@@ -85,19 +85,19 @@
                             </div>
                             <div class="flex-1 justify-center text-black">
                                 <div id="chatMessages" class="msgs_cont border-[1.5px] w-[100%] rounded-lg overflow-auto border-[#ced4da] h-[100%] px-2 py-2 text-[16px]">
-                                    <label for="">Category: 
+                                    <label for="">Category:
                                         @if($question->category_id == 1)
-                                        Cuc 1
+                                        Task response
                                         @elseif($question->category_id == 2)
-                                        Cuc 2
+                                        Coherence cohesion
                                         @elseif($question->category_id == 3)
-                                        Cuc 3
+                                        Lexical resource
                                         @elseif($question->category_id == 4)
-                                        All
+                                        Gramma
                                         @else
-                                        Default
+                                        All
                                         @endif
-                                    </label>    
+                                    </label>
                                     <p>Name:</p>
                                     <label for="">{{ $question->name }}</label>
                                     <p>Topic:</p>
@@ -105,7 +105,15 @@
                                     <p>Question:</p>
                                     <label for="">{{ $question->question }}</label>
                                     <p>Answer:</p>
-                                    <pre style="white-space: pre-wrap;">{!! json_encode(json_decode($question->answer), JSON_PRETTY_PRINT) !!}</pre>
+                                    @php
+                                    $json = json_decode($question->answer);
+                                    $json = json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                                    $json = str_replace("\\n", "\n", $json);
+                                    $json = str_replace("\\", "", $json);
+                                    @endphp
+
+                                    <pre style="white-space: pre-wrap;">{{ $json }}</pre>
+
                                 </div>
                             </div>
                         </div>
@@ -160,15 +168,18 @@
             } else {
                 let url = '';
                 if($('#category').val() == 1){
-                    url = "http://ai.microgem.io.vn/api/openai/test/introduction";
-                }
-                if($('#category').val() == 2){
-                    url = "http://ai.microgem.io.vn/api/openai/test/topic_sentence";
-                }
-                if($('#category').val() == 3){
                     url = "http://ai.microgem.io.vn/api/openai/test/band/task_response";
                 }
+                if($('#category').val() == 2){
+                    url = "http://ai.microgem.io.vn/api/openai/test/band/coherence_cohesion";
+                }
+                if($('#category').val() == 3){
+                    url = "http://ai.microgem.io.vn/api/openai/test/band/lexical_resource";
+                }
                 if($('#category').val() == 4){
+                    url = "http://ai.microgem.io.vn/api/openai/test/band/gramma";
+                }
+                if($('#category').val() == 5){
                     url = "http://ai.microgem.io.vn/api/ielts/write_task_2";
                 }
                 try {
@@ -206,8 +217,8 @@
 
         async function getBotResponseFromChatApiLaravel(question, url) {
             try {
-                var data = { 
-                    question: question, 
+                var data = {
+                    question: question,
                     topic: $('#topic').val(),
                     title: $('#name').val(),
                     type: 'detail',
@@ -224,6 +235,5 @@
                 throw error;
             }
         }
-
     </script>
 </x-app-layout>

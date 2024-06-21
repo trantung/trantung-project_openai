@@ -11,13 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('app_users', function (Blueprint $table) {
+        Schema::create('api_user_questions', function (Blueprint $table) {
             $table->id();
+            $table->string('user_id')->nullable();
+            $table->string('username')->nullable();
             $table->text('topic')->nullable();
             $table->text('question')->nullable();
-            $table->text('answer')->nullable();
-            $table->bigInteger('user_id')->nullable();
-            $table->tinyInteger('status')->nullable();
+            $table->tinyInteger('status')->default(0);
+            $table->bigInteger('prompt_token')->nullable();
+            $table->bigInteger('total_token')->nullable();
+            $table->bigInteger('complete_token')->nullable();
+            $table->text('openai_response')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('app_users');
+        Schema::dropIfExists('api_user_questions');
     }
 };

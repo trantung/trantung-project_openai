@@ -20,3 +20,18 @@ Route::post("openai/test/conclusion", [App\Http\Controllers\ApiTestController::c
 Route::post("openai/test/band/task_response", [App\Http\Controllers\ApiTestController::class,'bandTaskResponse']);
 //cuc 4 Coherence & Cohesion
 Route::post("openai/test/band/coherence_cohesion", [App\Http\Controllers\ApiTestController::class,'coherenceCohesion']);
+//cuc 5: Lexical resource
+Route::post("openai/test/band/lexical_resource", [App\Http\Controllers\ApiTestController::class,'lexicalResource']);
+//cuc 6: Grammatical range & accuracy
+Route::post("openai/test/band/gramma", [App\Http\Controllers\ApiTestController::class,'gramma']);
+//app
+//login
+Route::post("app/register", [App\Http\Controllers\ApiAppController::class,'register']);
+Route::post("openai/test/job", [App\Http\Controllers\ApiTestController::class,'newApiTestJob']);
+
+//api audio
+Route::post("openai/test/audio", [App\Http\Controllers\ApiTestController::class,'audio']);
+
+// api cms
+Route::post("cms/ielts/write_task_2/create", [App\Http\Controllers\ApiController::class,'writeTask2Create']);
+Route::post("cms/ielts/write_task_2/detail", [App\Http\Controllers\ApiController::class,'writeTask2Detail']);

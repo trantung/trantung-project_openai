@@ -13,11 +13,6 @@ return new class extends Migration
     {
         Schema::create('app_users', function (Blueprint $table) {
             $table->id();
-            $table->text('topic')->nullable();
-            $table->text('question')->nullable();
-            $table->text('answer')->nullable();
-            $table->bigInteger('user_id')->nullable();
-            $table->tinyInteger('status')->nullable();
             $table->timestamps();
         });
     }

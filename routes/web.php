@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\TrainingController;
+use App\Jobs\DemoJob;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -49,4 +50,32 @@ Route::get('chat/detail/{id}', [TrainingController::class, 'detailChat'])->middl
 Route::get('chat/delete/{id}', [TrainingController::class, 'deleteChat'])->name('chat.delete');
 Route::post('chat', [TrainingController::class, 'chat'])->name('chat.chat');
 Route::post('chat/importJson', [TrainingController::class, 'readJsonFile'])->name('chat.importJson');
+Route::get('/test-queue', [HomeController::class, 'testQueue'])->middleware('auth')->name('testQueue');
 
+Route::get('/test-streaming', [HomeController::class, 'testStreaming'])->middleware('auth')->name('testStreaming');
+
+Route::get('/video/secret/{key}', function ($key) {
+  dd(sys_get_temp_dir());
+    return Storage::disk('secrets')->download($key);
+})->name('video.key');
+
+Route::get('/video/{playlist}', function ($playlist) {
+
+    return FFMpeg::dynamicHLSPlaylist('secrets')
+        ->fromDisk('public')
+        ->open($playlist)
+        ->setKeyUrlResolver(function ($key) {
+            return route('video.key', ['key' => $key]);
+        })
+        ->setMediaUrlResolver(function ($mediaFilename) {
+            return Storage::disk('public')->url($mediaFilename);
+        })
+        ->setPlaylistUrlResolver(function ($playlistFilename) {
+            return route('video.playlist', ['playlist' => $playlistFilename]);
+        });
+})->name('video.playlist');
+
+Route::get('/dispatch-job', function () {
+    DemoJob::dispatch();
+    return 'Job dispatched!';
+});

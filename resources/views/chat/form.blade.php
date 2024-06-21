@@ -47,11 +47,11 @@
                             <div class="flex flex-col w-[100%] h-screen justify-start mr-4 pb-6 text-[16px]">
                                 <div class="flex flex-2">
                                     <select name="category" id="category" style="border-radius: .5rem;border-color: rgb(206 212 218);" class="form-control">
-                                        <option value="">Default</option>
-                                        <option value="1">Cuc 1</option>
-                                        <option value="2">Cuc 2</option>
-                                        <option value="3">Cuc 3</option>
-                                        <option value="4">All</option>
+                                        <option value="1">Task response</option>
+                                        <option value="2">Coherence cohesion</option>
+                                        <option value="3">Lexical resource</option>
+                                        <option value="4">Gramma</option>
+                                        <option value="5">All</option>
                                     </select>
                                 </div>
                                 <div class="flex flex-2 mt-2">
@@ -134,22 +134,26 @@
             } else {
                 let url = '';
                 if($('#category').val() == 1){
-                    url = "http://ai.microgem.io.vn/api/openai/test/introduction";
-                }
-                if($('#category').val() == 2){
-                    url = "http://ai.microgem.io.vn/api/openai/test/topic_sentence";
-                }
-                if($('#category').val() == 3){
                     url = "http://ai.microgem.io.vn/api/openai/test/band/task_response";
                 }
+                if($('#category').val() == 2){
+                    url = "http://ai.microgem.io.vn/api/openai/test/band/coherence_cohesion";
+                }
+                if($('#category').val() == 3){
+                    url = "http://ai.microgem.io.vn/api/openai/test/band/lexical_resource";
+                }
                 if($('#category').val() == 4){
+                    url = "http://ai.microgem.io.vn/api/openai/test/band/gramma";
+                }
+                if($('#category').val() == 5){
                     url = "http://ai.microgem.io.vn/api/ielts/write_task_2";
                 }
                 try {
                     const botResponse = await getBotResponseFromChatApiLaravel($('#question').val(), url);
                     const jsonString = JSON.stringify(botResponse, null, 2);
+                    console.log(botResponse);
                     // const text2WithoutBackslash = dataAsString.replace(/\\/g, '');
-                    if($('#category').val() != 4){
+                    if($('#category').val() != 5){
                         $.ajax({
                             url: "{{ route('chat.chat') }}",
                             method: 'POST',
@@ -175,7 +179,7 @@
                         });
                     }
 
-                    if($('#category').val() == 4){
+                    if($('#category').val() == 5){
                         alert('Successfully');
                         window.location.href = "http://ai.microgem.io.vn/dashboard";
                     }

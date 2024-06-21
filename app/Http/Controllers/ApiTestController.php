@@ -6,6 +6,14 @@ use Carbon\Carbon;
 use Storage;
 use \OpenAI;
 use Illuminate\Http\Request;
+use App\Models\TestOpenai;
+use App\Models\Question;
+use Illuminate\Support\Facades\DB;
+use App\Jobs\DemoJob;
+use App\Models\ApiUserQuestion;
+use App\Models\ApiUserQuestionPart;
+use App\Models\Common;
+use Illuminate\Support\Facades\Log;
 
 class ApiTestController extends Controller
 {
@@ -158,7 +166,7 @@ class ApiTestController extends Controller
            'messages' => [
                [
                    "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.Identify all topic sentence in the Body Paragraphs of an IELTS Essay Task 2, give comments on the strengths and weaknesses.Improvement with example for each topic sentence in the Body Paragraphs. Response is JSON format"
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.Identify all topic sentence in the Body Paragraphs of an IELTS Essay Task 2, give comments on the strengths and weaknesses, then improvement with example for each topic sentence in the Body Paragraphs, structured as:topic_sentence, improvement_examples, comments include strengths and weaknesses, where strengths and weaknesses are observations of the strong and weak points of each topic sentence. Response is JSON format"
                    // "content" => "Identify the topic sentences and main points in the Body Paragraphs of an IELTS Essay Task 2 with the prompt of the essay being:\n
                    // $topic \n
                    //  Then, provide comments on the strengths and weaknesses, followed by providing improvement examples for each topic sentence and main point in the Body Paragraphs. Response is JSON format"
@@ -174,18 +182,28 @@ class ApiTestController extends Controller
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
         $dataResponseChat = json_decode($dataResponseChat);
-        $topicSentence = $this->getValueFromArray('Topic', $dataResponseChat);
-        $strengths = implode("\n", $this->getValueFromArray('Strengths', $dataResponseChat->Comments));
-        $weaknesses = implode("\n", $this->getValueFromArray('Weaknesses', $dataResponseChat->Comments));
-        $improvements = $this->getValueFromArray('Improvement', $dataResponseChat);
+        // dd(reset($dataResponseChat));
+        // $topicSentence = $this->getValueFromArray('Topic', $dataResponseChat);
+        // $strengths = implode("\n", $this->getValueFromArray('Strengths', $dataResponseChat->Comments));
+        // $weaknesses = implode("\n", $this->getValueFromArray('Weaknesses', $dataResponseChat->Comments));
+        // $improvements = $this->getValueFromArray('Improvement', $dataResponseChat);
+        $topicSentence = $comment = $improvements = [];
+        foreach(reset($dataResponseChat) as $key => $value)
+        {
+            $topicSentence[] = $value->topic_sentence;
+            $comment[] = $value->comments;
+            $improvements[] = $value->improvement_examples;
+        }
+        $totalToken = $chat->usage->totalTokens;
         $response = [
             'topicSentence' => $topicSentence,
-            'comment' => [
-                'strengths' => $strengths,
-                'weaknesses' => $weaknesses,
-            ],
+            'comment' => $comment,
             'improvements' => $improvements,
+            'totalToken' => $totalToken,
+            'completionTokens' => $chat->usage->completionTokens,
+            'promptTokens' => $chat->usage->promptTokens,
         ];
+
         return $this->responseSuccess(200, $response);
     }
 
@@ -263,71 +281,37 @@ class ApiTestController extends Controller
     public function bandTaskResponse(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
-        $yourApiKey = getenv('OPENAI_API_KEY');
-        $client = OpenAI::client($yourApiKey);
-        // $model = 'gpt-4-turbo';
-        $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
-        $question = $jsonData['question'];
-        $topic = $jsonData['topic'];
-        $system_prompt = "Criterion 'Address all parts of the question.': \n -If the prompt is appropriately addressed and explored in depth, the band=9 \n If the prompt is appropriately and sufficiently addressed, the band=8\n-If the main parts of the prompt are appropriately addressed, the band=7\n-If the main parts of the prompt are addressed (though some may be more fully covered than others) and an appropriate format is used, the band = 6\n-If the main parts of the prompt are incompletely addressed and the format may be inappropriate in places, the band=5\n-If the prompt is tackled in a minimal way, or the answer is tangential, possibly due to some misunderstanding of the prompt and the format may be inappropriate, the band=4\n-If No part of the prompt is adequately addressed, or the prompt has been misunderstood, the band=3\n-If the content is barely related to the prompt, the band=2\n-If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1\nCriterion 'Present a clear and developed position throughout.':\n -If a clear and fully developed position is presented which directly answers the question/s, the band=9\n -If a clear and well-developed position is presented in response to the question/s, the band=8\n -If aclear and developed position is presented,the band=7\n -If a position is presented that is directly relevant to the prompt,although the conclusions drawn may be unclear, unjustified or repetitive, the band=6\n -If the writer expresses a position, but the development is not always clear,the band=5\n -If a position is discernible, but the reader has to read carefully to find it,the band=4\n -If no relevant position can be identified, and/or there is little direct response to the question/s,the band=3\n -If no position can be identified,the band=2\n -If responses of 20 words or fewer are rated at Band 1 and The content is wholly unrelated to the prompt,the band=1\nCriterion 'Present, develop, support ideas.':\n -If Ideas are relevant, fully extended and well supported.Any lapses in content or support are extremely rare, the band=9\n -If Ideas are relevant, well extended and supported.There may be occasional omissions or lapses in content, the band=8\n -If Main ideas are extended and supported but there may be a tendency to over-generalise or there may be a lack of focus and precision in supporting ideas/material, the band=7\n -If Main ideas are relevant, but some may be insufficiently developed or may lack clarity, while some supporting arguments and evidence may be less relevant or inadequate, the band=6\n -If Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail. There may be some repetition, the band=5\n -If Main ideas are difficult to identify and such ideas that are identifiable may lack relevance, clarity and or support. Large parts of the response may be repetitive, the band=4\n -If There are few ideas, and these may be irrelevant or insufficiently developed, the band=3\n -If There may be glimpses of one or two ideas without development, the band=2\n -If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1";
-
-        $chat = $client->chat()->create([
-            'model' => $model,
-           // 'response_format'=>["type"=>"json_object"],
-           'messages' => [
-               [
-                   "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "\n" . "Please grade the task response of my IELTS Writing Task 2 essay based on the following criteria:\n" . $system_prompt . " Provide the score for each criterion and explain why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, improvement suggestions."
-               ],
-               [
-                   "role" => "user",
-                   // "content" => $userContent
-                   "content" => "Provide the score for each criterion and explain why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, improvement suggestions.. This is my IELTS Writing Task 2 essay:\n" . $question
-                   // "content" => "Please grade the task response of my IELTS Writing Task 2. Show me grade for each criteria and explain why the scoring is done this way for each criterion and give me suggestions for improvements it. This is my IELTS Writing Task 2 essay:\n" . $question
-               ],
-
-            ],
-           'temperature' => 0,
-           'max_tokens' => 1000
-        ]);
-        // dd($chat);
+        $chat = Common::responseBandTaskResponse($jsonData);
         $dataResponseChat = $chat->choices[0]->message->content;
-        return $dataResponseChat;
+        $dataResponseChat = json_decode($dataResponseChat,true);
+        return $this->responseSuccess(200, $dataResponseChat);
     }
 
     public function coherenceCohesion(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
-        $yourApiKey = getenv('OPENAI_API_KEY');
-        $client = OpenAI::client($yourApiKey);
-        // $model = 'gpt-4-turbo';
-        $model = getenv('OPENAI_API_MODEL');
-        $question = $jsonData['question'];
-        $topic = $jsonData['topic'];
-        $system_prompt = "Criterion 'Organize Information logically with clear progression throughout the response.': \n -If the prompt can be followed effortlessly. Cohesion is used in such a way that it very rarely attracts attention, the band=9 \n If the prompt can be followed with ease.Information and ideas are logically sequenced, and cohesion is well managed, the band=8\n-If information and ideas are logically organised, and there is a clear progression throughout the response. (A few lapses may occur, but these are minor.), the band=7\n-If Information and ideas are generally arranged coherently and there is a clear overall progression, the band = 6\n-If the maOrganisation is evident but is not wholly logical and there may be a lack of overall progression. Nevertheless, there is a sense of underlying coherence to the response. The relationship of ideas can be followed but the sentences are not fluently linked to each other, the band=5\n-If Information and ideas are evident but not arranged coherently and there is no clear progression within the response. Relationships between ideas can be unclear and/or inadequately marked, the band=4\n-If There is no apparent logical organisation. Ideas are discernible but difficult to relate to each other, the band=3\n-If There is little relevant message, or the entire response may be off-topic, the band=2\n-If Responses of 20 words or fewer are rated at Band 1, the band=1\nCriterion 'Use cohesive devices including reference and substitution .':\n -If Cohesion is used in such a way that it very rarely attracts attention. Any lapses in coherence or cohesion are minimal, the band=9\n -If Occasional lapses in coherence and cohesion may occur, the band=8\n -If A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies or some over/under use,the band=7\n -If Cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or mechanical due to misuse, overuse or omission. The use of reference and substitution may lack flexibility or clarity and result in some repetition or error, the band=6\n -IfThere may be limited/overuse of cohesive devices with some inaccuracy. The writing may be repetitive due to inadequate and/or inaccurate use of reference and substitution,the band=5\n -If There is some use of basic cohesive devices, which may be inaccurate or repetitive. There is inaccurate use or a lack of substitution or referencing,the band=4\n -If There is minimal use of sequencers or cohesive devices. Those used do not necessarily indicate a logical relationship between ideas. There is difficulty in identifying referencing,the band=3\n -If There is little relevant message, or the entire response may be off-topic. There is little evidence of control of organisational features,the band=2\n -If responses of 20 words or fewer are rated at Band 1 and The content is wholly unrelated to the prompt,the band=1\nCriterion 'Paraphrasing.':\n -If Paragraphing is skilfully managed, the band=9\n -If Paragraphing is used sufficiently and appropriately, the band=8\n -If Paragraphing is generally used effectively to support overall coherence, and the sequencing of ideas within a paragraph is generally logical, the band=7\n -If Paragraphing may not always be logical and/or the central topic may not always be clear, the band=6\n -If Paragraphing may be inadequate or missing, the band=5\n -If There may be no paragraphing and/or no clear main topic within paragraphs, the band=4\n -If Any attempts at paragraphing are unhelpful, the band=3\n -If There is little evidence of control of organisational features, the band=2\n -If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1";
-
-        $chat = $client->chat()->create([
-            'model' => $model,
-           // 'response_format'=>["type"=>"json_object"],
-           'messages' => [
-               [
-                   "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "\n" . "Please grade the Coherence & Cohesion of my IELTS Writing Task 2 essay based on the following criteria:\n" . $system_prompt . " Provide the score for each criterion and explain with accompanying examples why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, accompanying examples, improvement suggestions"
-               ],
-               [
-                   "role" => "user",
-                   "content" => "Provide the score for each criterion and explain why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, accompanying examples, improvement suggestions.. This is my IELTS Writing Task 2 essay:\n" . $question
-               ],
-
-            ],
-           'temperature' => 0,
-           'max_tokens' => 1000
-        ]);
+        $chat = Common::responseCoherenceCohesion($jsonData);
         $dataResponseChat = $chat->choices[0]->message->content;
-        // $dataResponseChat = json_decode($dataResponseChat);
-        dd($dataResponseChat);
+        $dataResponseChat = json_decode($dataResponseChat,true);
         return $this->responseSuccess(200, $dataResponseChat);
-        // return $dataResponseChat;
+    }
+
+    public function lexicalResource(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $chat = Common::responseLexicalResource($jsonData);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $dataResponseChat = json_decode($dataResponseChat,true);
+        return $this->responseSuccess(200, $dataResponseChat);
+    }
+
+    public function gramma(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $chat = Common::responseGramma($jsonData);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $dataResponseChat = json_decode($dataResponseChat,true);
+        return $this->responseSuccess(200, $dataResponseChat);
     }
 
     public function test(Request $request)
@@ -389,5 +373,102 @@ class ApiTestController extends Controller
             ];
         }
         return $this->responseSuccess(200, $response);
+    }
+
+    public function newApiTestJob(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        //ApiUserQuestion::truncate();
+        //ApiUserQuestionPart::truncate();
+        if($jsonData['test'] == 'tunglaso1') {
+            // dd(ApiUserQuestion::whereIn('id', [2,4,5])->get()->toArray());
+            $test = ApiUserQuestionPart::where('user_question_id',$jsonData['question_id'])
+                ->pluck('status','part_number');
+            $test1 = ApiUserQuestion::find($jsonData['question_id']);
+            dd($test, $test1);
+        }
+        // dd(ApiUserQuestion::find(5));
+        DB::beginTransaction();
+        try {
+            // Insert vào b?ng ApiUserQuestion
+            $data = [
+                'question' => $jsonData['question'],
+                'topic' => $jsonData['topic'],
+                'user_id' => $jsonData['user_id'],
+                'username' => $jsonData['username'],
+                'status' => 0
+            ];
+            $questionTable = ApiUserQuestion::create($data);
+    
+            if ($questionTable->id) {
+                // Insert vào b?ng ApiUserQuestionPart
+                for ($i = 1; $i <= 7; $i++) {
+                    $data1 = [
+                        'user_question_id' => $questionTable->id,
+                        'question' => $jsonData['question'],
+                        'topic' => $jsonData['topic'],
+                        'part_number' => $i,
+                        'status' => 0
+                    ];
+                    ApiUserQuestionPart::create($data1);
+                }
+            }
+    
+            // Commit transaction tru?c khi dispatch job
+            DB::commit();
+    
+            // Dispatch job
+            dispatch(new DemoJob($jsonData, $questionTable->id));
+            return $this->responseSuccess(200, $questionTable->id);
+            // return response()->json(['message' => 'Data inserted and job dispatched successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Transaction failed: ' . $e->getMessage());
+            return $this->responseSuccess(403, $e->getMessage());
+            // return response()->json(['message' => 'An error occurred', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function audio(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        
+        if(empty($jsonData['context'])) {
+            $context = [
+                "question" => "What did you do yesterday",
+            ];
+        } else {
+            $context = $jsonData['context'];
+        }
+        $audio_format = "wav";
+        $user_metadata = [
+            'speaker_gender' => "male",
+            'speaker_age' => "child",
+            'speaker_english_level' => "advanced",
+        ];
+        
+        $data = [
+            'audio_base64' => $audio_base64,
+            'audio_format' => $audio_format,
+            'user_metadata' => $user_metadata,
+            'context' => $context,
+        ];
+
+        $data_string = json_encode($data);
+        $curl = curl_init('https://apis.languageconfidence.ai/speech-assessment/unscripted/us');
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'api-key: P950LqE9SfejPhIVdzRpyLRWeCmJULk5',
+            'x-user-id: 1',
+            'Content-Length: ' . strlen($data_string))
+        );
+
+        $result = curl_exec($curl);
+        curl_close($curl);
+        return $this->responseSuccess(200, json_decode($result, true));
+        // dd(json_decode($result, true));
     }
 }
