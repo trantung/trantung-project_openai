@@ -44,7 +44,7 @@ class DemoJob implements ShouldQueue
         dispatch(new Part5Job($this->jsonData, 5, $this->apiUserQuestionId));
         dispatch(new Part6Job($this->jsonData, 6, $this->apiUserQuestionId));
         dispatch(new Part7Job($this->jsonData, 7, $this->apiUserQuestionId));
-        //dispatch(new ProcessBatchResultsJob($this->apiUserQuestionId));
+        // dispatch(new ProcessBatchResultsJob($this->apiUserQuestionId));
     }
 
     /**

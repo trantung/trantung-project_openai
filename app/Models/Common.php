@@ -9,6 +9,14 @@ use Illuminate\Support\Facades\Log;
 
 class Common extends Model
 {
+    const PART_NUMBER_GRAMMA_RESPONSE = 7;
+    const PART_NUMBER_LEXICAL_RESPONSE = 6;
+    const PART_NUMBER_COHERENCE_COHESION_RESPONSE = 5;
+    const PART_NUMBER_BAND_TASK_RESPONSE = 4;
+    const PART_NUMBER_CONCLUSION_RESPONSE = 3;
+    const PART_NUMBER_TOPIC_SENTENCE_RESPONSE = 2;
+    const PART_NUMBER_INTRODUCTION_RESPONSE = 1;
+
     public static function getSystemPromptCommon()
     {
         return " Provide the score for each criterion and explain with accompanying examples why the score is as it is.Then offer suggestions for improving the scores for each criterion.After that give overall score and explain in 4 to 5 sentences for overall why this overall score is not in a lower band nearest or a higher band nearest. Reponse is json format structured as: \n each criteria: \n - criteria_name is name criteria \n score_criteria is score \n -explain is explain \n -accompanying_examples is accompanying examples\n -improvement_suggestions is improvement suggestions \n and\n overall: \n -overall_score is overall score \n -belower_score is score nearest band lower \n -reason_not_belower_score is reason why the score is not in a lower band \n -higher_score is nearest band higher \n -reason_not_higher_score is reason why the score is not in a higher band";
@@ -191,7 +199,6 @@ class Common extends Model
     {
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
-        // $model = 'gpt-4-turbo';
         $model = getenv('OPENAI_API_MODEL');
         $question = $jsonData['question'];
 
@@ -213,5 +220,27 @@ class Common extends Model
            'max_tokens' => 2000
         ]);
         return $chat;
+    }
+
+    public static function callCms($dataResponseChat, $questionId, $partNumber)
+    {
+        $data = [
+            'question_id' => $questionId,
+            'part_number' => $partNumber,
+            'data' => $dataResponseChat
+        ];
+
+        $data_string = json_encode($data);
+        $curl = curl_init('https://apiems.microgem.io.vn/hook/resultWritingTask2');
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            // 'api-key: P950LqE9SfejPhIVdzRpyLRWeCmJULk5',
+            'Content-Length: ' . strlen($data_string))
+        );
+        $result = curl_exec($curl);
+        curl_close($curl);
     }
 }
