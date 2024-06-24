@@ -59,8 +59,9 @@ class Part3Job implements ShouldQueue
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
                 
-                // CheckJobsCompletion::dispatch($this->apiUserQuestionId);
                 Common::callCms($dataResponseChat, $this->apiUserQuestionId, Common::PART_NUMBER_CONCLUSION_RESPONSE);
+                CheckJobsCompletion::dispatch($this->apiUserQuestionId);
+                
             }
 
             // Gửi response về Event để xử lý bởi Listener

@@ -144,11 +144,11 @@ class Common extends Model
 
         $chat = $client->chat()->create([
             'model' => $model,
-           // 'response_format'=>["type"=>"json_object"],
+           'response_format'=>["type"=>"json_object"],
            'messages' => [
                [
                    "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy. Identify introduction and show introduction of IELTS Writing Task 2. Please explain to me and give comments on the strengths and weaknesses of my IELTS Writing Task 2. Then provide suggestions for improving the introduction, structured as: introduction, strengths, weaknesses, improvement"
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy. Identify introduction and show introduction of IELTS Writing Task 2. Please explain to me and give comments on the strengths and weaknesses of my IELTS Writing Task 2. Then provide suggestions for improving the introduction. Response is JSON with format following rule: introduction, strengths, weaknesses, improvement"
                ],
                [
                    "role" => "user",
@@ -221,12 +221,38 @@ class Common extends Model
         ]);
         return $chat;
     }
+    // const PART_NUMBER_GRAMMA_RESPONSE = 7;
+    // const PART_NUMBER_LEXICAL_RESPONSE = 6;
+    // const PART_NUMBER_COHERENCE_COHESION_RESPONSE = 5;
+    // const PART_NUMBER_BAND_TASK_RESPONSE = 4;
+    // const PART_NUMBER_CONCLUSION_RESPONSE = 3;
+    // const PART_NUMBER_TOPIC_SENTENCE_RESPONSE = 2;
+    // const PART_NUMBER_INTRODUCTION_RESPONSE = 1;
+    public static function getPartInfo($partNumber = null)
+    {
+        $data = [
+            self::PART_NUMBER_INTRODUCTION_RESPONSE => 'introduction',
+            self::PART_NUMBER_TOPIC_SENTENCE_RESPONSE => 'topic_sentence',
+            self::PART_NUMBER_CONCLUSION_RESPONSE => 'conclusion',
+            self::PART_NUMBER_BAND_TASK_RESPONSE => 'band_task_response',
+            self::PART_NUMBER_COHERENCE_COHESION_RESPONSE => 'coherence_cohesion',
+            self::PART_NUMBER_LEXICAL_RESPONSE => 'lexical',
+            self::PART_NUMBER_GRAMMA_RESPONSE => 'gramma',
+        ];
+        if($partNumber) {
+            return $data[$partNumber];
+        }
+        return $data;
+    }
 
     public static function callCms($dataResponseChat, $questionId, $partNumber)
     {
+        $partInfo = self::getPartInfo($partNumber);
+        $dataResponseChat = json_decode($dataResponseChat,true);
         $data = [
             'question_id' => $questionId,
             'part_number' => $partNumber,
+            'part_info' => $partInfo,
             'data' => $dataResponseChat
         ];
 

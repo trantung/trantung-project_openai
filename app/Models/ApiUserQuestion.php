@@ -9,7 +9,7 @@ class ApiUserQuestion extends Model
 {
     use HasFactory;
     protected $table = "api_user_questions";
-    public $fillable = ['user_id', 'username', 'topic', 'question', 'status', 'openai_response', 'prompt_token', 'total_token', 'complete_token'];
+    public $fillable = ['user_id', 'username', 'topic', 'question', 'status', 'openai_response', 'prompt_token', 'total_token', 'complete_token', 'writing_task_number'];
     public $timestamps = true;
 
     const STATUS_SUCCESS = 1;

@@ -73,32 +73,7 @@ class ProcessBatchResultsJob implements ShouldQueue
             'complete_token' => $completionTokens,
             'openai_response' => json_encode($response),
         ];
-
-        // Perform the update operation
+        // // Perform the update operation
         ApiUserQuestion::find($this->apiUserQuestionId)->update($updateData);
-        //curl api cms
-        $res = ApiUserQuestion::where('id', $this->apiUserQuestionId)
-            ->where('status', ApiUserQuestion::STATUS_SUCCESS)
-            ->first();
-        if($res) {
-            $openai_response = $res->openai_response;
-            $data = [
-                'question_id' => $this->apiUserQuestionId,
-                'data' => $response
-            ];
-
-            $data_string = json_encode($data);
-            $curl = curl_init('https://apiems.microgem.io.vn/hook/resultWritingTask2');
-            curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
-            curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
-            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  
-            curl_setopt($curl, CURLOPT_HTTPHEADER, array(
-                'Content-Type: application/json',
-                // 'api-key: P950LqE9SfejPhIVdzRpyLRWeCmJULk5',
-                'Content-Length: ' . strlen($data_string))
-            );
-            $result = curl_exec($curl);
-            curl_close($curl);
-        }
     }
 }

@@ -25,12 +25,13 @@ class CheckJobsCompletion implements ShouldQueue
     public function handle()
     {
         $completedJobs = ApiUserQuestionPart::where('user_question_id', $this->apiUserQuestionId)
-                                             ->where('status', 1)
-                                             ->count();
+            ->where('status', 1)
+            ->count();
 
         if ($completedJobs == 7) {
             Log::info("All parts completed for question ID: " . $this->apiUserQuestionId);
             ProcessBatchResultsJob::dispatch($this->apiUserQuestionId);
         }
+        
     }
 }
