@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
@@ -212,17 +211,18 @@ class ApiTestController extends Controller
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
+        // dd(111);
         // $model = 'gpt-4-turbo';
         $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
         $question = $jsonData['question'];
 
         $chat = $client->chat()->create([
             'model' => $model,
-           // 'response_format'=>["type"=>"json_object"],
+           'response_format'=>["type"=>"json_object"],
            'messages' => [
                [
                    "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy. Identify introduction and show introduction of IELTS Writing Task 2. Please explain to me and give comments on the strengths and weaknesses of my IELTS Writing Task 2. Then provide suggestions for improving the introduction, structured as: introduction, strengths, weaknesses, improvement"
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy. Identify introduction and show introduction of IELTS Writing Task 2. Please explain to me and give comments on the strengths and weaknesses of my IELTS Writing Task 2. Then provide suggestions for improving the introduction. Response is JSON with format following rule: introduction, strengths, weaknesses, improvement"
                ],
                [
                    "role" => "user",
@@ -234,7 +234,8 @@ class ApiTestController extends Controller
            'max_tokens' => 1000
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
-        // $dataResponseChat = json_decode($dataResponseChat);
+        $dataResponseChat = json_decode($dataResponseChat,true);
+        dd($dataResponseChat);
         return $this->responseSuccess(200, $dataResponseChat);
         // dd($dataResponseChat);
         $response = [
@@ -258,11 +259,11 @@ class ApiTestController extends Controller
         $question = $jsonData['question'];
         $chat = $client->chat()->create([
             'model' => $model,
-           // 'response_format'=>["type"=>"json_object"],
+           'response_format'=>["type"=>"json_object"],
            'messages' => [
                [
                    "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy. Identify introduction and show introduction of IELTS Writing Task 2. Please explain to me and give comments on the strengths and weaknesses of my IELTS Writing Task 2. Then provide suggestions for improving the introduction, structured as: introduction, strengths, weaknesses, improvement"
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy. Identify introduction and show introduction of IELTS Writing Task 2. Please explain to me and give comments on the strengths and weaknesses of my IELTS Writing Task 2. Then provide suggestions for improving the introduction. Response is JSON with format following rule: introduction, strengths, weaknesses, improvement"
                ],
                [
                    "role" => "user",
@@ -385,7 +386,9 @@ class ApiTestController extends Controller
             $test = ApiUserQuestionPart::where('user_question_id',$jsonData['question_id'])
                 ->pluck('status','part_number');
             $test1 = ApiUserQuestion::find($jsonData['question_id']);
-            dd($test, $test1);
+            $test3 = ApiUserQuestionPart::where('user_question_id',$jsonData['question_id'])
+                ->where('part_number',2)->first()->toArray();
+            dd($test, $test1,$test3);
         }
         // dd(ApiUserQuestion::find(5));
         DB::beginTransaction();
@@ -471,4 +474,167 @@ class ApiTestController extends Controller
         return $this->responseSuccess(200, json_decode($result, true));
         // dd(json_decode($result, true));
     }
+
+    public function task2LexicalGramma(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        $model = getenv('OPENAI_API_MODEL');
+        $question = $jsonData['question'];
+        $topic = $jsonData['topic'];
+        $chat = Common::task1LexicalResource($jsonData,$messageTopic);
+        // $analyze = $this->image($request);
+        dd($chat);
+        // $messageTopic = $topic . "This is the content of the chart \n" . $analyze;
+        $chat = $client->chat()->create([
+            'model' => $model,
+           'response_format'=>["type"=>"json_object"],
+           'messages' => [
+               [
+                   "role" => "system",
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "\nIdentify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 2. Response is JSON format"
+               ],
+               [
+                   "role" => "user",
+                   "content" => "could you help me to identify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 2. Show me the errors and suggest improvements and explain for suggest improvements. This is my IELTS Writing Task 2: \n" . $question
+               ],
+
+            ],
+           'temperature' => 0,
+           'max_tokens' => 2000
+        ]);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $response = json_decode($dataResponseChat, true);
+        return $this->responseSuccess(200, $response);
+    }
+
+    public function task2IdentifyErrors(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        $model = getenv('OPENAI_API_MODEL');
+        $question = $jsonData['question'];
+        $topic = $jsonData['topic'];
+        // $analyze = $this->image($request);
+        // // dd($analyze->data);
+        // $messageTopic = $topic . "\n" . "This is the content of the chart:\n" . $analyze;
+        // $chat = Common::task1LexicalResource($jsonData,$messageTopic);
+        // $analyze = $this->image($request);
+        $chat = $client->chat()->create([
+            'model' => $model,
+           'response_format'=>["type"=>"json_object"],
+           'messages' => [
+               [
+                   "role" => "system",
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "\nIdentify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 2. Reponse is json format structured as: error, explanations, corrections. for each error"
+               ],
+               [
+                   "role" => "user",
+                   "content" => "This is my IELTS Writing Task 2: \n" . $question
+               ],
+
+            ],
+           'temperature' => 0,
+           'max_tokens' => 1000
+        ]);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $response = json_decode($dataResponseChat, true);
+        return $this->responseSuccess(200, $response);
+    }
+    
+// Lexical & Grammatical errors task1
+    public function task1LexicalGramma(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        $model = getenv('OPENAI_API_MODEL');
+        $question = $jsonData['question'];
+        $topic = $jsonData['topic'];
+        $analyze = $this->image($request);
+        // dd($analyze->data);
+        $messageTopic = $topic . "\n" . "This is the content of the chart:\n" . $analyze;
+        $chat = Common::task1LexicalResource($jsonData,$messageTopic);
+        // $analyze = $this->image($request);
+        dd($chat);
+        $chat = $client->chat()->create([
+            'model' => $model,
+           'response_format'=>["type"=>"json_object"],
+           'messages' => [
+               [
+                   "role" => "system",
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 1 essay: \n" . $messageTopic . "\nIdentify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 1. Reponse is json format structured as: error, explanations, corrections. for each error"
+               ],
+               [
+                   "role" => "user",
+                   "content" => "could you help me to identify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 2. Show me the errors and suggest improvements and explain for suggest improvements. This is my IELTS Writing Task 1: \n" . $question
+               ],
+
+            ],
+           'temperature' => 0,
+           'max_tokens' => 1000
+        ]);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $response = json_decode($dataResponseChat, true);
+        return $this->responseSuccess(200, $response);
+    }
+
+    public function image(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        $model = 'gpt-4o';
+        // $question = $jsonData['question'];
+        // $topic = $jsonData['topic'];
+        // $system_prompt = Question::criterionCoherenceCohesion();
+        // $commonPrompt = self::getSystemPromptCommon();
+        $content = [
+            [
+                'type' => 'text',
+                'text' => $jsonData['analyze'],
+            ],
+            [
+                'type' => 'image_url',
+                'image_url' => [
+                    'url' => $jsonData['url'],
+                ]
+            ],
+        ];
+        if(!empty($jsonData['detail'])) {
+            $content = [
+                [
+                    'type' => 'text',
+                    'text' => $jsonData['analyze'],
+                ],
+                [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        'url' => $jsonData['url'],
+                        'detail' => $jsonData['detail']
+                    ]
+                ],
+            ];
+        }
+        $chat = $client->chat()->create([
+            'model' => $model,
+            // 'response_format'=>["type"=>"json_object"],
+            'messages' => [
+                [
+                    "role" => "user",
+                    "content" => $content
+                ],
+            ],
+            'max_tokens' => 1000,
+            'temperature' => 0
+        ]);
+        // dd($chat);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        return $dataResponseChat;
+        // return $this->responseSuccess(200, $dataResponseChat); 
+
+    }
+
 }

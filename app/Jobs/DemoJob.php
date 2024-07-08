@@ -20,14 +20,16 @@ class DemoJob implements ShouldQueue
 
     public $jsonData;
     public $apiUserQuestionId;
+    public $writing_task_number;
 
     /**
      * Create a new job instance.
      */
-    public function __construct($jsonData, $apiUserQuestionId)
+    public function __construct($jsonData, $apiUserQuestionId, $writing_task_number)
     {
         $this->jsonData = $jsonData;
         $this->apiUserQuestionId = $apiUserQuestionId;
+        $this->writing_task_number = $writing_task_number;
     }
 
     /**
@@ -37,13 +39,14 @@ class DemoJob implements ShouldQueue
     {
         Log::info('DemoJob started for question ID: ' . $this->apiUserQuestionId);
         
-        dispatch(new Part1Job($this->jsonData, 1, $this->apiUserQuestionId));
-        dispatch(new Part2Job($this->jsonData, 2, $this->apiUserQuestionId));
-        dispatch(new Part3Job($this->jsonData, 3, $this->apiUserQuestionId));
-        dispatch(new Part4Job($this->jsonData, 4, $this->apiUserQuestionId));
-        dispatch(new Part5Job($this->jsonData, 5, $this->apiUserQuestionId));
-        dispatch(new Part6Job($this->jsonData, 6, $this->apiUserQuestionId));
-        dispatch(new Part7Job($this->jsonData, 7, $this->apiUserQuestionId));
+        dispatch(new Part1Job($this->jsonData, 1, $this->apiUserQuestionId, $this->writing_task_number));
+        dispatch(new Part2Job($this->jsonData, 2, $this->apiUserQuestionId, $this->writing_task_number));
+        dispatch(new Part3Job($this->jsonData, 3, $this->apiUserQuestionId, $this->writing_task_number));
+        dispatch(new Part4Job($this->jsonData, 4, $this->apiUserQuestionId, $this->writing_task_number));
+        dispatch(new Part5Job($this->jsonData, 5, $this->apiUserQuestionId, $this->writing_task_number));
+        dispatch(new Part6Job($this->jsonData, 6, $this->apiUserQuestionId, $this->writing_task_number));
+        dispatch(new Part7Job($this->jsonData, 7, $this->apiUserQuestionId, $this->writing_task_number));
+        dispatch(new Part8Job($this->jsonData, 8, $this->apiUserQuestionId, $this->writing_task_number));
         // dispatch(new ProcessBatchResultsJob($this->apiUserQuestionId));
     }
 
@@ -61,7 +64,7 @@ class DemoJob implements ShouldQueue
 
         $partsCompleted = true;
 
-        for ($i = 1; $i <= 7; $i++) {
+        for ($i = 1; $i <= 8; $i++) {
             if (isset($openAiResponses[$i]) && !empty($openAiResponses[$i]['openai_response'])) {
                 $openAiResponse = $openAiResponses[$i];
                 switch ($i) {

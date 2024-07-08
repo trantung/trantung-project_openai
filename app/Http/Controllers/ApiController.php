@@ -15,172 +15,23 @@ use App\Models\ApiUserQuestionPart;
 use App\Models\Common;
 use Illuminate\Support\Facades\Log;
 
-
-class ApiController extends Controller
+class ApiTestController extends Controller
 {
-    public function checkParamCms($jsonData, $fields)
-    {
-        if(empty($jsonData['token']) || $jsonData['token'] != 'tunglaso1') {
-            return false;
-        }
-        foreach($fields as $value) {
-            if(empty($jsonData[$value])) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public function writeTask2Create(Request $request)
-    {
-        $jsonData = $this->getDataFromRequest($request);
-        $checkToken = $this->checkParamCms($request, ['username', 'user_id', 'topic','question']);
-        if(!$checkToken) {
-            return $this->responseSuccess(403, 'Token invalid');
-        }
-        DB::beginTransaction();
-        try {
-            // Insert vào b?ng ApiUserQuestion
-            $data = [
-                'question' => $jsonData['question'],
-                'topic' => $jsonData['topic'],
-                'user_id' => $jsonData['user_id'],
-                'username' => $jsonData['username'],
-                'status' => 0
-            ];
-            $questionTable = ApiUserQuestion::create($data);
-            if ($questionTable->id) {
-                // Insert vào b?ng ApiUserQuestionPart
-                for ($i = 1; $i <= 7; $i++) {
-                    $data1 = [
-                        'user_question_id' => $questionTable->id,
-                        'question' => $jsonData['question'],
-                        'topic' => $jsonData['topic'],
-                        'part_number' => $i,
-                        'status' => 0
-                    ];
-                    ApiUserQuestionPart::create($data1);
-                }
-            }
-    
-            // Commit transaction tru?c khi dispatch job
-            DB::commit();
-    
-            // Dispatch job
-            dispatch(new DemoJob($jsonData, $questionTable->id));
-            return $this->responseSuccess(200, ['question_id' => $questionTable->id]);
-            // return response()->json(['message' => 'Data inserted and job dispatched successfully']);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Transaction failed: ' . $e->getMessage());
-            return $this->responseSuccess(403, $e->getMessage());
-            // return response()->json(['message' => 'An error occurred', 'error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function writeTask2Detail(Request $request)
-    {
-        $jsonData = $this->getDataFromRequest($request);
-        $checkToken = $this->checkParamCms($request, ['question_id']);
-        if(!$checkToken) {
-            return $this->responseSuccess(403, 'Token invalid');
-        }
-        $userQuestionId = $jsonData['question_id'];
-        $questionData = ApiUserQuestion::find($userQuestionId);
-        if(!$questionData) {
-            return $this->responseSuccess(404, 'question_id: '. $userQuestionId . ' not found');
-        }
-        return $this->responseSuccess(200, json_decode($questionData['openai_response'],true));
-    }
-    
     public function ieltsWriteTask2(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
         // $model = 'gpt-4-turbo';
-        $model = getenv('OPENAI_API_MODEL');
+        $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
         $question = $jsonData['question'];
-        $topic = $jsonData['topic'];
-
-        //cuc 1: introduction
-        $introductionData = $this->introduction($request);
-        $introductionRes = $introductionData['dataResponseChat'];
-        //cuc 2: topic sentence+conclusion
-        $conclusionData = $this->conclusion($request);
-        $conclusionRes = $conclusionData['dataResponseChat'];
-        $topicSentenceData = $this->topicSentence($request);
-        $topicSentenceRes = $topicSentenceData['dataResponseChat'];
-
-        //cuc 3: band task response
-        $taskResponseData = $this->bandTaskResponse($request);
-        $taskResponseRes = $taskResponseData['dataResponseChat'];
-        //cuc 4: coherence cohesion
-        $coherence_cohesionData = $this->coherenceCohesion($request);
-        $coherence_cohesionRes = $coherence_cohesionData['dataResponseChat'];
-        //cuc 5:lexical Resource
-        $lexicalResourceData = $this->lexicalResource($request);
-        $lexicalResourceRes = $lexicalResourceData['dataResponseChat'];
-        //cuc 6:gramma
-        $grammaData = $this->gramma($request);
-        $grammaRes = $grammaData['dataResponseChat'];
-        //calculator token
-        $totalToken = $introductionData['totalToken'] + $taskResponseData['totalToken'] + $conclusionData['totalToken'] + $topicSentenceData['totalToken'] + $coherence_cohesionData['totalToken'] + $lexicalResourceData['totalToken'] + $grammaData['totalToken']; 
-        $completionTokens = $introductionData['completionTokens'] + $taskResponseData['completionTokens'] + $conclusionData['completionTokens'] + $topicSentenceData['completionTokens'] + $coherence_cohesionData['completionTokens'] + $lexicalResourceData['completionTokens'] + $grammaData['completionTokens'];
-        $promptTokens = $introductionData['promptTokens'] + $taskResponseData['promptTokens'] + $conclusionData['promptTokens'] + $topicSentenceData['promptTokens'] + $coherence_cohesionData['promptTokens'] + $lexicalResourceData['promptTokens'] + $grammaData['promptTokens'];
-        //check token from cms duy
-        $checkToken = $this->checkTokenFromCms($request);
-        if($checkToken == 'test') {
-            //create record in table cms_questions
-        }
-        //response
+        $introduction = $this->introduction($request);
+        $task_response = $this->bandTaskResponse($request);
         $response = [
-            'introduction' => $introductionRes,
-            'topic_sentence' => [
-                'topic_sentence' => $topicSentenceRes,
-                'conclusion' => $conclusionRes,
-            ],
-            'band_task_response' => $taskResponseRes,
-            'coherence_cohesion_response' => $coherence_cohesionRes,
-            'lexical_resource' => $lexicalResourceRes,
-            'gramma' => $grammaRes,
-            'totalToken' => $totalToken,
-            'completionTokens' => $completionTokens,
-            'promptTokens' => $promptTokens,
+            'introduction' => $introduction,
+            'band_task_response' => $task_response,
         ];
-        $title = 'test postman';
-        if(!empty($jsonData['title'])) {
-            $title = $jsonData['title'];
-        }
-        //save db
-        $testOpenaiData = [
-            'name' => $title,
-            'topic' => $topic,
-            'question' => $question,
-            'category_id' => 4,
-            'answer' => json_encode($response),
-            'total_token' => $totalToken,
-            'prompt_token' => $promptTokens,
-            'complete_token' => $completionTokens,
-        ];
-        if(!empty($jsonData['type']) && $jsonData['type'] == 'detail') {
-            return $this->responseSuccess(200, $response);
-        }else {
-            TestOpenai::create($testOpenaiData);
-            return $this->responseSuccess(200, $response);
-        }
-        
-    }
-
-    public function checkTokenFromCms($request)
-    {
-        if(empty($request['token'])) {
-            return true;
-        }
-        if($request['token'] == 'test') {
-            return 'test';
-        }
-        return true;
+        return $this->responseSuccess(200, $response);
     }
 
     public function getDataFromRequest($request)
@@ -241,13 +92,45 @@ class ApiController extends Controller
         return null;
     }
 
-    public function conclusion($request)
+    public function task2IdentifyErrors(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
         $model = getenv('OPENAI_API_MODEL');
         $question = $jsonData['question'];
+        $topic = $jsonData['topic'];
+        $chat = $client->chat()->create([
+            'model' => $model,
+           'response_format'=>["type"=>"json_object"],
+           'messages' => [
+               [
+                   "role" => "system",
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "\nIdentify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 2. Reponse is json format structured as: error, explanations, corrections. for each error"
+               ],
+               [
+                   "role" => "user",
+                   "content" => "This is my IELTS Writing Task 2: \n" . $question
+               ],
+
+            ],
+           'temperature' => 0,
+           'max_tokens' => 1000
+        ]);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $response = json_decode($dataResponseChat, true);
+        return $this->responseSuccess(200, $response);
+    }
+
+    public function conclusion(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        // $model = 'gpt-4-turbo';
+        $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
+        $question = $jsonData['question'];
+
         $chat = $client->chat()->create([
             'model' => $model,
            'response_format'=>["type"=>"json_object"],
@@ -263,7 +146,7 @@ class ApiController extends Controller
 
             ],
            'temperature' => 0,
-           'max_tokens' => 1000
+           'max_tokens' => 2000
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
         $dataResponseChat = json_decode($dataResponseChat);
@@ -276,16 +159,7 @@ class ApiController extends Controller
             'Improvements' => $dataResponseChat->Comments->Improvements,
             'Overall' => implode("\n", $dataResponseChat->Comments->Overall),
         ];
-        $totalToken = $chat->usage->totalTokens;
-        $res = [
-            'dataResponseChat' => $response,
-            'totalToken' => $totalToken,
-            'completionTokens' => $chat->usage->completionTokens,
-            'promptTokens' => $chat->usage->promptTokens,
-            'completionTokens' => $chat->usage->completionTokens,
-            'promptTokens' => $chat->usage->promptTokens,
-        ];
-        return $res;
+        return $this->responseSuccess(200, $response);
     }
 
     public function getComment($data)
@@ -307,7 +181,7 @@ class ApiController extends Controller
         return $res;
     }
 
-    public function topicSentence($request)
+    public function topicSentence(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
@@ -323,6 +197,9 @@ class ApiController extends Controller
                [
                    "role" => "system",
                    "content" => "You are a friendly IELTS preparation teacher and today you are very happy.Identify all topic sentence in the Body Paragraphs of an IELTS Essay Task 2, give comments on the strengths and weaknesses, then improvement with example for each topic sentence in the Body Paragraphs, structured as:topic_sentence, improvement_examples, comments include strengths and weaknesses, where strengths and weaknesses are observations of the strong and weak points of each topic sentence. Response is JSON format"
+                   // "content" => "Identify the topic sentences and main points in the Body Paragraphs of an IELTS Essay Task 2 with the prompt of the essay being:\n
+                   // $topic \n
+                   //  Then, provide comments on the strengths and weaknesses, followed by providing improvement examples for each topic sentence and main point in the Body Paragraphs. Response is JSON format"
                ],
                [
                    "role" => "user",
@@ -342,20 +219,17 @@ class ApiController extends Controller
             $comment[] = $value->comments;
             $improvements[] = $value->improvement_examples;
         }
-
+        $totalToken = $chat->usage->totalTokens;
         $response = [
             'topicSentence' => $topicSentence,
             'comment' => $comment,
             'improvements' => $improvements,
-        ];
-        $totalToken = $chat->usage->totalTokens;
-        $res = [
-            'dataResponseChat' => $response,
             'totalToken' => $totalToken,
             'completionTokens' => $chat->usage->completionTokens,
             'promptTokens' => $chat->usage->promptTokens,
         ];
-        return $res;
+
+        return $this->responseSuccess(200, $response);
     }
 
     public function introductionTest(Request $request)
@@ -363,18 +237,18 @@ class ApiController extends Controller
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
+        // dd(111);
         // $model = 'gpt-4-turbo';
-        $model = getenv('OPENAI_API_MODEL');
-        $yourApiKey = getenv('OPENAI_API_KEY');
+        $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
         $question = $jsonData['question'];
 
         $chat = $client->chat()->create([
             'model' => $model,
-           // 'response_format'=>["type"=>"json_object"],
+           'response_format'=>["type"=>"json_object"],
            'messages' => [
                [
                    "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy. Identify introduction and show introduction of IELTS Writing Task 2. Please explain to me and give comments on the strengths and weaknesses of my IELTS Writing Task 2. Then provide suggestions for improving the introduction, structured as: introduction, strengths, weaknesses, improvement"
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy. Identify introduction and show introduction of IELTS Writing Task 2. Please explain to me and give comments on the strengths and weaknesses of my IELTS Writing Task 2. Then provide suggestions for improving the introduction. Response is JSON with format following rule: introduction, strengths, weaknesses, improvement"
                ],
                [
                    "role" => "user",
@@ -386,7 +260,8 @@ class ApiController extends Controller
            'max_tokens' => 1000
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
-        // $dataResponseChat = json_decode($dataResponseChat);
+        $dataResponseChat = json_decode($dataResponseChat,true);
+        dd($dataResponseChat);
         return $this->responseSuccess(200, $dataResponseChat);
         // dd($dataResponseChat);
         $response = [
@@ -406,15 +281,15 @@ class ApiController extends Controller
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
         // $model = 'gpt-4-turbo';
-        $model = getenv('OPENAI_API_MODEL');
+        $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
         $question = $jsonData['question'];
         $chat = $client->chat()->create([
             'model' => $model,
-           // 'response_format'=>["type"=>"json_object"],
+           'response_format'=>["type"=>"json_object"],
            'messages' => [
                [
                    "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy. Identify introduction and show introduction of IELTS Writing Task 2. Please explain to me and give comments on the strengths and weaknesses of my IELTS Writing Task 2. Then provide suggestions for improving the introduction, structured as: introduction, strengths, weaknesses, improvement"
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy. Identify introduction and show introduction of IELTS Writing Task 2. Please explain to me and give comments on the strengths and weaknesses of my IELTS Writing Task 2. Then provide suggestions for improving the introduction. Response is JSON with format following rule: introduction, strengths, weaknesses, improvement"
                ],
                [
                    "role" => "user",
@@ -426,46 +301,26 @@ class ApiController extends Controller
            'max_tokens' => 1000
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
-        $totalToken = $chat->usage->totalTokens;
-        $res = [
-            'dataResponseChat' => $dataResponseChat,
-            'totalToken' => $totalToken,
-            'completionTokens' => $chat->usage->completionTokens,
-            'promptTokens' => $chat->usage->promptTokens,
-        ];
-        return $res;
+        
+        return $dataResponseChat;
     }
 
-    public function coherenceCohesion($request)
-    {
-        $jsonData = $this->getDataFromRequest($request);
-        $chat = Common::responseCoherenceCohesion($jsonData);
-        $dataResponseChat = $chat->choices[0]->message->content;
-        $dataResponseChat = json_decode($dataResponseChat,true);
-        $totalToken = $chat->usage->totalTokens;
-        $res = [
-            'dataResponseChat' => $dataResponseChat,
-            'totalToken' => $totalToken,
-            'completionTokens' => $chat->usage->completionTokens,
-            'promptTokens' => $chat->usage->promptTokens,
-        ];
-        return $res;
-    }
-
-    public function bandTaskResponse($request)
+    public function bandTaskResponse(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
         $chat = Common::responseBandTaskResponse($jsonData);
         $dataResponseChat = $chat->choices[0]->message->content;
         $dataResponseChat = json_decode($dataResponseChat,true);
-        $totalToken = $chat->usage->totalTokens;
-        $res = [
-            'dataResponseChat' => $dataResponseChat,
-            'totalToken' => $totalToken,
-            'completionTokens' => $chat->usage->completionTokens,
-            'promptTokens' => $chat->usage->promptTokens,
-        ];
-        return $res;
+        return $this->responseSuccess(200, $dataResponseChat);
+    }
+
+    public function coherenceCohesion(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $chat = Common::responseCoherenceCohesion($jsonData);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $dataResponseChat = json_decode($dataResponseChat,true);
+        return $this->responseSuccess(200, $dataResponseChat);
     }
 
     public function lexicalResource(Request $request)
@@ -474,14 +329,7 @@ class ApiController extends Controller
         $chat = Common::responseLexicalResource($jsonData);
         $dataResponseChat = $chat->choices[0]->message->content;
         $dataResponseChat = json_decode($dataResponseChat,true);
-        $totalToken = $chat->usage->totalTokens;
-        $res = [
-            'dataResponseChat' => $dataResponseChat,
-            'totalToken' => $totalToken,
-            'completionTokens' => $chat->usage->completionTokens,
-            'promptTokens' => $chat->usage->promptTokens,
-        ];
-        return $res;
+        return $this->responseSuccess(200, $dataResponseChat);
     }
 
     public function gramma(Request $request)
@@ -490,74 +338,214 @@ class ApiController extends Controller
         $chat = Common::responseGramma($jsonData);
         $dataResponseChat = $chat->choices[0]->message->content;
         $dataResponseChat = json_decode($dataResponseChat,true);
-        $totalToken = $chat->usage->totalTokens;
-        $res = [
-            'dataResponseChat' => $dataResponseChat,
-            'totalToken' => $totalToken,
-            'completionTokens' => $chat->usage->completionTokens,
-            'promptTokens' => $chat->usage->promptTokens,
-        ];
-        return $res;
+        return $this->responseSuccess(200, $dataResponseChat);
     }
 
     public function test(Request $request)
     {
+// 
         $jsonData = $this->getDataFromRequest($request);
-        $yourApiKey = getenv('OPENAI_API_KEY');
-        $client = OpenAI::client($yourApiKey);
-        // $model = 'gpt-4-turbo';
-        // $model = 'gpt-3.5-turbo';
-        $model = getenv('OPENAI_API_MODEL');
+
+        // dd($jsonData);
+
+        $model = 'gpt-4-turbo';
         $question = $jsonData['question'];
-        $topic = $jsonData['topic'];
+        // $open_ai_key = getenv('OPENAI_API_KEY');
+        // $open_ai_key = getenv('OPENAI_API_KEY');
+        // $open_ai = new OpenAi($open_ai_key);
 
-        $prompUser = "Please grade the task response of my IELTS Writing Task 2. Show me grade for each criteria and explain why the scoring is done this way for each criterion and give me suggestions for improvements it.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic;
-
-        $userContent = "
-        $prompUser \n This is my essay
-        {question}
-            ----------------
-            CONTEXT: 
-            {context}
-            ----------------
-            FINAL ANSWER:";
-
-        $userContent = str_replace("{question}", $question, $userContent);
-
-        $system_prompt = "Criterion 'Address all parts of the question.': \n -If the prompt is appropriately addressed and explored in depth, the band=9 \n If the prompt is appropriately and sufficiently addressed, the band=8\n-If the main parts of the prompt are appropriately addressed, the band=7\n-If the main parts of the prompt are addressed (though some may be more fully covered than others) and an appropriate format is used, the band = 6\n-If the main parts of the prompt are incompletely addressed and the format may be inappropriate in places, the band=5\n-If the prompt is tackled in a minimal way, or the answer is tangential, possibly due to some misunderstanding of the prompt and the format may be inappropriate, the band=4\n-If No part of the prompt is adequately addressed, or the prompt has been misunderstood, the band=3\n-If the content is barely related to the prompt, the band=2\n-If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1\nCriterion 'Present a clear and developed position throughout.':\n -If a clear and fully developed position is presented which directly answers the question/s, the band=9\n -If a clear and well-developed position is presented in response to the question/s, the band=8\n -If aclear and developed position is presented,the band=7\n -If a position is presented that is directly relevant to the prompt,although the conclusions drawn may be unclear, unjustified or repetitive, the band=6\n -If the writer expresses a position, but the development is not always clear,the band=5\n -If a position is discernible, but the reader has to read carefully to find it,the band=4\n -If no relevant position can be identified, and/or there is little direct response to the question/s,the band=3\n -If no position can be identified,the band=2\n -If responses of 20 words or fewer are rated at Band 1 and The content is wholly unrelated to the prompt,the band=1\nCriterion 'Present, develop, support ideas.':\n -If Ideas are relevant, fully extended and well supported.Any lapses in content or support are extremely rare, the band=9\n -If Ideas are relevant, well extended and supported.There may be occasional omissions or lapses in content, the band=8\n -If Main ideas are extended and supported but there may be a tendency to over-generalise or there may be a lack of focus and precision in supporting ideas/material, the band=7\n -If Main ideas are relevant, but some may be insufficiently developed or may lack clarity, while some supporting arguments and evidence may be less relevant or inadequate, the band=6\n -If Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail. There may be some repetition, the band=5\n -If Main ideas are difficult to identify and such ideas that are identifiable may lack relevance, clarity and or support. Large parts of the response may be repetitive, the band=4\n -If There are few ideas, and these may be irrelevant or insufficiently developed, the band=3\n -If There may be glimpses of one or two ideas without development, the band=2\n -If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1";
-
-        $userContent = str_replace("{context}", $system_prompt, $userContent);
-
-        $chat = $client->chat()->create([
+        $chat = OpenAI::chat()->create([
             'model' => $model,
-           // 'response_format'=>["type"=>"json_object"],
+           'response_format'=>["type"=>"json_object"],
            'messages' => [
                [
                    "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "\n" . "Please grade the task response of my IELTS Writing Task 2 essay based on the following criteria:\n" . $system_prompt . " Provide the score for each criterion and explain why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, improvement suggestions."
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.Identify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 2. Response is JSON format"
                ],
                [
                    "role" => "user",
-                   // "content" => $userContent
-                   "content" => "Provide the score for each criterion and explain why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, improvement suggestions.. This is my IELTS Writing Task 2 essay:\n" . $question
-                   // "content" => "Please grade the task response of my IELTS Writing Task 2. Show me grade for each criteria and explain why the scoring is done this way for each criterion and give me suggestions for improvements it. This is my IELTS Writing Task 2 essay:\n" . $question
+                   "content" => "could you help me to identify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 2. Show me the errors and suggest improvements and explain for suggest improvements. This is my IELTS Writing Task 2: \n" . $question
                ],
 
             ],
            'temperature' => 0,
-           'max_tokens' => 1000
+           'max_tokens' => 2000
         ]);
-        $dataResponseChat = $chat->choices[0]->message->content;
-        // $data = json_decode($dataResponseChat);
-        dd($chat, $dataResponseChat);
+
+        $dataResponseChat = json_decode($chat);
+        $data = json_decode($chat)->choices[0]->message->content;
         $response = [];
-        foreach($data as $key => $value) {
-            $response[] = [
-                'criterion' => $value->criterion,
-                'score' => $value->score,
-                'explanation' => $value->explanation,
-            ];
+        foreach(json_decode($data) as $value) {
+            foreach($value as $result) {
+                if(!empty($result->error) && !empty($result->correction) && !empty($result->explanation)) {
+                    $response[] = [
+                        'error' => $result->error,
+                        'correction' => $result->correction,
+                        'explanation' => $result->explanation,
+                    ];
+                }
+            }
         }
         return $this->responseSuccess(200, $response);
     }
+
+    public function newApiTestJob(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        //ApiUserQuestion::truncate();
+        //ApiUserQuestionPart::truncate();
+        if($jsonData['test'] == 'tunglaso1') {
+            // dd(ApiUserQuestion::whereIn('id', [2,4,5])->get()->toArray());
+            $test = ApiUserQuestionPart::where('user_question_id',$jsonData['question_id'])
+                ->pluck('status','part_number');
+            $test1 = ApiUserQuestion::find($jsonData['question_id']);
+            $test3 = ApiUserQuestionPart::where('user_question_id',$jsonData['question_id'])
+                ->where('part_number',2)->first()->toArray();
+            dd($test, $test1,$test3);
+        }
+        // dd(ApiUserQuestion::find(5));
+        DB::beginTransaction();
+        try {
+            // Insert vào b?ng ApiUserQuestion
+            $data = [
+                'question' => $jsonData['question'],
+                'topic' => $jsonData['topic'],
+                'user_id' => $jsonData['user_id'],
+                'username' => $jsonData['username'],
+                'writing_task_number' => ApiUserQuestion::TASK_2,
+                'status' => 0
+            ];
+            $questionTable = ApiUserQuestion::create($data);
+    
+            if ($questionTable->id) {
+                // Insert vào b?ng ApiUserQuestionPart
+                for ($i = 1; $i <= 7; $i++) {
+                    $data1 = [
+                        'user_question_id' => $questionTable->id,
+                        'question' => $jsonData['question'],
+                        'topic' => $jsonData['topic'],
+                        'part_number' => $i,
+                        'writing_task_number' => ApiUserQuestionPart::WRITING_TASK_2,
+                        'status' => 0
+                    ];
+                    ApiUserQuestionPart::create($data1);
+                }
+            }
+    
+            // Commit transaction tru?c khi dispatch job
+            DB::commit();
+            // Dispatch job
+            dispatch(new DemoJob($jsonData, $questionTable->id, ApiUserQuestion::TASK_2));
+
+            return $this->responseSuccess(200, $questionTable->id);
+            // return response()->json(['message' => 'Data inserted and job dispatched successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Transaction failed: ' . $e->getMessage());
+            return $this->responseSuccess(403, $e->getMessage());
+            // return response()->json(['message' => 'An error occurred', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function audio(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        
+        if(empty($jsonData['context'])) {
+            $context = [
+                "question" => "What did you do yesterday",
+            ];
+        } else {
+            $context = $jsonData['context'];
+        }
+        $audio_format = "wav";
+        $user_metadata = [
+            'speaker_gender' => "male",
+            'speaker_age' => "child",
+            'speaker_english_level' => "advanced",
+        ];
+        
+        $data = [
+            'audio_base64' => $audio_base64,
+            'audio_format' => $audio_format,
+            'user_metadata' => $user_metadata,
+            'context' => $context,
+        ];
+
+        $data_string = json_encode($data);
+        $curl = curl_init('https://apis.languageconfidence.ai/speech-assessment/unscripted/us');
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'api-key: P950LqE9SfejPhIVdzRpyLRWeCmJULk5',
+            'x-user-id: 1',
+            'Content-Length: ' . strlen($data_string))
+        );
+
+        $result = curl_exec($curl);
+        curl_close($curl);
+        return $this->responseSuccess(200, json_decode($result, true));
+        // dd(json_decode($result, true));
+    }
+
+    public function image(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        $model = 'gpt-4o';
+        // $question = $jsonData['question'];
+        // $topic = $jsonData['topic'];
+        // $system_prompt = Question::criterionCoherenceCohesion();
+        // $commonPrompt = self::getSystemPromptCommon();
+        $content = [
+            [
+                'type' => 'text',
+                'text' => $jsonData['question'],
+            ],
+            [
+                'type' => 'image_url',
+                'image_url' => [
+                    'url' => $jsonData['url'],
+                ]
+            ],
+        ];
+        if(!empty($jsonData['detail'])) {
+            $content = [
+                [
+                    'type' => 'text',
+                    'text' => $jsonData['question'],
+                ],
+                [
+                    'type' => 'image_url',
+                    'image_url' => [
+                        'url' => $jsonData['url'],
+                        'detail' => $jsonData['detail']
+                    ]
+                ],
+            ];
+        }
+        $chat = $client->chat()->create([
+            'model' => $model,
+            // 'response_format'=>["type"=>"json_object"],
+            'messages' => [
+                [
+                    "role" => "user",
+                    "content" => $content
+                ],
+            ],
+            'max_tokens' => 1000,
+            'temperature' => 0
+        ]);
+        // dd($chat);
+
+        $dataResponseChat = $chat->choices[0]->message->content;
+        // dd($dataResponseChat);
+        // $res = json_decode($dataResponseChat, true);
+        return $this->responseSuccess(200, $dataResponseChat);
+
+    }
+
 }

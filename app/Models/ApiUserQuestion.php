@@ -14,4 +14,6 @@ class ApiUserQuestion extends Model
 
     const STATUS_SUCCESS = 1;
     const STATUS_NOT_SUCCESS = 0;
+    const TASK_2 = 2;
+    const TASK_1 = 1;
 }

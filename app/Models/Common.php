@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class Common extends Model
 {
+    const PART_IDENTIFY_ERROR_RESPONSE = 8;
     const PART_NUMBER_GRAMMA_RESPONSE = 7;
     const PART_NUMBER_LEXICAL_RESPONSE = 6;
     const PART_NUMBER_COHERENCE_COHESION_RESPONSE = 5;
@@ -16,6 +17,11 @@ class Common extends Model
     const PART_NUMBER_CONCLUSION_RESPONSE = 3;
     const PART_NUMBER_TOPIC_SENTENCE_RESPONSE = 2;
     const PART_NUMBER_INTRODUCTION_RESPONSE = 1;
+
+    public static function getSystemPromptCommonTask1()
+    {
+        return " Provide the score for each criterion and explain with accompanying examples why the score is as it is.Then offer suggestions for improving the scores for each criterion. After that give overall score is the rounded average of the scores of the graded criteria according to the IELTS scoring rounding rule and explain in 4 to 5 sentences for overall why this overall score is not in a lower band nearest or a higher band nearest. Reponse is json format structured as: \n each criteria: \n - criteria_name is name criteria \n score_criteria is score \n -explain is explain \n -accompanying_examples is accompanying examples\n -improvement_suggestions is improvement suggestions \n and\n overall: \n -overall_score is overall score \n -belower_score is score nearest band lower \n -reason_not_belower_score is reason why the score is not in a lower band \n -higher_score is nearest band higher \n -reason_not_higher_score is reason why the score is not in a higher band";
+    }
 
     public static function getSystemPromptCommon()
     {
@@ -134,6 +140,35 @@ class Common extends Model
         return $chat;
     }
 
+    public static function task2IdentifyErrors($jsonData)
+    {
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        // $model = 'gpt-4-turbo';
+        $model = getenv('OPENAI_API_MODEL');
+        $question = $jsonData['question'];
+
+        $chat = $client->chat()->create([
+            'model' => $model,
+           'response_format'=>["type"=>"json_object"],
+           'messages' => [
+               [
+                   "role" => "system",
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "\nIdentify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 2. Reponse is json format structured as: error, explanations, corrections. for each error"
+               ],
+               [
+                   "role" => "user",
+                   "content" => "This is my IELTS Writing Task 2: \n" . $question
+               ],
+
+            ],
+           'temperature' => 0,
+           'max_tokens' => 1000
+        ]);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        return $chat;
+    }
+
     public static function responseIntroduction($jsonData)
     {
         $yourApiKey = getenv('OPENAI_API_KEY');
@@ -221,13 +256,7 @@ class Common extends Model
         ]);
         return $chat;
     }
-    // const PART_NUMBER_GRAMMA_RESPONSE = 7;
-    // const PART_NUMBER_LEXICAL_RESPONSE = 6;
-    // const PART_NUMBER_COHERENCE_COHESION_RESPONSE = 5;
-    // const PART_NUMBER_BAND_TASK_RESPONSE = 4;
-    // const PART_NUMBER_CONCLUSION_RESPONSE = 3;
-    // const PART_NUMBER_TOPIC_SENTENCE_RESPONSE = 2;
-    // const PART_NUMBER_INTRODUCTION_RESPONSE = 1;
+
     public static function getPartInfo($partNumber = null)
     {
         $data = [
@@ -268,5 +297,34 @@ class Common extends Model
         );
         $result = curl_exec($curl);
         curl_close($curl);
+    }
+
+    public static function task1LexicalResource($jsonData, $messageTopic)
+    {
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        $model = getenv('OPENAI_API_MODEL');
+        $question = $jsonData['question'];
+        $topic = $jsonData['topic'];
+        $system_prompt = Question::task1LexicalResource();
+        $commonPrompt = self::getSystemPromptCommonTask1();
+        // dd("You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 1 essay: \n" . $messageTopic . "\n" . "Please grade the Lexical resource of my IELTS Writing Task 1 essay based on the following criteria:\n" . $system_prompt . $commonPrompt);
+        $chat = $client->chat()->create([
+            'model' => $model,
+           'response_format'=>["type"=>"json_object"],
+           'messages' => [
+                [
+                   "role" => "system",
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 1 essay:\n" . $messageTopic . "\n" . "Based on the prompt and the content of the chart, please grade the Lexical resource of my IELTS Writing Task 1 essay based on the following criteria:\n" . $system_prompt . $commonPrompt
+               ],
+               [
+                   "role" => "user",
+                   "content" => "This is my IELTS Writing Task 1 essay:\n" . $question
+               ],
+            ],
+           'temperature' => 0,
+           'max_tokens' => 1000
+        ]);
+        return $chat;
     }
 }

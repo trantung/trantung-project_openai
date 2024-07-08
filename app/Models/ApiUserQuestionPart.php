@@ -11,4 +11,7 @@ class ApiUserQuestionPart extends Model
     protected $table = "api_user_question_parts";
     public $fillable = ['user_question_id', 'topic', 'question', 'status', 'openai_response', 'part_number', 'score', 'prompt_token', 'total_token', 'complete_token', 'writing_task_number'];
     public $timestamps = true;
+
+    const WRITING_TASK_2 = 2;
+    const WRITING_TASK_1 = 1;
 }

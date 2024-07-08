@@ -16,21 +16,24 @@ class CheckJobsCompletion implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $apiUserQuestionId;
+    public $writing_task_number;
 
-    public function __construct($apiUserQuestionId)
+    public function __construct($apiUserQuestionId, $writing_task_number)
     {
         $this->apiUserQuestionId = $apiUserQuestionId;
+        $this->writing_task_number = $writing_task_number;
     }
 
     public function handle()
     {
         $completedJobs = ApiUserQuestionPart::where('user_question_id', $this->apiUserQuestionId)
             ->where('status', 1)
+            ->where('writing_task_number', $this->writing_task_number)
             ->count();
 
-        if ($completedJobs == 7) {
+        if ($completedJobs == 8) {
             Log::info("All parts completed for question ID: " . $this->apiUserQuestionId);
-            ProcessBatchResultsJob::dispatch($this->apiUserQuestionId);
+            ProcessBatchResultsJob::dispatch($this->apiUserQuestionId,$this->writing_task_number);
         }
         
     }

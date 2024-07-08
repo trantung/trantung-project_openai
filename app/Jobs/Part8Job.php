@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Bus\Batchable;
 
-class Part2Job implements ShouldQueue
+class Part8Job implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -39,7 +39,7 @@ class Part2Job implements ShouldQueue
     public function handle(): void
     {
         try {
-            $chat = Common::responseTopicSentence($this->jsonData);
+            $chat = Common::task2IdentifyErrors($this->jsonData);
             $dataResponseChat = $chat->choices[0]->message->content;
             $totalToken = $chat->usage->totalTokens;
             $completionTokens = $chat->usage->completionTokens;
@@ -61,8 +61,8 @@ class Part2Job implements ShouldQueue
 
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
-                Common::callCms($dataResponseChat, $this->apiUserQuestionId, Common::PART_NUMBER_TOPIC_SENTENCE_RESPONSE);
-                CheckJobsCompletion::dispatch($this->apiUserQuestionId,$this->writingTaskNumber);
+                Common::callCms($dataResponseChat, $this->apiUserQuestionId, Common::PART_IDENTIFY_ERROR_RESPONSE);
+                CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writing_task_number);
                 
             }
 

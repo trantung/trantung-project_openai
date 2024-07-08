@@ -20,15 +20,17 @@ class Part1Job implements ShouldQueue
     public $jsonData;
     public $partNumber;
     public $apiUserQuestionId;
+    public $writing_task_number;
 
     /**
      * Create a new job instance.
      */
-    public function __construct($jsonData, $partNumber, $apiUserQuestionId)
+    public function __construct($jsonData, $partNumber, $apiUserQuestionId, $writing_task_number)
     {
         $this->jsonData = $jsonData;
         $this->partNumber = $partNumber;
         $this->apiUserQuestionId = $apiUserQuestionId;
+        $this->writing_task_number = $writing_task_number;
     }
 
     /**
@@ -45,6 +47,7 @@ class Part1Job implements ShouldQueue
 
             $checkData = ApiUserQuestionPart::where('user_question_id', $this->apiUserQuestionId)
                 ->where('part_number', $this->partNumber)
+                ->where('writing_task_number', $this->writing_task_number)
                 ->first();
 
             if (!empty($checkData)) {
@@ -59,7 +62,7 @@ class Part1Job implements ShouldQueue
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
                 Common::callCms($dataResponseChat, $this->apiUserQuestionId, Common::PART_NUMBER_INTRODUCTION_RESPONSE);
-                CheckJobsCompletion::dispatch($this->apiUserQuestionId);
+                CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writingTaskNumber);
                 
             }
 
@@ -72,6 +75,7 @@ class Part1Job implements ShouldQueue
             // Xử lý lỗi và log
             $checkData = ApiUserQuestionPart::where('user_question_id', $this->apiUserQuestionId)
                 ->where('part_number', $this->partNumber)
+                ->where('writing_task_number', $this->writing_task_number)
                 ->first();
             if (!empty($checkData)) {
                 $updateData = [
