@@ -43,3 +43,8 @@ Route::post("cms/ielts/write_task_2/detail", [App\Http\Controllers\ApiController
 // api cms task 1
 Route::post("cms/ielts/write_task_1/create", [App\Http\Controllers\ApiController::class,'writeTask1Create']);
 Route::post("cms/ielts/write_task_1/detail", [App\Http\Controllers\ApiController::class,'writeTask1Detail']);
+
+
+
+Route::post("lms/course/activity/complention", [App\Http\Controllers\LmsCompletionActivityController::class,'create']);
+Route::post("lms/course/complention/detail", [App\Http\Controllers\LmsCompletionActivityController::class,'show']);

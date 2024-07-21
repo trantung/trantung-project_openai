@@ -543,7 +543,7 @@ class ApiTestController extends Controller
         $response = json_decode($dataResponseChat, true);
         return $this->responseSuccess(200, $response);
     }
-    
+
 // Lexical & Grammatical errors task1
     public function task1LexicalGramma(Request $request)
     {
@@ -554,7 +554,7 @@ class ApiTestController extends Controller
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
         $analyze = $this->image($request);
-        // dd($analyze->data);
+        dd($analyze);
         $messageTopic = $topic . "\n" . "This is the content of the chart:\n" . $analyze;
         $chat = Common::task1LexicalResource($jsonData,$messageTopic);
         // $analyze = $this->image($request);
@@ -633,7 +633,11 @@ class ApiTestController extends Controller
         // dd($chat);
         $dataResponseChat = $chat->choices[0]->message->content;
         return $dataResponseChat;
-        // return $this->responseSuccess(200, $dataResponseChat); 
+
+    }
+
+    public function writeTask1CreateWrite(Request $request)
+    {
 
     }
 

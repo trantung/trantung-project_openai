@@ -19,27 +19,18 @@ class VideoEncode extends Command
         } else {
             echo public_path('uploads/big_buck_bunny_720p_1mb.mp4') . PHP_EOL;
             
-            $lowBitrate  = (new X264)->setKiloBitrate(1000);
-            $midBitrate = (new X264)->setKiloBitrate(2500);
-            $highBitrate = (new X264)->setKiloBitrate(5000);
-
             $this->info('Converting big_buck_bunny_720p_1mb.mp4');
 
             try {
                 FFMpeg::fromDisk('uploads')
                     ->open('big_buck_bunny_720p_1mb.mp4')
                     ->exportForHLS()
-                    // ->addFormat($lowBitrate)
-                    // ->addFormat($midBitrate)
-                    ->withRotatingEncryptionKey(function($filename, $content){
-                        Storage::disk('secrets')->put($filename, $content);
-                    })
-                    ->addFormat($highBitrate)
+                    ->addFormat(new X264('aac', 'libx264'))
                     ->onProgress(function ($progress) {
                         $this->info("Progress: {$progress}%");
                     })
                     ->toDisk('secrets')
-                    ->save('big_buck_bunny_720p_1mb.m3u8');
+                    ->save('video1.m3u8');
 
                 $this->info('Done!');
             } catch (\Exception $e) {
@@ -48,4 +39,3 @@ class VideoEncode extends Command
         }
     }
 }
-
