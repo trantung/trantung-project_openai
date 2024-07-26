@@ -29,13 +29,17 @@ Route::post("openai/test/band/gramma", [App\Http\Controllers\ApiTestController::
 Route::post("openai/test/image", [App\Http\Controllers\ApiTestController::class,'image']);
 Route::post("openai/test/task1/lexical_gramma", [App\Http\Controllers\ApiTestController::class,'task1LexicalGramma']);
 Route::post("openai/test/task2/lexical_gramma", [App\Http\Controllers\ApiTestController::class,'task2LexicalGramma']);
+
+Route::post("openai/test/task1/task_achievement", [App\Http\Controllers\ApiTestController::class,'task1TaskAchievement']);
+
 //app
 //login
 Route::post("app/register", [App\Http\Controllers\ApiAppController::class,'register']);
 Route::post("openai/test/job", [App\Http\Controllers\ApiTestController::class,'newApiTestJob']);
-
 //api audio
 Route::post("openai/test/audio", [App\Http\Controllers\ApiTestController::class,'audio']);
+// Route::post("lms/course/activity/complention", [App\Http\Controllers\ApiTestController::class,'audio']);
+// Route::post("lms/course/complention/detail", [App\Http\Controllers\ApiTestController::class,'audio']);
 
 // api cms task 2
 Route::post("cms/ielts/write_task_2/create", [App\Http\Controllers\ApiController::class,'writeTask2Create']);
@@ -43,8 +47,12 @@ Route::post("cms/ielts/write_task_2/detail", [App\Http\Controllers\ApiController
 // api cms task 1
 Route::post("cms/ielts/write_task_1/create", [App\Http\Controllers\ApiController::class,'writeTask1Create']);
 Route::post("cms/ielts/write_task_1/detail", [App\Http\Controllers\ApiController::class,'writeTask1Detail']);
+Route::post("cms/ielts/test/write_task_1/write_task", [App\Http\Controllers\ApiTestController::class,'writeTask1CreateWrite']);
 
-
-
+//lms
 Route::post("lms/course/activity/complention", [App\Http\Controllers\LmsCompletionActivityController::class,'create']);
-Route::post("lms/course/complention/detail", [App\Http\Controllers\LmsCompletionActivityController::class,'show']);
+Route::post("lms/course/complention/detail", [App\Http\Controllers\LmsCompletionActivityController::class,'detail']);
+
+//api task 1 2 all
+Route::post("openai/task1/all", [App\Http\Controllers\ApiController::class,'task1All']);
+Route::post("openai/task2/all", [App\Http\Controllers\ApiController::class,'task2All']);

@@ -20,7 +20,6 @@ class LmsCompletionActivityController extends Controller
             'video_id' => 'required|string',
             'status' => 'required|integer',
         ]);
-
         // Find the existing record or create a new one
         $activity = LmsCompletionActivity::updateOrCreate(
             [
@@ -38,7 +37,7 @@ class LmsCompletionActivityController extends Controller
         return response()->json(['success' => true, 'activity' => $activity], 200);
     }
     
-    public function show(Request $request)
+    public function detail(Request $request)
     {
         // Validate the request parameters
         $validated = $request->validate([
@@ -49,7 +48,6 @@ class LmsCompletionActivityController extends Controller
         $username = $validated['username'];
         $course_id = $validated['course_id'];
         $section_id = $request->input('section_id'); // Optional parameter
-
         if ($section_id) {
             // Retrieve the activities for the given section
             $activities = LmsCompletionActivity::where('username', $username)
@@ -60,7 +58,7 @@ class LmsCompletionActivityController extends Controller
             $totalActivities = $activities->count();
             $completedActivities = $activities->where('status', 1)->count();
 
-            $completionPercentage = $totalActivities > 0 ? ($completedActivities / $totalActivities) * 100 : 0;
+            $completionPercentage = $totalActivities > 0 ? round(($completedActivities / $totalActivities) * 100) : 0;
 
             return response()->json([
                 'totalActivities' => $totalActivities,
@@ -91,7 +89,7 @@ class LmsCompletionActivityController extends Controller
                 $totalCompletedActivities += $sectionCompleted;
             }
 
-            $completionPercentage = $totalActivities > 0 ? ($totalCompletedActivities / $totalActivities) * 100 : 0;
+            $completionPercentage = $totalActivities > 0 ? round(($totalCompletedActivities / $totalActivities) * 100) : 0;
 
             return response()->json([
                 'totalActivities' => $totalActivities,
