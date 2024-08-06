@@ -10,6 +10,7 @@ use App\Models\TestOpenai;
 use App\Models\Question;
 use Illuminate\Support\Facades\DB;
 use App\Jobs\DemoJob;
+use App\Jobs\Task1Job;
 use App\Models\ApiUserQuestion;
 use App\Models\ApiUserQuestionPart;
 use App\Models\Common;
@@ -609,7 +610,7 @@ class ApiController extends Controller
         $jsonData = $this->getDataFromRequest($request);
         //ApiUserQuestion::truncate();
         //ApiUserQuestionPart::truncate();
-        if($jsonData['test'] == 'tunglaso1') {
+        if(isset($jsonData['test']) &&  $jsonData['test'] == 'tunglaso1') {
             // dd(ApiUserQuestion::whereIn('id', [2,4,5])->get()->toArray());
             $test = ApiUserQuestionPart::where('user_question_id',$jsonData['question_id'])
                 ->pluck('status','part_number');
@@ -668,9 +669,20 @@ class ApiController extends Controller
         $jsonData = $this->getDataFromRequest($request);
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
+        if(isset($jsonData['test'])) {
+            $question_id = $jsonData['question_id'];
+            $checkQuestion = ApiUserQuestion::find($question_id);
+            if($checkQuestion) {
+                $checkQuestionId = $checkQuestion->id;
+                $checkPart = ApiUserQuestionPart::where('user_question_id', $checkQuestionId)
+                    ->get()->toArray();
+                dd($checkPart);
+            }
+        }
         $analyze = $this->image($request);
         $messageTopic = $topic . "\n" . "This is the content of the chart:\n" . $analyze;
         $jsonData['topic'] = $messageTopic;
+        
         DB::beginTransaction();
         try {
             // Insert vào b?ng ApiUserQuestion

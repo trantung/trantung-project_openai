@@ -332,9 +332,10 @@ class Common extends Model
     {
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
-        $model = getenv('OPENAI_API_MODEL');
+        // $model = getenv('OPENAI_API_MODEL');
+        $model = 'gpt-4o';
         $question = $jsonData['question'];
-
+        $topic = $jsonData['topic'];
         $chat = $client->chat()->create([
             'model' => $model,
            'response_format'=>["type"=>"json_object"],
@@ -360,7 +361,8 @@ class Common extends Model
     {
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
-        $model = getenv('OPENAI_API_MODEL');
+        // $model = getenv('OPENAI_API_MODEL');
+        $model = 'gpt-4o';
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
         if(!$messageTopic) {
@@ -391,7 +393,8 @@ class Common extends Model
     {
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
-        $model = getenv('OPENAI_API_MODEL');
+        // $model = getenv('OPENAI_API_MODEL');
+        $model = 'gpt-4o';
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
         if(!$messageTopic) {
@@ -422,7 +425,8 @@ class Common extends Model
     {
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
-        $model = getenv('OPENAI_API_MODEL');
+        // $model = getenv('OPENAI_API_MODEL');
+        $model = 'gpt-4o';
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
         if(!$messageTopic) {
@@ -430,6 +434,16 @@ class Common extends Model
         }
         $system_prompt = Question::task1CoherenceCohesion();
         $commonPrompt = self::getSystemPromptCommonTask1();
+        $message = [
+            [
+                   "role" => "system",
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 1 essay: " . $topic . "\n" . "Based on the prompt and the content of the charts, please grade the Coherence & Cohesion of my IELTS Writing Task 1 essay based on the following criteria:\n" . $system_prompt . $commonPrompt
+               ],
+           [
+               "role" => "user",
+               "content" => "This is my IELTS Writing Task 1 essay:\n" . $question
+           ],
+        ];
         $chat = $client->chat()->create([
             'model' => $model,
            'response_format'=>["type"=>"json_object"],
@@ -453,7 +467,8 @@ class Common extends Model
     {
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
-        $model = getenv('OPENAI_API_MODEL');
+        // $model = getenv('OPENAI_API_MODEL');
+        $model = 'gpt-4o';
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
         if(!$messageTopic) {
@@ -486,6 +501,7 @@ class Common extends Model
         $client = OpenAI::client($yourApiKey);
         // $model = 'gpt-4-turbo';
         $model = getenv('OPENAI_API_MODEL');
+        $model = 'gpt-4o';
         $question = $jsonData['question'];
 
         $chat = $client->chat()->create([
@@ -516,6 +532,7 @@ class Common extends Model
         $client = OpenAI::client($yourApiKey);
         // $model = 'gpt-4-turbo';
         $model = getenv('OPENAI_API_MODEL');
+        $model = 'gpt-4o';
         $question = $jsonData['question'];
         $chat = $client->chat()->create([
             'model' => $model,
@@ -541,9 +558,9 @@ class Common extends Model
     {
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
-        $model = getenv('OPENAI_API_MODEL');
+        // $model = getenv('OPENAI_API_MODEL');
         $question = $jsonData['question'];
-
+        $model = 'gpt-4o';
         $chat = $client->chat()->create([
             'model' => $model,
            'response_format'=>["type"=>"json_object"],

@@ -554,9 +554,9 @@ class ApiTestController extends Controller
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
         $analyze = $this->image($request);
-        dd($analyze);
+        // dd($analyze);
         $messageTopic = $topic . "\n" . "This is the content of the chart:\n" . $analyze;
-        $chat = Common::task1LexicalResource($jsonData,$messageTopic);
+        $chat = Common::task1BandLexicalResource($jsonData,$messageTopic);
         // $analyze = $this->image($request);
         dd($chat);
         $chat = $client->chat()->create([
@@ -580,17 +580,30 @@ class ApiTestController extends Controller
         $response = json_decode($dataResponseChat, true);
         return $this->responseSuccess(200, $response);
     }
-
+    public function task1TaskAchievement(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        // $yourApiKey = getenv('OPENAI_API_KEY');
+        // $client = OpenAI::client($yourApiKey);
+        // $model = getenv('OPENAI_API_MODEL');
+        $question = $jsonData['question'];
+        $topic = $jsonData['topic'];
+        $analyze = $this->image($request);
+        // // // dd($analyze);
+        $messageTopic = $topic . "\n" . "This is the content of the charts:\n" . $analyze;
+        $chat = Common::task1BandCoherenceCohesion($jsonData,$analyze);
+        dd($chat);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $response = json_decode($dataResponseChat, true);
+        return $this->responseSuccess(200, $response);
+    }
+    
     public function image(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
         $model = 'gpt-4o';
-        // $question = $jsonData['question'];
-        // $topic = $jsonData['topic'];
-        // $system_prompt = Question::criterionCoherenceCohesion();
-        // $commonPrompt = self::getSystemPromptCommon();
         $content = [
             [
                 'type' => 'text',
@@ -604,6 +617,9 @@ class ApiTestController extends Controller
             ],
         ];
         if(!empty($jsonData['detail'])) {
+            if(!isset($jsonData['analyze'])) {
+                $analyze = 'Please analyze the following chart for me so that I can have the information about it';
+            }
             $content = [
                 [
                     'type' => 'text',
@@ -618,6 +634,21 @@ class ApiTestController extends Controller
                 ],
             ];
         }
+
+        $analyze = 'Please analyze the following chart for me so that I can have the information about it';
+        $content = [
+            [
+                'type' => 'text',
+                'text' => $jsonData['analyze'],
+            ],
+            [
+                'type' => 'image_url',
+                'image_url' => [
+                    'url' => $jsonData['url'],
+                    'detail' => $jsonData['detail']
+                ]
+            ],
+        ];
         $chat = $client->chat()->create([
             'model' => $model,
             // 'response_format'=>["type"=>"json_object"],

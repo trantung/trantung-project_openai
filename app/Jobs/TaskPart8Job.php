@@ -44,7 +44,7 @@ class TaskPart8Job implements ShouldQueue
             $totalToken = $chat->usage->totalTokens;
             $completionTokens = $chat->usage->completionTokens;
             $promptTokens = $chat->usage->promptTokens;
-
+            Log::info('Part' . $this->partNumber . 'start');
             $checkData = ApiUserQuestionPart::where('user_question_id', $this->apiUserQuestionId)
                 ->where('part_number', $this->partNumber)
                 ->where('writing_task_number', $this->writing_task_number)
@@ -62,7 +62,8 @@ class TaskPart8Job implements ShouldQueue
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
                 Common::callCmsTask1($dataResponseChat, $this->apiUserQuestionId, Common::PART_IDENTIFY_ERROR_RESPONSE);
-                CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writingTaskNumber);
+                CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writing_task_number);
+                Log::info('Part' . $this->partNumber . 'end');
                 
             }
 

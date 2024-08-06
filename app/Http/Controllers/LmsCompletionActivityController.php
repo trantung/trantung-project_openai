@@ -10,26 +10,29 @@ use DB;
 
 class LmsCompletionActivityController extends Controller
 {
-    public function create(Request $request)
+    public function createActivityCompletion(Request $request)
     {
-        // Validate the request parameters
-        $validated = $request->validate([
-            'username' => 'required|string',
-            'course_id' => 'required|string',
-            'section_id' => 'required|string',
-            'video_id' => 'required|string',
-            'status' => 'required|integer',
-        ]);
+        // var_dump(444444);
+        // // Validate the request parameters
+        // $validated = $request->validate([
+        //     'username' => 'required|string',
+        //     'course_id' => 'required|string',
+        //     'section_id' => 'required|string',
+        //     'video_id' => 'required|string',
+        //     'status' => 'required|integer',
+        // ]);
+        // dd(11);
+        $jsonData = $request->json()->all();
         // Find the existing record or create a new one
         $activity = LmsCompletionActivity::updateOrCreate(
             [
-                'username' => $validated['username'],
-                'course_id' => $validated['course_id'],
-                'section_id' => $validated['section_id'],
-                'video_id' => $validated['video_id'],
+                'username' => $jsonData['username'],
+                'course_id' => $jsonData['course_id'],
+                'section_id' => $jsonData['section_id'],
+                'video_id' => $jsonData['video_id'],
             ],
             [
-                'status' => $validated['status'],
+                'status' => $jsonData['status'],
             ]
         );
 
@@ -40,13 +43,20 @@ class LmsCompletionActivityController extends Controller
     public function detail(Request $request)
     {
         // Validate the request parameters
-        $validated = $request->validate([
-            'username' => 'required|string',
-            'course_id' => 'required|integer',
-        ]);
-
-        $username = $validated['username'];
-        $course_id = $validated['course_id'];
+        // $validated = $request->validate([
+        //     'username' => 'required|string',
+        //     'course_id' => 'required|integer',
+        // ]);
+        $jsonData = $request->json()->all();
+        if(isset($jsonData['username'])) {
+            $username = $jsonData['username'];
+        }
+        if(isset($jsonData['course_id'])) {
+            $course_id = $jsonData['course_id'];
+        }
+        if(isset($jsonData['user_id'])) {
+            $user_id = $jsonData['user_id'];
+        }
         $section_id = $request->input('section_id'); // Optional parameter
         if ($section_id) {
             // Retrieve the activities for the given section

@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Bus\Batchable;
 
-class Part1Job implements ShouldQueue
+class TaskPart1Job implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -62,7 +62,7 @@ class Part1Job implements ShouldQueue
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
                 Common::callCmsTask1($dataResponseChat, $this->apiUserQuestionId, Common::PART_NUMBER_INTRODUCTION_RESPONSE);
-                CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writingTaskNumber);
+                CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writing_task_number);
                 
             }
 

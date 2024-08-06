@@ -62,7 +62,7 @@ class TaskPart3Job implements ShouldQueue
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
                 Common::callCmsTask1($dataResponseChat, $this->apiUserQuestionId, Common::PART_NUMBER_CONCLUSION_RESPONSE);
-                CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writingTaskNumber);
+                CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writing_task_number);
                 
             }
 
