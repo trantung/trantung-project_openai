@@ -582,4 +582,9 @@ class TrainingController extends BaseApiController
         }
         return $chat->choices[0]->message->content;
     }
+
+    public function chatTask1()
+    {
+        return view('chat.task1');
+    }
 }

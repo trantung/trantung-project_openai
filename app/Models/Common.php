@@ -29,6 +29,7 @@ class Common extends Model
             self::PART_NUMBER_COHERENCE_COHESION_RESPONSE => 'coherence_cohesion',
             self::PART_NUMBER_LEXICAL_RESPONSE => 'lexical',
             self::PART_NUMBER_GRAMMA_RESPONSE => 'gramma',
+            self::PART_IDENTIFY_ERROR_RESPONSE => 'vocalburary_error',
         ];
         if($partNumber) {
             return $data[$partNumber];

@@ -94,6 +94,13 @@ class ApiTestController extends Controller
     public function conclusion(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
+        $chat = Common::responseConclusion($jsonData);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $dataResponseChat = json_decode($dataResponseChat,true);
+        return $this->responseSuccess(200, $dataResponseChat);
+
+
+
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
         // $model = 'gpt-4-turbo';
@@ -153,12 +160,19 @@ class ApiTestController extends Controller
     public function topicSentence(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
-        $yourApiKey = getenv('OPENAI_API_KEY');
-        $client = OpenAI::client($yourApiKey);
-        // $model = 'gpt-4-turbo';
-        $model = getenv('OPENAI_API_MODEL');
-        $question = $jsonData['question'];
-        $topic = $jsonData['topic'];
+        // $yourApiKey = getenv('OPENAI_API_KEY');
+        // $client = OpenAI::client($yourApiKey);
+        // // $model = 'gpt-4-turbo';
+        // $model = getenv('OPENAI_API_MODEL');
+        // $question = $jsonData['question'];
+        // $topic = $jsonData['topic'];
+        // $test = Common::responseTopicSentence($jsonData);
+        $chat = Common::responseTopicSentence($jsonData);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $dataResponseChat = json_decode($dataResponseChat,true);
+        return $this->responseSuccess(200, $dataResponseChat);
+
+        dd($test);
         $chat = $client->chat()->create([
             'model' => $model,
            'response_format'=>["type"=>"json_object"],
@@ -209,6 +223,11 @@ class ApiTestController extends Controller
     public function introductionTest(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
+        $chat = Common::responseIntroduction($jsonData);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $dataResponseChat = json_decode($dataResponseChat,true);
+        return $this->responseSuccess(200, $dataResponseChat);
+
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
         // dd(111);
@@ -233,9 +252,7 @@ class ApiTestController extends Controller
            'temperature' => 0,
            'max_tokens' => 1000
         ]);
-        $dataResponseChat = $chat->choices[0]->message->content;
-        $dataResponseChat = json_decode($dataResponseChat,true);
-        dd($dataResponseChat);
+       
         return $this->responseSuccess(200, $dataResponseChat);
         // dd($dataResponseChat);
         $response = [
@@ -393,7 +410,7 @@ class ApiTestController extends Controller
         // dd(ApiUserQuestion::find(5));
         DB::beginTransaction();
         try {
-            // Insert vào b?ng ApiUserQuestion
+            // Insert vï¿½o b?ng ApiUserQuestion
             $data = [
                 'question' => $jsonData['question'],
                 'topic' => $jsonData['topic'],
@@ -404,7 +421,7 @@ class ApiTestController extends Controller
             $questionTable = ApiUserQuestion::create($data);
     
             if ($questionTable->id) {
-                // Insert vào b?ng ApiUserQuestionPart
+                // Insert vï¿½o b?ng ApiUserQuestionPart
                 for ($i = 1; $i <= 7; $i++) {
                     $data1 = [
                         'user_question_id' => $questionTable->id,
@@ -528,7 +545,7 @@ class ApiTestController extends Controller
            'messages' => [
                [
                    "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "\nIdentify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 2. Reponse is json format structured as: error, explanations, corrections. for each error"
+                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "This is my IELTS Writing Task 2: \n" . $question  ." \nIdentify vocabulary and grammar errors, then provide explanations and suggestion correction. Reponse is json format structured as: error, explanations, suggestion for each error"
                ],
                [
                    "role" => "user",
@@ -592,7 +609,6 @@ class ApiTestController extends Controller
         // // // dd($analyze);
         $messageTopic = $topic . "\n" . "This is the content of the charts:\n" . $analyze;
         $chat = Common::task1BandCoherenceCohesion($jsonData,$analyze);
-        dd($chat);
         $dataResponseChat = $chat->choices[0]->message->content;
         $response = json_decode($dataResponseChat, true);
         return $this->responseSuccess(200, $response);

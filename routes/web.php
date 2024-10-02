@@ -57,6 +57,10 @@ Route::get('/test-streaming', [HomeController::class, 'testStreaming'])->middlew
 Route::get('upload', [VideoController::class, 'showForm'])->name('video.upload');
 Route::post('convert12345', [VideoController::class, 'convert12345'])->name('video.convert12345');
 
+//test task 1
+Route::get('chat/task1', [TrainingController::class, 'chatTask1'])->middleware('auth')->name('chat.task1');
+
+
 // Route::get('/video/secret/{key}', function ($key) {
 //   dd(sys_get_temp_dir());
 //     return Storage::disk('secrets')->download($key);

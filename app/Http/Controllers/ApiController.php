@@ -14,6 +14,7 @@ use App\Jobs\Task1Job;
 use App\Models\ApiUserQuestion;
 use App\Models\ApiUserQuestionPart;
 use App\Models\Common;
+use App\Models\Task1Image;
 use Illuminate\Support\Facades\Log;
 
 
@@ -41,7 +42,7 @@ class ApiController extends Controller
         }
         DB::beginTransaction();
         try {
-            // Insert vào b?ng ApiUserQuestion
+            // Insert vï¿½o b?ng ApiUserQuestion
             $data = [
                 'question' => $jsonData['question'],
                 'topic' => $jsonData['topic'],
@@ -51,7 +52,7 @@ class ApiController extends Controller
             ];
             $questionTable = ApiUserQuestion::create($data);
             if ($questionTable->id) {
-                // Insert vào b?ng ApiUserQuestionPart
+                // Insert vï¿½o b?ng ApiUserQuestionPart
                 for ($i = 1; $i <= 7; $i++) {
                     $data1 = [
                         'user_question_id' => $questionTable->id,
@@ -511,54 +512,95 @@ class ApiController extends Controller
         $model = getenv('OPENAI_API_MODEL');
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
-
-        $prompUser = "Please grade the task response of my IELTS Writing Task 2. Show me grade for each criteria and explain why the scoring is done this way for each criterion and give me suggestions for improvements it.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic;
-
-        $userContent = "
-        $prompUser \n This is my essay
-        {question}
-            ----------------
-            CONTEXT: 
-            {context}
-            ----------------
-            FINAL ANSWER:";
-
-        $userContent = str_replace("{question}", $question, $userContent);
-
-        $system_prompt = "Criterion 'Address all parts of the question.': \n -If the prompt is appropriately addressed and explored in depth, the band=9 \n If the prompt is appropriately and sufficiently addressed, the band=8\n-If the main parts of the prompt are appropriately addressed, the band=7\n-If the main parts of the prompt are addressed (though some may be more fully covered than others) and an appropriate format is used, the band = 6\n-If the main parts of the prompt are incompletely addressed and the format may be inappropriate in places, the band=5\n-If the prompt is tackled in a minimal way, or the answer is tangential, possibly due to some misunderstanding of the prompt and the format may be inappropriate, the band=4\n-If No part of the prompt is adequately addressed, or the prompt has been misunderstood, the band=3\n-If the content is barely related to the prompt, the band=2\n-If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1\nCriterion 'Present a clear and developed position throughout.':\n -If a clear and fully developed position is presented which directly answers the question/s, the band=9\n -If a clear and well-developed position is presented in response to the question/s, the band=8\n -If aclear and developed position is presented,the band=7\n -If a position is presented that is directly relevant to the prompt,although the conclusions drawn may be unclear, unjustified or repetitive, the band=6\n -If the writer expresses a position, but the development is not always clear,the band=5\n -If a position is discernible, but the reader has to read carefully to find it,the band=4\n -If no relevant position can be identified, and/or there is little direct response to the question/s,the band=3\n -If no position can be identified,the band=2\n -If responses of 20 words or fewer are rated at Band 1 and The content is wholly unrelated to the prompt,the band=1\nCriterion 'Present, develop, support ideas.':\n -If Ideas are relevant, fully extended and well supported.Any lapses in content or support are extremely rare, the band=9\n -If Ideas are relevant, well extended and supported.There may be occasional omissions or lapses in content, the band=8\n -If Main ideas are extended and supported but there may be a tendency to over-generalise or there may be a lack of focus and precision in supporting ideas/material, the band=7\n -If Main ideas are relevant, but some may be insufficiently developed or may lack clarity, while some supporting arguments and evidence may be less relevant or inadequate, the band=6\n -If Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail. There may be some repetition, the band=5\n -If Main ideas are difficult to identify and such ideas that are identifiable may lack relevance, clarity and or support. Large parts of the response may be repetitive, the band=4\n -If There are few ideas, and these may be irrelevant or insufficiently developed, the band=3\n -If There may be glimpses of one or two ideas without development, the band=2\n -If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1";
-
-        $userContent = str_replace("{context}", $system_prompt, $userContent);
-
-        $chat = $client->chat()->create([
-            'model' => $model,
-           // 'response_format'=>["type"=>"json_object"],
-           'messages' => [
-               [
-                   "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "\n" . "Please grade the task response of my IELTS Writing Task 2 essay based on the following criteria:\n" . $system_prompt . " Provide the score for each criterion and explain why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, improvement suggestions."
-               ],
-               [
-                   "role" => "user",
-                   // "content" => $userContent
-                   "content" => "Provide the score for each criterion and explain why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, improvement suggestions.. This is my IELTS Writing Task 2 essay:\n" . $question
-                   // "content" => "Please grade the task response of my IELTS Writing Task 2. Show me grade for each criteria and explain why the scoring is done this way for each criterion and give me suggestions for improvements it. This is my IELTS Writing Task 2 essay:\n" . $question
-               ],
-
-            ],
-           'temperature' => 0,
-           'max_tokens' => 1000
-        ]);
-        $dataResponseChat = $chat->choices[0]->message->content;
-        // $data = json_decode($dataResponseChat);
-        dd($chat, $dataResponseChat);
-        $response = [];
-        foreach($data as $key => $value) {
-            $response[] = [
-                'criterion' => $value->criterion,
-                'score' => $value->score,
-                'explanation' => $value->explanation,
+        $analyze = $this->image($request);
+        $messageTopic = $topic . "\n" . "This is the content of the chart:\n" . $analyze;
+        $jsonData['topic'] = $messageTopic;
+        
+        DB::beginTransaction();
+        try {
+            $data = [
+                'question' => $jsonData['question'],
+                'topic' => $jsonData['topic'],
+                'user_id' => $jsonData['user_id'],
+                'username' => $jsonData['username'],
+                'writing_task_number' => ApiUserQuestion::TASK_1,
+                'status' => 0
             ];
+            $questionTable = ApiUserQuestion::create($data);
+            if ($questionTable->id) {
+                // Insert vï¿½o b?ng ApiUserQuestionPart
+                for ($i = 1; $i <= 8; $i++) {
+                    $data1 = [
+                        'user_question_id' => $questionTable->id,
+                        'question' => $jsonData['question'],
+                        'topic' => $jsonData['topic'],
+                        'part_number' => $i,
+                        'writing_task_number' => ApiUserQuestionPart::WRITING_TASK_1,
+                        'status' => 0
+                    ];
+                    ApiUserQuestionPart::create($data1);
+                }
+            }
+    
+            // Commit transaction tru?c khi dispatch job
+            DB::commit();
+            // Dispatch job
+            dispatch(new Task1Job($jsonData, $questionTable->id, ApiUserQuestion::TASK_1));
+            return $this->responseSuccess(200, $questionTable->id);
+            // return response()->json(['message' => 'Data inserted and job dispatched successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Transaction failed: ' . $e->getMessage());
+            return $this->responseSuccess(403, $e->getMessage());
+            // return response()->json(['message' => 'An error occurred', 'error' => $e->getMessage()], 500);
         }
+        // $prompUser = "Please grade the task response of my IELTS Writing Task 2. Show me grade for each criteria and explain why the scoring is done this way for each criterion and give me suggestions for improvements it.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic;
+
+        // $userContent = "
+        // $prompUser \n This is my essay
+        // {question}
+        //     ----------------
+        //     CONTEXT: 
+        //     {context}
+        //     ----------------
+        //     FINAL ANSWER:";
+
+        // $userContent = str_replace("{question}", $question, $userContent);
+
+        // $system_prompt = "Criterion 'Address all parts of the question.': \n -If the prompt is appropriately addressed and explored in depth, the band=9 \n If the prompt is appropriately and sufficiently addressed, the band=8\n-If the main parts of the prompt are appropriately addressed, the band=7\n-If the main parts of the prompt are addressed (though some may be more fully covered than others) and an appropriate format is used, the band = 6\n-If the main parts of the prompt are incompletely addressed and the format may be inappropriate in places, the band=5\n-If the prompt is tackled in a minimal way, or the answer is tangential, possibly due to some misunderstanding of the prompt and the format may be inappropriate, the band=4\n-If No part of the prompt is adequately addressed, or the prompt has been misunderstood, the band=3\n-If the content is barely related to the prompt, the band=2\n-If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1\nCriterion 'Present a clear and developed position throughout.':\n -If a clear and fully developed position is presented which directly answers the question/s, the band=9\n -If a clear and well-developed position is presented in response to the question/s, the band=8\n -If aclear and developed position is presented,the band=7\n -If a position is presented that is directly relevant to the prompt,although the conclusions drawn may be unclear, unjustified or repetitive, the band=6\n -If the writer expresses a position, but the development is not always clear,the band=5\n -If a position is discernible, but the reader has to read carefully to find it,the band=4\n -If no relevant position can be identified, and/or there is little direct response to the question/s,the band=3\n -If no position can be identified,the band=2\n -If responses of 20 words or fewer are rated at Band 1 and The content is wholly unrelated to the prompt,the band=1\nCriterion 'Present, develop, support ideas.':\n -If Ideas are relevant, fully extended and well supported.Any lapses in content or support are extremely rare, the band=9\n -If Ideas are relevant, well extended and supported.There may be occasional omissions or lapses in content, the band=8\n -If Main ideas are extended and supported but there may be a tendency to over-generalise or there may be a lack of focus and precision in supporting ideas/material, the band=7\n -If Main ideas are relevant, but some may be insufficiently developed or may lack clarity, while some supporting arguments and evidence may be less relevant or inadequate, the band=6\n -If Some main ideas are put forward, but they are limited and are not sufficiently developed and/or there may be irrelevant detail. There may be some repetition, the band=5\n -If Main ideas are difficult to identify and such ideas that are identifiable may lack relevance, clarity and or support. Large parts of the response may be repetitive, the band=4\n -If There are few ideas, and these may be irrelevant or insufficiently developed, the band=3\n -If There may be glimpses of one or two ideas without development, the band=2\n -If responses of 20 words or fewer are rated at Band 1 and the content is wholly unrelated to the prompt, the band=1";
+
+        // $userContent = str_replace("{context}", $system_prompt, $userContent);
+
+        // $chat = $client->chat()->create([
+        //     'model' => $model,
+        //    // 'response_format'=>["type"=>"json_object"],
+        //    'messages' => [
+        //        [
+        //            "role" => "system",
+        //            "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "\n" . "Please grade the task response of my IELTS Writing Task 2 essay based on the following criteria:\n" . $system_prompt . " Provide the score for each criterion and explain why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, improvement suggestions."
+        //        ],
+        //        [
+        //            "role" => "user",
+        //            // "content" => $userContent
+        //            "content" => "Provide the score for each criterion and explain why the score is as it is. Then offer suggestions for improving the scores for each criterion, structured as: score, explanation, improvement suggestions.. This is my IELTS Writing Task 2 essay:\n" . $question
+        //            // "content" => "Please grade the task response of my IELTS Writing Task 2. Show me grade for each criteria and explain why the scoring is done this way for each criterion and give me suggestions for improvements it. This is my IELTS Writing Task 2 essay:\n" . $question
+        //        ],
+
+        //     ],
+        //    'temperature' => 0,
+        //    'max_tokens' => 1000
+        // ]);
+        // $dataResponseChat = $chat->choices[0]->message->content;
+        // // $data = json_decode($dataResponseChat);
+        // dd($chat, $dataResponseChat);
+        // $response = [];
+        // foreach($data as $key => $value) {
+        //     $response[] = [
+        //         'criterion' => $value->criterion,
+        //         'score' => $value->score,
+        //         'explanation' => $value->explanation,
+        //     ];
+        // }
         return $this->responseSuccess(200, $response);
     }
 
@@ -608,8 +650,8 @@ class ApiController extends Controller
     public function task2All(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
-        //ApiUserQuestion::truncate();
-        //ApiUserQuestionPart::truncate();
+        // ApiUserQuestion::truncate();
+        // ApiUserQuestionPart::truncate();
         if(isset($jsonData['test']) &&  $jsonData['test'] == 'tunglaso1') {
             // dd(ApiUserQuestion::whereIn('id', [2,4,5])->get()->toArray());
             $test = ApiUserQuestionPart::where('user_question_id',$jsonData['question_id'])
@@ -619,10 +661,10 @@ class ApiController extends Controller
                 ->where('part_number',2)->first()->toArray();
             dd($test, $test1,$test3);
         }
-        // dd(ApiUserQuestion::find(5));
+        // dd(ApiUserQuestionPart::all());
         DB::beginTransaction();
         try {
-            // Insert vào b?ng ApiUserQuestion
+            // Insert vï¿½o b?ng ApiUserQuestion
             $data = [
                 'question' => $jsonData['question'],
                 'topic' => $jsonData['topic'],
@@ -634,7 +676,7 @@ class ApiController extends Controller
             $questionTable = ApiUserQuestion::create($data);
     
             if ($questionTable->id) {
-                // Insert vào b?ng ApiUserQuestionPart
+                // Insert vï¿½o b?ng ApiUserQuestionPart
                 for ($i = 1; $i <= 8; $i++) {
                     $data1 = [
                         'user_question_id' => $questionTable->id,
@@ -679,13 +721,14 @@ class ApiController extends Controller
                 dd($checkPart);
             }
         }
-        $analyze = $this->image($request);
+        // $analyze = $this->image($request);
+        $analyze = $jsonData['image_content'];
         $messageTopic = $topic . "\n" . "This is the content of the chart:\n" . $analyze;
         $jsonData['topic'] = $messageTopic;
         
         DB::beginTransaction();
         try {
-            // Insert vào b?ng ApiUserQuestion
+            // Insert vï¿½o b?ng ApiUserQuestion
             $data = [
                 'question' => $jsonData['question'],
                 'topic' => $jsonData['topic'],
@@ -696,7 +739,7 @@ class ApiController extends Controller
             ];
             $questionTable = ApiUserQuestion::create($data);
             if ($questionTable->id) {
-                // Insert vào b?ng ApiUserQuestionPart
+                // Insert vï¿½o b?ng ApiUserQuestionPart
                 for ($i = 1; $i <= 8; $i++) {
                     $data1 = [
                         'user_question_id' => $questionTable->id,
@@ -748,7 +791,7 @@ class ApiController extends Controller
                ],
                [
                    "role" => "user",
-                   "content" => "could you help me to identify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 2. Show me the errors and suggest improvements and explain for suggest improvements. This is my IELTS Writing Task 1: \n" . $question
+                   "content" => "could you help me to identify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 1. Show me the errors and suggest improvements and explain for suggest improvements. This is my IELTS Writing Task 1: \n" . $question
                ],
 
             ],
@@ -807,4 +850,112 @@ class ApiController extends Controller
         $dataResponseChat = $chat->choices[0]->message->content;
         return $dataResponseChat;
     }
+
+    public function imageTask1(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        $model = 'gpt-4o';
+        $analyze = 'Please analyze the following chart for me so that I can have the information about it';
+        $content = [
+            [
+                'type' => 'text',
+                'text' => $analyze,
+            ],
+            [
+                'type' => 'image_url',
+                'image_url' => [
+                    'url' => $jsonData['url'],
+                    'detail' => 'low'
+                ]
+            ],
+        ];
+        $chat = $client->chat()->create([
+            'model' => $model,
+            // 'response_format'=>["type"=>"json_object"],
+            'messages' => [
+                [
+                    "role" => "user",
+                    "content" => $content
+                ],
+            ],
+            'max_tokens' => 1000,
+            'temperature' => 0
+        ]);
+        // dd($chat);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $dataImage = [
+            'user_id' => $jsonData['user_id'],
+            'username' => $jsonData['username'],
+            'image_base64' => $jsonData['url'],
+            'image_response' => $dataResponseChat,
+        ];
+        $image_id = Task1Image::create($dataImage)->id;
+        return $this->responseSuccess(200, ['data' => $dataResponseChat, 'image_id' => $image_id]);
+    }
+
+    public function imageTask1Chat(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $yourApiKey = getenv('OPENAI_API_KEY');
+        $client = OpenAI::client($yourApiKey);
+        $model = 'gpt-4o';
+        // $data = 
+        // dd($jsonData['messages']);
+        $chat = $client->chat()->create([
+            'model' => $model,
+            // 'response_format'=>["type"=>"json_object"],
+            // 'messages' => [
+            //     [
+            //         "role" => "user",
+            //         "content" => $content
+            //     ],
+            // ],
+            'messages'=>$jsonData['messages'],
+            'max_tokens' => 1000,
+            'temperature' => 0
+        ]);
+        dd($chat);
+        $analyze = 'Please analyze the following chart for me so that I can have the information about it';
+        $content = [
+            [
+                'type' => 'text',
+                'text' => $analyze,
+            ],
+            [
+                'type' => 'image_url',
+                'image_url' => [
+                    'url' => $jsonData['url'],
+                    'detail' => 'low'
+                ]
+            ],
+        ];
+        $chat = $client->chat()->create([
+            'model' => $model,
+            // 'response_format'=>["type"=>"json_object"],
+            'messages' => [
+                [
+                    "role" => "user",
+                    "content" => $content
+                ],
+            ],
+            'max_tokens' => 1000,
+            'temperature' => 0
+        ]);
+        // dd($chat);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $dataImage = [
+            'user_id' => $jsonData['user_id'],
+            'username' => $jsonData['username'],
+            'image_base64' => $jsonData['url'],
+            'image_response' => $dataResponseChat,
+        ];
+        $image_id = Task1Image::create($dataImage)->id;
+        $dataFile = [
+
+        ];
+        return $this->responseSuccess(200, ['data' => $dataResponseChat, 'image_id' => $image_id]);
+    }
+    
 }

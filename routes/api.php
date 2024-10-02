@@ -50,9 +50,12 @@ Route::post("cms/ielts/write_task_1/detail", [App\Http\Controllers\ApiController
 Route::post("cms/ielts/test/write_task_1/write_task", [App\Http\Controllers\ApiTestController::class,'writeTask1CreateWrite']);
 
 //lms
-Route::post("lms/course/activity/complention", [App\Http\Controllers\LmsCompletionActivityController::class,'create']);
+Route::post("lms/course/activity/complention", [App\Http\Controllers\LmsCompletionActivityController::class,'createActivityCompletion']);
 Route::post("lms/course/complention/detail", [App\Http\Controllers\LmsCompletionActivityController::class,'detail']);
 
 //api task 1 2 all
 Route::post("openai/task1/all", [App\Http\Controllers\ApiController::class,'task1All']);
 Route::post("openai/task2/all", [App\Http\Controllers\ApiController::class,'task2All']);
+Route::post("openai/task1/analyze", [App\Http\Controllers\ApiController::class,'imageTask1']);
+//api tinh chinh anh
+Route::post("openai/task1/analyze/chat", [App\Http\Controllers\ApiController::class,'imageTask1Chat']);
