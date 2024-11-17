@@ -7,55 +7,30 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post("openai/test", [App\Http\Controllers\ApiController::class,'test']);
-//all
-Route::post("/ielts/write_task_2", [App\Http\Controllers\ApiController::class,'ieltsWriteTask2']);
+Route::get("lms/course/list", [App\Http\Controllers\ProductController::class,'core_course_get_courses']);
+Route::get("lms/category/list", [App\Http\Controllers\ProductController::class,'getCategoryMoodles']);
 
-//cuc 1: introduction
-Route::post("openai/test/introduction", [App\Http\Controllers\ApiTestController::class,'introductionTest']);
-Route::post("openai/test/task2IdentifyErrors", [App\Http\Controllers\ApiTestController::class,'task2IdentifyErrors']);
-//cuc 2: topic sentence
-Route::post("openai/test/topic_sentence", [App\Http\Controllers\ApiTestController::class,'topicSentence']);
-Route::post("openai/test/conclusion", [App\Http\Controllers\ApiTestController::class,'conclusion']);
-//cuc 3: band
-Route::post("openai/test/band/task_response", [App\Http\Controllers\ApiTestController::class,'bandTaskResponse']);
-//cuc 4 Coherence & Cohesion
-Route::post("openai/test/band/coherence_cohesion", [App\Http\Controllers\ApiTestController::class,'coherenceCohesion']);
-//cuc 5: Lexical resource
-Route::post("openai/test/band/lexical_resource", [App\Http\Controllers\ApiTestController::class,'lexicalResource']);
-//cuc 6: Grammatical range & accuracy
-Route::post("openai/test/band/gramma", [App\Http\Controllers\ApiTestController::class,'gramma']);
-//test phan tich anh
-Route::post("openai/test/image", [App\Http\Controllers\ApiTestController::class,'image']);
-Route::post("openai/test/task1/lexical_gramma", [App\Http\Controllers\ApiTestController::class,'task1LexicalGramma']);
-Route::post("openai/test/task2/lexical_gramma", [App\Http\Controllers\ApiTestController::class,'task2LexicalGramma']);
+Route::post("lms/category/create", [App\Http\Controllers\ProductController::class,'createCategoryMoodles']);
+Route::post("lms/category/update", [App\Http\Controllers\ProductController::class,'updateCategoryMoodles']);
+Route::post("lms/category/delete", [App\Http\Controllers\ProductController::class,'deleteCategoryMoodles']);
+Route::post("lms/category/detail", [App\Http\Controllers\ProductController::class,'detailCategoryMoodles']);
 
-Route::post("openai/test/task1/task_achievement", [App\Http\Controllers\ApiTestController::class,'task1TaskAchievement']);
+Route::post("lms/course/create", [App\Http\Controllers\ProductController::class,'createCourseMoodles']);
+Route::post("lms/course/detail", [App\Http\Controllers\ProductController::class,'detailCourseMoodles']);
+Route::post("lms/course/update", [App\Http\Controllers\ProductController::class,'updateCourseMoodles']);
+Route::post("lms/course/delete", [App\Http\Controllers\ProductController::class,'deleteCourseMoodles']);
 
-//app
-//login
-Route::post("app/register", [App\Http\Controllers\ApiAppController::class,'register']);
-Route::post("openai/test/job", [App\Http\Controllers\ApiTestController::class,'newApiTestJob']);
-//api audio
-Route::post("openai/test/audio", [App\Http\Controllers\ApiTestController::class,'audio']);
-// Route::post("lms/course/activity/complention", [App\Http\Controllers\ApiTestController::class,'audio']);
-// Route::post("lms/course/complention/detail", [App\Http\Controllers\ApiTestController::class,'audio']);
+Route::post("lms/section/create", [App\Http\Controllers\ProductController::class,'createSectionCourse']);
+Route::post("lms/section/update", [App\Http\Controllers\ProductController::class,'updateSectionCourse']);
+Route::post("lms/section/list", [App\Http\Controllers\ProductController::class,'getSectionCourse']);
+Route::post("lms/section/detail", [App\Http\Controllers\ProductController::class,'detailSectionCourse']);
 
-// api cms task 2
-Route::post("cms/ielts/write_task_2/create", [App\Http\Controllers\ApiController::class,'writeTask2Create']);
-Route::post("cms/ielts/write_task_2/detail", [App\Http\Controllers\ApiController::class,'writeTask2Detail']);
-// api cms task 1
-Route::post("cms/ielts/write_task_1/create", [App\Http\Controllers\ApiController::class,'writeTask1Create']);
-Route::post("cms/ielts/write_task_1/detail", [App\Http\Controllers\ApiController::class,'writeTask1Detail']);
-Route::post("cms/ielts/test/write_task_1/write_task", [App\Http\Controllers\ApiTestController::class,'writeTask1CreateWrite']);
+Route::post("lms/activity/create", [App\Http\Controllers\ProductController::class,'createActivityMoodles']);
+Route::post("lms/activity/update", [App\Http\Controllers\ProductController::class,'updateActivityMoodles']);
+Route::post("lms/activity/detail", [App\Http\Controllers\ProductController::class,'detailActivityMoodles']);
 
-//lms
-Route::post("lms/course/activity/complention", [App\Http\Controllers\LmsCompletionActivityController::class,'createActivityCompletion']);
-Route::post("lms/course/complention/detail", [App\Http\Controllers\LmsCompletionActivityController::class,'detail']);
+Route::post("lms/availablity/detail", [App\Http\Controllers\ProductController::class,'detailAvailabilityMoodles']);
 
-//api task 1 2 all
-Route::post("openai/task1/all", [App\Http\Controllers\ApiController::class,'task1All']);
-Route::post("openai/task2/all", [App\Http\Controllers\ApiController::class,'task2All']);
-Route::post("openai/task1/analyze", [App\Http\Controllers\ApiController::class,'imageTask1']);
-//api tinh chinh anh
-Route::post("openai/task1/analyze/chat", [App\Http\Controllers\ApiController::class,'imageTask1Chat']);
+Route::post("products/search", [App\Http\Controllers\ProductController::class,'search']);
+
+Route::get("ielts/exam/list", [App\Http\Controllers\ProductController::class,'listContestIelts']);

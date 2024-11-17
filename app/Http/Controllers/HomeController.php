@@ -4,11 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Question;
-use App\Models\TestOpenai;
 use App\Jobs\OpenAiJob;
 use App\Models\User;
-use App\Models\CustomerId;
 use App\Models\Job;
 use Illuminate\Support\Facades\DB;
 
@@ -26,8 +23,7 @@ class HomeController extends Controller
 
     public function index1()
     {
-        $data = TestOpenai::orderBy('id', 'DESC')->paginate(10);
-        return view('dashboard', compact('data'));
+        return view('dashboard');
     }
 
     public function testQueue(Request $request)

@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('api_user_question_parts', function (Blueprint $table) {
-            $table->integer('writing_task_number')->default(2);
+            if (!Schema::hasColumn('api_user_question_parts', 'writing_task_number')) {
+                $table->integer('writing_task_number')->default(2);
+            }
         });
     }
 
