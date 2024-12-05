@@ -69,8 +69,8 @@
         <input type="hidden" id="page_type" value="product">
         <input type="hidden" id="h_quiz_section_add" value="">
 
-        <!-- <button type="button" name="btn-save" class="btn-save btn btn-primary">Lưu</button>
-        <button type="button" name="btn-save-version" class="btn-save-version btn btn-secondary">Lưu phiên bản</button> -->
+        <button type="button" name="btn-save" class="btn-save btn btn-primary">Lưu</button>
+        <button type="button" name="btn-save-version" class="btn-save-version btn btn-secondary">Lưu phiên bản</button>
     </div>
 
 

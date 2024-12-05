@@ -726,3 +726,70 @@ select option {
 .availability-item input.level-2 {
     margin-left: 26px;
 }
+
+[data-filetypesbrowserkey][aria-expanded="false"] ul[role="group"] {
+    display: none;
+}
+
+/**
+ * Style css use for search
+ */
+ .results-search {
+    border: 1px solid #ccc;
+    background: #ffffff;
+    max-height: 300px;
+    overflow: auto;
+}
+.s-tree-items{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.s-tree-item{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e2e2e2;
+    padding: 2px 5px;
+    width: 100%;
+}
+.s-tree-item-contain, .s-tree-item-cover{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.s-tree-item-cover{
+    width: 100%;
+}
+.s-left-item, .s-right-item{
+    display: flex;
+    align-items: center;
+}
+.s-left-item i, .s-left-item div {
+    padding-right: 8px;
+}
+.s-right-item i{
+    padding-left: 8px;
+}
+.s-expand-folder:hover,
+.s-btn-expand-collapse:hover {
+    cursor: pointer;
+}
+.s-tree-item.active {
+    background-color: #cccccc;
+    cursor: pointer;
+}
+.s-tree-item.active.disabled {
+    color: #ffffff;
+}
+.s-tree-item:hover,
+.s-tree-item.active:hover {
+    background-color: #e4e4e4;
+    cursor: pointer;
+}
+.s-left-item, .s-box-name {
+    width: 100%;
+}
+.tree-item.active.disabled {
+    color: #000;
+}

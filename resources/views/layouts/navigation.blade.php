@@ -10,10 +10,19 @@
                         <li class="home-item"><a href="#"><i
                                     style="font-size:25px;" class="fa fa-home"></i></a></li>
                         <li class="mycourses dropdown"><a href="#" title="Khoá của tôi"
-                                class="sf-with-ul">Khoá của tôi <span class="mycourses-num">(13)</span><span
+                                class="sf-with-ul">Khoá của tôi <span class="mycourses-num">({{ $courses->count() }})</span><span
                                     class="mobile-arrow"></span></a>
                             <ul style="display: none;">
-                                <li class="visible1 student"><a
+                                @if(isset($courses) && $courses->count() > 0)
+                                        @foreach($courses as $course)
+                                                <li class="visible1">
+                                                        <a href="{{ env('URL_LMS') . '/course/view.php?id=' . $course->moodle_id }}" target="_blank">{{ $course->moodle_name }}</a>
+                                                </li>
+                                        @endforeach
+                                @else
+                                        <li>No courses available</li>
+                                @endif
+                                <!-- <li class="visible1 student"><a
                                         href="#"
                                         title="🏫IELTS Classroom - Foundation">🏫IELTS Classroom - Foundation</a>
                                 </li>
@@ -58,7 +67,7 @@
                                 <li class="visible1 coursecreator"><a
                                         href="#"
                                         title="📋 IELTS Classroom - Intensive (3B)">📋 IELTS Classroom - Intensive
-                                        (3B)</a></li>
+                                        (3B)</a></li> -->
                             </ul>
                         </li>
                         <li class="dropdown"><a href="#cm_submenu_1" class="sf-with-ul" data-toggle=""
@@ -73,15 +82,19 @@
                                 <li class=""><a title="Danh sách công việc" class=""
                                         href="#">Danh
                                         sách công việc</a></li>
-                                <li class=""><a title="Danh sách lớp" class=""
-                                        href="#">Danh
-                                        sách lớp</a></li>
+                                <li class="">
+                                        <a title="Danh sách lớp" class="" href="{{ route('class.index') }}">
+                                                Danh sách lớp
+                                        </a>
+                                </li>
                                 <li class=""><a title="Danh sách học sinh" class=""
                                         href="#">Danh
                                         sách học sinh</a></li>
-                                <li class=""><a title="Danh sách giáo viên" class=""
-                                        href="#">Danh
-                                        sách giáo viên</a></li>
+                                <li class="">
+                                        <a title="Danh sách giáo viên" class="" href="{{ route('teacher.index') }}">
+                                                Danh sách giáo viên
+                                        </a>
+                                </li>
                             </ul>
                         </li>
                         <li class="dropdown"><a href="#cm_submenu_2" class="sf-with-ul" data-toggle=""

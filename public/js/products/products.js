@@ -1,28 +1,47 @@
 $(document).ready(function() {
     loadCategoryList();
+    let newStorageLevel = false;
+
+    function resetStorageLevelFirstTime(){
+        if(!newStorageLevel){
+            for (let i = 1; i <= 10; i++) { // 10 là số level tối đa, bạn có thể thay đổi
+                localStorage.removeItem(`level-${i}`);
+            }
+            newStorageLevel = true;
+        }
+    }
+
+    resetStorageLevelFirstTime();
 
     $('#add_product').on('click', function(e) {
         e.preventDefault();
         const dataType = $(this).data('type');
         if(dataType == 'category'){
-            createCategory()
+            createCategory(1)
         }
         
     });
 
-    function createCategory(){
+    function createCategory(level){
         const currentUser = localStorage.getItem('currentUser');
         $.ajax({
             url: "/api/lms/category/create",
             type: "POST",
             data: {
-                currentUser: currentUser
+                currentUser: currentUser,
+                level: level
             },
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                if(response) {
+                if (response.error) {
+                    $('.message-product .alert').removeClass('alert-success');
+                    $('.message-product .alert').addClass('alert-danger');
+                    $('.message-product .alert #content_message').text(response.error);
+                    $('.message-product').removeClass('hidden');
+                    $('html, body').animate({ scrollTop: 0 }, 'fast');
+                }else{
                     loadCategoryList();
                 }
             },
@@ -45,6 +64,44 @@ $(document).ready(function() {
         });
     }
 
+    function autoClickLevels() {
+        const maxLevel = 10; // Số level tối đa, có thể thay đổi
+        const levels = [];
+    
+        // Lấy dữ liệu từ localStorage
+        for (let i = 1; i <= maxLevel; i++) {
+            const categoryId = localStorage.getItem(`level-${i}`);
+            if (categoryId) {
+                levels.push({ level: i, categoryId: parseInt(categoryId, 10) });
+            } else {
+                break; // Dừng khi không có thêm level nào
+            }
+        }
+    
+        // Click từ level nhỏ nhất đến lớn nhất
+        function clickLevel(index) {
+            if (index >= levels.length) return; // Dừng nếu đã xử lý hết các level
+    
+            const { level, categoryId } = levels[index];
+            const $element = $(`.tree-item[data-level="${level}"][data-category-id="${categoryId}"]`);
+    
+            if ($element.length) {
+                $element.trigger('click'); // Kích hoạt click
+                setTimeout(() => clickLevel(index + 1), 200); // Delay để đảm bảo UI cập nhật
+            } else {
+                console.warn(`Không tìm thấy phần tử cho level ${level} với category ID ${categoryId}`);
+            }
+        }
+        
+        // Bắt đầu click từ level 1
+        if (levels.length > 0) {
+            clickLevel(0);
+        }else{
+            $('.view-product-children.active').click();
+            $('.view-course-children.active').click();
+        }
+    }
+
     function renderCategoryList(categories, clickedCategoryId = null) {
         let html = '';
         categories.forEach(function(item, index) {
@@ -52,33 +109,42 @@ $(document).ready(function() {
             let viewClass = item.moodle_type === 'course' ? 'course' : 'product';
             let mainClass = (index === 0 || item.id === clickedCategoryId) ? 'view-'+viewClass+'-children active' : 'view-'+viewClass+'-children';
             var icon = item.moodle_type === 'course' ? 'fa-book' : 'fa-archive'; // Chọn icon
+            var level = item.level;
             html += `
                 <div class="tree-item-cover cover-category-${item.id} ui-sortable-handle">
                     <input type="hidden" class="slot-parent-category" name="parent_category[slot]" value="${item.id}">
-                    <div class="level-${index + 1} tree-item ${mainClass}" data-type="${item.moodle_type}" data-category-id="${item.id}" style="width: calc(100% - 4%);">
+                    <div class="level-${level} tree-item ${mainClass}" data-level=${level} data-type="${item.moodle_type}" data-category-id="${item.id}" style="width: calc(100% - 4%);">
                         <div class="left-item">
                             <i class="fas fa-arrows-alt drag-handle"></i>
-                            <i class="fa btn-expand-collapse fa-chevron-right btn-collapse" title="Mở rộng" data-category-id="${item.id}" aria-hidden="true"></i>
+                            ${item.moodle_type !== 'course' ? `
+                                <i class="fa btn-expand-collapse fa-chevron-right btn-collapse" title="Mở rộng" data-category-id="${item.id}" aria-hidden="true"></i>
+                            ` : ''}
                             <i class="fa ${icon}" aria-hidden="true"></i>
                             <div class="product-name-w100 product-name-${item.id}" data-category-id="${item.id}">${item.moodle_name}</div>
                         </div>
                         <div class="right-item">
-                            <div class="btn-group">
-                                <i class="fa fa-plus" title="Thêm sản phẩm con" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-hidden="true"></i>
-                                <div class="dropdown-menu">
-                                    <h5 style="border-bottom: 1px solid #dadada" class="dropdown-header"><b>Chọn loại sản phẩm</b></h5>
-                                    <div class="dropdown-item add-child-product" data-child-level="2" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
-                                        <i class="fa fa-plus" aria-hidden="true"></i>
-                                        <i class="fa fa-archive" aria-hidden="true"></i>
-                                        <div>Sản phẩm</div>
-                                    </div>
-                                    <div class="dropdown-item add-child-course" data-child-level="2" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
-                                        <i class="fa fa-plus" aria-hidden="true"></i>
-                                        <i class="fa fa-book" aria-hidden="true"></i>
-                                        <div>Khóa học</div>
+                            ${item.moodle_type !== 'course' ? `
+                                <div class="btn-group">
+                                    <i class="fa fa-plus" title="Thêm sản phẩm con" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-hidden="true"></i>
+                                    <div class="dropdown-menu">
+                                        <h5 style="border-bottom: 1px solid #dadada" class="dropdown-header"><b>Chọn loại sản phẩm</b></h5>
+                                        <div class="dropdown-item add-child-product" data-child-level="${level + 1}" data-current-level="${level}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
+                                            <i class="fa fa-plus" aria-hidden="true"></i>
+                                            <i class="fa fa-archive" aria-hidden="true"></i>
+                                            <div>Sản phẩm</div>
+                                        </div>
+                                        <div class="dropdown-item add-child-course" data-child-level="${level + 1}" data-current-level="${level}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
+                                            <i class="fa fa-plus" aria-hidden="true"></i>
+                                            <i class="fa fa-book" aria-hidden="true"></i>
+                                            <div>Khóa học</div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            ` : `
+                                <a href="/product/detail/${item.id}">
+                                    <i class="fa fa-sitemap" title="Xem cấu trúc" aria-hidden="true"></i>
+                                </a>
+                            `}
                             <i class="fa fa-trash delete-archive-product" title="Xóa" aria-hidden="true" data-toggle="modal" data-target="#deleteOrArchiveModal" data-product-id="${item.id}" data-product-name="${item.moodle_name}" data-product-type="${item.moodle_type}"></i>
                         </div>
                     </div>
@@ -98,15 +164,33 @@ $(document).ready(function() {
         $('.above-block').on('click', '.add-child-product', function(e) {
             e.stopPropagation();
             const categoryId = $(this).data('category-id');
+            const level = $(this).data('child-level');
+            const currentLevel = $(this).data('current-level');
             const parentId = $(this).data('parent-id');
-            addProductToCategory(categoryId, parentId);
+
+            for (let i = currentLevel; i <= 10; i++) {
+                localStorage.removeItem(`level-${i}`);
+            }
+    
+            localStorage.setItem(`level-${currentLevel}`, parentId);
+
+            addProductToCategory(categoryId, parentId, level);
         });
 
         $('.above-block').on('click', '.add-child-course', function(e) {
             e.stopPropagation();
             const categoryId = $(this).data('category-id');
+            const level = $(this).data('child-level');
+            const currentLevel = $(this).data('current-level');
             const parentId = $(this).data('parent-id');
-            addCourseToCategory(categoryId, parentId);
+
+            for (let i = currentLevel; i <= 10; i++) {
+                localStorage.removeItem(`level-${i}`);
+            }
+    
+            localStorage.setItem(`level-${currentLevel}`, parentId);
+
+            addCourseToCategory(categoryId, parentId, level);
         });
 
         $('.tree-items').off('click', '.delete-archive-product').on('click', '.delete-archive-product', function (e) {
@@ -130,33 +214,34 @@ $(document).ready(function() {
         });
 
         // Nếu clickedCategoryId có giá trị, thêm class 'active' vào phần tử vừa click
-        if (clickedCategoryId) {
-            $(`.cover-category-${clickedCategoryId} .view-product-children`).addClass('active');
-        }
+        // if (clickedCategoryId) {
+        //     $(`.cover-category-${clickedCategoryId} .view-product-children`).addClass('active');
+        // }
 
-        // Tự động click vào item có class active (vừa được chọn hoặc là item đầu tiên)
-        $('.view-product-children.active').click();
+        // $('.view-product-children.active').click();
 
-        if (clickedCategoryId === null && categories.length > 0) {
-            clickedCategoryId = categories[0].id;
-            const clickedCategoryType = categories[0].moodle_type; 
+        autoClickLevels();
 
-            $('#setting_product')
-                .attr('data-type', 'category')
-                .attr('data-category-id', clickedCategoryId);
+        // if (clickedCategoryId === null && categories.length > 0) {
+        //     clickedCategoryId = categories[0].id;
+        //     const clickedCategoryType = categories[0].moodle_type; 
 
-            console.log("Category ID đầu tiên:", clickedCategoryId);
-            console.log("Category Type đầu tiên:", clickedCategoryType);
-        } else {
-            $('#setting_product')
-                .attr('data-type', 'category')
-                .attr('data-category-id', clickedCategoryId);
-            console.log("Clicked Category ID:", clickedCategoryId);
-        }
+        //     $('#setting_product')
+        //         .attr('data-type', 'category')
+        //         .attr('data-category-id', clickedCategoryId);
+
+        //     console.log("Category ID đầu tiên:", clickedCategoryId);
+        //     console.log("Category Type đầu tiên:", clickedCategoryType);
+        // } else {
+        //     $('#setting_product')
+        //         .attr('data-type', 'category')
+        //         .attr('data-category-id', clickedCategoryId);
+        //     console.log("Clicked Category ID:", clickedCategoryId);
+        // }
 
     }
 
-    function addProductToCategory(categoryId, parentId) {
+    function addProductToCategory(categoryId, parentId, level) {
         console.log("Thêm sản phẩm vào danh mục " + categoryId + " ở parent " + parentId);
         const clickedCategoryId = parentId;
         const currentUser = localStorage.getItem('currentUser');
@@ -166,7 +251,8 @@ $(document).ready(function() {
             data: {
                 parent_category_lms: categoryId,
                 parent_id: parentId,
-                currentUser: currentUser
+                currentUser: currentUser,
+                level: level
             },
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -183,7 +269,7 @@ $(document).ready(function() {
         });
     }
 
-    function addCourseToCategory(categoryId, parentId) {
+    function addCourseToCategory(categoryId, parentId, level) {
         // Lưu lại `parentId` để active sau khi load lại danh sách
         const clickedCategoryId = parentId;
         const currentUser = localStorage.getItem('currentUser');
@@ -193,14 +279,20 @@ $(document).ready(function() {
             data: {
                 parent_id: parentId,
                 category_lms: categoryId,
-                currentUser: currentUser
+                currentUser: currentUser,
+                level: level
             },
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                if (response) {
-                    // Gọi lại `loadCategoryList` và truyền ID cần active
+                if (response.error) {
+                    $('.message-product .alert').removeClass('alert-success');
+                    $('.message-product .alert').addClass('alert-danger');
+                    $('.message-product .alert #content_message').text(response.error);
+                    $('.message-product').removeClass('hidden');
+                    $('html, body').animate({ scrollTop: 0 }, 'fast');
+                }else{
                     loadCategoryList(clickedCategoryId);
                 }
             },
@@ -399,7 +491,16 @@ $(document).ready(function() {
         var dataType = $this.data('type');
         var categoryId = $this.data('category-id');
         var $currentBlock = $this.closest('.above-block');
+        var currentLevel = $this.data('level');
 
+        // **1. Xóa các `localStorage` không cần thiết**
+        // Loại bỏ tất cả các cấp lớn hơn và nhỏ hơn `currentLevel`
+        for (let i = currentLevel + 1; i <= 10; i++) { // 10 là số level tối đa, bạn có thể thay đổi
+            localStorage.removeItem(`level-${i}`);
+        }
+
+        // **2. Lưu lại `localStorage` cho cấp độ hiện tại**
+        localStorage.setItem(`level-${currentLevel}`, categoryId);
         // Xóa phần đóng các tree-item khác
 
         // Toggle trạng thái mở/đóng của item hiện tại
@@ -426,7 +527,6 @@ $(document).ready(function() {
             getDetailCourse(categoryId);
         }
         // Toggle class hide cho #info_product
-        
     });
 
     function getDetailCategory(parent_id){
@@ -489,6 +589,8 @@ $(document).ready(function() {
 
                 let iconArrow = '';
                 let containCategory = '';
+
+                let level = item.level;
     
                 if (item.moodle_type === 'course') {
                     // Nếu là course, thêm icon sitemap
@@ -512,12 +614,12 @@ $(document).ready(function() {
                             <i class="fa fa-plus" title="Thêm sản phẩm con" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-hidden="true"></i>
                             <div class="dropdown-menu">
                                 <h5 style="border-bottom: 1px solid #dadada" class="dropdown-header"><b>Chọn loại sản phẩm</b></h5>
-                                <div class="dropdown-item add-child-product" data-child-level="2" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
+                                <div class="dropdown-item add-child-product" data-child-level="${level + 1}" data-current-level="${level}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
                                     <i class="fa fa-plus" aria-hidden="true"></i>
                                     <i class="fa fa-archive" aria-hidden="true"></i>
                                     <div>Sản phẩm</div>
                                 </div>
-                                <div class="dropdown-item add-child-course" data-child-level="2" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
+                                <div class="dropdown-item add-child-course" data-child-level="${level + 1}" data-current-level="${level}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
                                     <i class="fa fa-plus" aria-hidden="true"></i>
                                     <i class="fa fa-book" aria-hidden="true"></i>
                                     <div>Khóa học</div>
@@ -532,7 +634,7 @@ $(document).ready(function() {
                 var newItem = `
                     <div class="tree-item-cover cover-category-${item.id} ui-sortable-handle">
                         <input type="hidden" class="slot-parent-category" name="parent_category[slot]" value="${item.id}">
-                        <div class="level-${index + 1} tree-item view-${viewClass}-children view-course-children-${item.id}" data-type="${item.moodle_type}" data-category-id="${item.id}" style="width: calc(100% - 4%);">
+                        <div class="level-${level} tree-item view-${viewClass}-children view-course-children-${item.id}" data-level=${level} data-type="${item.moodle_type}" data-category-id="${item.id}" style="width: calc(100% - 4%);">
                             <div class="left-item">
                                 <i class="fas fa-arrows-alt drag-handle"></i>
                                 ${iconArrow}
@@ -682,7 +784,7 @@ $(document).ready(function() {
             method: 'POST',
             data: productData,
             success: function(response) {
-                loadCategoryList();
+                loadCategoryList($('#product_parent').val());
                 if (response.success) {
                     $('.message-product .alert').addClass('alert-success');
                     $('.message-product .alert').removeClass('alert-danger');
@@ -780,7 +882,7 @@ $(document).ready(function() {
                 <label>Ngày bắt đầu khoá học</label>
                 <div style="display: flex;">
                     <input type="date" id="course_startdate" class="search-date form-control  search-date-startdate" value="${startDate}">
-                    <select class="ml-2 form-control" id="course_starthour" name="course_starthour">
+                    <select class="ml-2" id="course_starthour" name="course_starthour">
                         ${[...Array(24).keys()].map(hour => {
                             const hourValue = hour < 10 ? '0' + hour : hour;
                             const selected = (hourValue == startHour) ? 'selected' : '';
@@ -788,7 +890,7 @@ $(document).ready(function() {
                         }).join('')}
                     </select>
                     <div class="ml-1 mr-1">:</div>
-                    <select class="form-control" id="course_startminute" name="course_startminute">
+                    <select id="course_startminute" name="course_startminute">
                         ${[...Array(60).keys()].map(minute => {
                             const minuteValue = minute < 10 ? '0' + minute : minute;
                             const selected = (minuteValue == startMinute) ? 'selected' : '';
@@ -944,7 +1046,7 @@ $(document).ready(function() {
             processData: false, // Không xử lý dữ liệu
             contentType: false, // Không thiết lập kiểu content-type mặc định
             success: function(response) {
-                loadCategoryList();
+                loadCategoryList($('#course_parent').val());
                 $('.message-product').removeClass('hidden');
                 if (response.success) {
                     $('.message-product .alert').addClass('alert-success');
@@ -1071,12 +1173,13 @@ $(document).ready(function() {
             // Kiểm tra loại item (course hoặc không)
             var icon = item.moodle_type === 'course' ? 'fa-book' : 'fa-archive'; // Chọn icon
             // Tạo HTML cho từng item
+            var level = item.level;
             var newItem = `
-                <div class="s-tree-item-cover s-cover-category-${item.id}" data-level="${index + 1}" data-cover-category="${item.id}">
-                    <div class="s-level-${index + 1} s-tree-item " data-child-level="${index + 1}" data-category-id="${item.id}" style="width: calc(100% - 0%)">
+                <div class="s-tree-item-cover s-cover-category-${item.id}" data-level="${level}" data-cover-category="${item.id}">
+                    <div class="s-level-${index + 1} s-tree-item " data-child-level="${level}" data-category-id="${item.id}" style="width: calc(100% - 0%)">
                         <div class="s-left-item">
-                            <i class="fa ${icon}" aria-hidden="true" data-child-level="${index + 1}" data-category-id="${item.id}"></i>
-                            <div class="s-expand-folder s-box-name" data-child-level="${index + 1}" data-category-id="${item.id}" id="s-folder-${item.id}">
+                            <i class="fa ${icon}" aria-hidden="true" data-child-level="${level}" data-category-id="${item.id}"></i>
+                            <div class="s-expand-folder s-box-name" data-child-level="${level}" data-category-id="${item.id}" id="s-folder-${item.id}">
                                 ${item.moodle_name}
                             </div>
                         </div>
@@ -1107,6 +1210,14 @@ $(document).ready(function() {
         treeItem.addClass('active');
         // Lấy giá trị của category id từ phần tử con có class s-tree-item
         const categoryId = $(this).find('.s-tree-item').data('category-id');
+
+        const currentLevel = $(this).find('.s-tree-item').data('child-level');
+            
+        for (let i = 1; i <= 10; i++) {
+            localStorage.removeItem(`level-${i}`);
+        }
+
+        localStorage.setItem(`level-${currentLevel}`, categoryId);
 
         $.ajax({
             url: '/api/products/search',

@@ -7,6 +7,8 @@ use App\Models\Common;
 use App\Models\ApiEs;
 use App\Models\ApiMoodle;
 use App\Models\ApiMoodleEms;
+use App\Models\MoodleActivityFile;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
@@ -74,11 +76,28 @@ class ProductController extends Controller
         // ApiEs::truncate();
 
         // dd(ApiMoodle::all(),ApiMoodleEms::all(),ApiEs::all());
-
+        // dd(User::all());
+        // $updateCategory = User::where('id', 1)->update([
+        //     'type' => 1,
+        // ]);
+        // $updateCategory = User::where('id', 5)->update([
+        //     'type' => 1,
+        // ]);
         // dd($this->getCurrentUser()->email);
-        $currentEmail = $this->getCurrentUser()->email;
+        $currentEmail = Common::getCurrentUser()->email;
 
-        return view('products.index', compact('products', 'currentEmail'));
+        $breadcrumbs = [
+            [
+                'url' => route('dashboard'),
+                'text' => 'Tổng quan',
+            ],
+            [
+                'url' => route('course.index'),
+                'text' => 'Danh sách sản phẩm',
+            ]
+        ];
+
+        return view('products.index', compact('products', 'currentEmail', 'breadcrumbs'));
     }
 
     public function detail(Request $request, $course_id)
@@ -117,9 +136,24 @@ class ProductController extends Controller
         ->where('moodle_type', 'course')
         ->first();
 
-        $currentEmail = $this->getCurrentUser()->email;
+        $currentEmail = Common::getCurrentUser()->email;
 
-        return view('product_detail.index', compact('products', 'courseData', 'currentEmail'));
+        $breadcrumbs = [
+            [
+                'url' => route('dashboard'),
+                'text' => 'Tổng quan',
+            ],
+            [
+                'url' => route('course.detail', ['course_id' => $course_id]),
+                'text' => $courseData->moodle_name,
+            ],
+            [
+                'text' => $courseData->moodle_name,
+                'url' => null
+            ]
+        ];
+
+        return view('product_detail.index', compact('products', 'courseData', 'currentEmail', 'breadcrumbs'));
     }
 
     public function search(Request $request)
@@ -144,6 +178,74 @@ class ProductController extends Controller
         }
 
         return response()->json($data);
+    }
+
+    public function searchProductDetail(Request $request)
+    {
+        $searchTerm = $request->input('searchTerm');
+        $id = $request->input('id');
+
+        $parent_id = $request->input('parentId');
+
+        // Nếu có searchTerm thì tìm kiếm theo searchTerm
+        if (!empty($searchTerm) && !empty($parent_id)) {
+            // Tìm tất cả các item theo parent_id và áp dụng điều kiện searchTerm
+            $allItems = $this->getAllItemsByParentId($parent_id, $searchTerm);
+        } elseif (!empty($searchTerm)) {
+            // Chỉ tìm kiếm theo searchTerm
+            $allItems = ApiMoodle::where(function ($query) use ($searchTerm) {
+                    $query->where('moodle_name', 'LIKE', '%' . $searchTerm . '%')
+                        ->whereNotIn('moodle_type', ['category', 'course']);
+                })
+                ->get();
+        }
+        // Nếu không có searchTerm nhưng có id thì tìm kiếm theo id
+        elseif (!empty($id)) {
+            $allItems = ApiMoodle::where('id', $id)->get();
+        }elseif (!empty($parent_id)) {
+            // Chỉ tìm tất cả các item liên kết theo parent_id
+            $allItems = $this->getAllItemsByParentId($parent_id);
+        } else {
+            // Nếu không có cả searchTerm và id thì trả về mảng rỗng
+            $allItems = [];
+        }
+
+        return response()->json($allItems);
+    }
+
+    private function getAllItemsByParentId($parent_id, $searchTerm = null)
+    {
+        $allItems = $this->getAllRelatedItems($parent_id);
+
+        // Bước 2: Lấy danh sách id của tất cả các item liên quan
+        $allItemIds = $allItems->pluck('id')->toArray();
+
+        // Lấy danh sách các item con của parent_id hiện tại
+        $filteredItems = ApiMoodle::whereIn('id', $allItemIds)
+            ->when($searchTerm, function ($query, $searchTerm) {
+                $query->where('moodle_name', 'LIKE', '%' . $searchTerm . '%')
+                    ->whereNotIn('moodle_type', ['category', 'course']);
+            })
+            ->get();
+
+        return $filteredItems;
+    }
+
+    private function getAllRelatedItems($parent_id)
+    {
+        $allItems = collect();
+
+        // Lấy danh sách các item con của parent_id hiện tại
+        $items = ApiMoodle::where('parent_id', $parent_id)->get();
+
+        foreach ($items as $item) {
+            $allItems->push($item); // Thêm item hiện tại vào danh sách
+            // Gọi đệ quy để lấy các item con của item hiện tại
+            $childItems = $this->getAllRelatedItems($item->id);
+            $allItems = $allItems->merge($childItems);
+        }
+
+        return $allItems;
     }
 
     public function core_course_get_courses(){
@@ -173,6 +275,11 @@ class ProductController extends Controller
             $parent_id = $request->input('parent_id');
         }
 
+        $level = 0;
+        if(!empty($request->input('level'))){
+            $level = $request->input('level');
+        }
+
         $parentCategoryLMS = 0;
         if(!empty($request->input('parent_category_lms'))){
             $parentCategoryLMS = $request->input('parent_category_lms');
@@ -192,17 +299,18 @@ class ProductController extends Controller
                 'moodle_name' => $categoryName,
                 'moodle_type' => 'category',
                 'parent_id' => $parent_id,
+                'level' => $level,
                 'creator' => $request->input('currentUser')
             ]);
 
             if ($newCategory) {
                 return response()->json($newCategory);
             } else {
-                return response()->json(['error' => 'Failed to save category to database'], 500);
+                return response()->json(['error' => 'Failed to save category to database']);
             }
         }
 
-        return response()->json(['error' => 'Invalid data received from LMS'], 500);
+        return response()->json(['error' => 'Invalid data received from LMS']);
     }
 
     public function updateCategoryMoodles(Request $request)
@@ -258,6 +366,11 @@ class ProductController extends Controller
             $parent_id = $request->input('parent_id');
         }
 
+        $level = 0;
+        if(!empty($request->input('level'))){
+            $level = $request->input('level');
+        }
+
         $categoryLMS = 1;
         if(!empty($request->input('category_lms'))){
             $categoryLMS = $request->input('category_lms');
@@ -276,17 +389,22 @@ class ProductController extends Controller
                 'moodle_name' => $courseName,
                 'moodle_type' => 'course',
                 'parent_id' => $parent_id,
+                'level' => $level,
                 'creator' => $request->input('currentUser')
             ]);
 
             if ($newCourse) {
                 return response()->json($newCourse);
             } else {
-                return response()->json(['error' => 'Failed to save course to database'], 500);
+                return response()->json(['error' => 'Failed to save course to database']);
+            }
+        }else{
+            if($createCourseLMS['message']){
+                return response()->json(['error' => $createCourseLMS['message']]);
             }
         }
 
-        return response()->json(['error' => 'Invalid data received from LMS'], 500);
+        return response()->json(['error' => 'Invalid data received from LMS']);
     }
 
     function detailCategoryMoodles(Request $request)
@@ -313,14 +431,21 @@ class ProductController extends Controller
             $isSubCategory = "false";
         }
 
-        $categoryParentData = ApiMoodle::where('parent_id', 0)->where('moodle_type', 'category')->get();
+        // $categoryParentData = ApiMoodle::where('parent_id', 0)->where('moodle_type', 'category')->get();
+
+        $currentLevel = $dataMain->level;
+
+        $categoryParentData = ApiMoodle::where('moodle_type', 'category')
+            ->where('level', '<', $currentLevel) // Điều kiện level nhỏ hơn currentLevel
+            ->get();
 
         $arr = [
             'main' => $dataMain,
             'data' => $getContentCategory,
             'isSubCategory' => $isSubCategory,
             'selectedParentId' => $selectedParentId,
-            'categoryParentData' => $categoryParentData
+            'categoryParentData' => $categoryParentData,
+            'level' => $currentLevel
         ];
 
         return response()->json($arr);
@@ -410,6 +535,11 @@ class ProductController extends Controller
         $sectionCount = ApiMoodle::where('moodle_type', 'section')->where('parent_id', $request->input('couseId'))->count();
         $sectionName = 'Topic ' . ($sectionCount + 1);
         $createSectionCourse = Common::local_custom_service_create_sections($couseId, 1);
+
+        $level = 0;
+        if(!empty($request->input('level'))){
+            $level = $request->input('level');
+        }
         
         if (isset($createSectionCourse[0]['sectionid'])) {
             $sectionId = $createSectionCourse[0]['sectionid'];
@@ -419,17 +549,18 @@ class ProductController extends Controller
                 'moodle_name' => $sectionName,
                 'moodle_type' => 'section',
                 'parent_id' => $request->input('couseId'),
-                'creator' => $request->input('currentUser')
+                'creator' => $request->input('currentUser'),
+                'level' => $level
             ]);
 
             if ($newSection) {
                 return response()->json($newSection);
             } else {
-                return response()->json(['error' => 'Failed to save category to database'], 500);
+                return response()->json(['error' => 'Failed to save category to database']);
             }
         }
 
-        return response()->json(['error' => 'Invalid data received from LMS'], 500);
+        return response()->json(['error' => 'Invalid data received from LMS']);
     }
 
     public function updateSectionCourse(Request $request)
@@ -473,9 +604,26 @@ class ProductController extends Controller
         return response()->json(['error' => 'Invalid data received from LMS']);
     }
 
-    public function getSectionCourse(Request $request){
-        // ApiMoodle::truncate();
-        $sectionCourse = ApiMoodle::where('parent_id', $request->input('course_id'))->where('moodle_type', 'section')->get();
+    public function getSectionCourse(Request $request) {
+        $sectionCourse = ApiMoodle::where('parent_id', $request->input('course_id'))
+                                  ->where('moodle_type', 'section')
+                                  ->get();
+    
+        foreach ($sectionCourse as $section) {
+            // Lấy thông tin chi tiết của section
+            $course_id = ApiMoodle::where('id', $request->input('course_id'))->value('moodle_id');
+            $sectionDetail = $this->getSectionById($section->moodle_id, $course_id);
+            if ($sectionDetail) {
+                // Các trường cần thêm
+                $fieldsToMerge = ['sectionnum', 'summary', 'summaryformat', 'visible', 'uservisible', 'availability', 'sequence', 'courseformat'];
+    
+                // Kiểm tra và thêm từng trường
+                foreach ($fieldsToMerge as $field) {
+                    // Nếu trường tồn tại trong sectionDetail, thêm vào section
+                    $section->{$field} = $sectionDetail[$field] ?? null;
+                }
+            }
+        }
         return response()->json($sectionCourse);
     }
 
@@ -531,6 +679,7 @@ class ProductController extends Controller
                         if ($module['id'] == $moodleItem->moodle_id) {
                             // Gán giá trị availability nếu tồn tại
                             $moodleItem->availabilityinfo = $module['availabilityinfo'] ?? null;
+                            $moodleItem->visible = $module['visible'];
                         }
                     }
                 }
@@ -558,6 +707,16 @@ class ProductController extends Controller
             return $this->createActivityUrl($request);
         }
 
+        if ($request->input('type') == 'resource') {
+            // Trả về kết quả từ hàm `createActivityQuiz`
+            return $this->createActivityResource($request);
+        }
+
+        if ($request->input('type') == 'assign') {
+            // Trả về kết quả từ hàm `createActivityQuiz`
+            return $this->createActivityAssign($request);
+        }
+
         // Nếu không phải 'quiz', trả về thông báo lỗi
         return response()->json(['error' => 'Invalid activity type'], 400);
     }
@@ -565,13 +724,19 @@ class ProductController extends Controller
     public function updateActivityMoodles(Request $request)
     {
         if ($request->input('type') == 'quiz') {
-            // Trả về kết quả từ hàm `createActivityQuiz`
             return $this->updateActivityQuiz($request);
         }
 
         if ($request->input('type') == 'url') {
-            // Trả về kết quả từ hàm `createActivityQuiz`
-            return $this->createActivityUrl($request);
+            return $this->updateActivityUrl($request);
+        }
+
+        if ($request->input('type') == 'resource') {
+            return $this->updateActivityResource($request);
+        }
+
+        if ($request->input('type') == 'assign') {
+            return $this->updateActivityAssign($request);
         }
 
         // Nếu không phải 'quiz', trả về thông báo lỗi
@@ -602,6 +767,185 @@ class ProductController extends Controller
         return response()->json(['error' => 'Invalid data received from LMS']);
     }
 
+    public function updateActivityUrl(Request $request)
+    {
+        $updateUrlMoodle = Common::local_custom_service_update_activity_url($request);
+        if (isset($updateUrlMoodle['urlid'])) {
+            try {
+                $updateCourse = ApiMoodle::where('id', $request->input('activity_id'))->where('moodle_type', 'url')->update([
+                    'moodle_name' => $request->input('url_name'),
+                    'parent_id' => $request->input('url_section'),
+                    'modifier' => $request->input('currentUser')
+                ]);
+            
+                if ($updateCourse) {
+                    return response()->json(['success' => 'Cập nhật sản phẩm thành công']);
+                } else {
+                    return response()->json(['error' => 'Cập nhật sản phẩm thất bại']);
+                }
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+            }
+        }
+
+        return response()->json(['error' => 'Invalid data received from LMS']);
+    }
+
+    public function updateActivityResource(Request $request)
+    {
+        $updateResourceMoodle = Common::local_custom_service_update_activity_resource($request);
+        if (isset($updateResourceMoodle['cmid'])) {
+            try {
+                $updateCourse = ApiMoodle::where('id', $request->input('activity_id'))->where('moodle_type', 'resource')->update([
+                    'moodle_name' => $request->input('resource_name'),
+                    'parent_id' => $request->input('resource_section'),
+                    'modifier' => $request->input('currentUser')
+                ]);
+            
+                if ($updateCourse) {
+                    $dataUploaded = [
+                        'cmid' => $updateResourceMoodle['cmid'],
+                        'component' => 'mod_resource',
+                        'filearea' => 'content',
+                    ];
+                    $uploadedFiles = [];
+
+                    $oldResources = MoodleActivityFile::where('activity_id', $request->input('activity_id'))->get();
+
+                    // Xóa các file cũ trong Storage
+                    foreach ($oldResources as $resource) {
+                        $filePath = storage_path('app/' . $resource->file_path);
+                        if (file_exists($filePath)) {
+                            unlink($filePath); // Xóa file khỏi storage
+                        }
+                    }
+
+                    // Xóa bản ghi cũ trong cơ sở dữ liệu
+                    MoodleActivityFile::where('activity_id', $request->input('activity_id'))->delete();
+
+                    if ($request->hasFile('files')) {
+                        $files = $request->file('files');
+                        $index = 0;
+                        foreach ($files as $file) {
+                            $fileNameUpload = $file->getClientOriginalName();
+                            $fileContent = base64_encode(file_get_contents($file->getPathname()));
+            
+                            $dataUploaded["files[$index][filename]"] = $fileNameUpload;
+                            $dataUploaded["files[$index][filecontent]"] = $fileContent;
+                            $index++;
+
+                            $filePath = $file->storeAs('public/activity/resource/activity_'.$request->input('activity_id'), $fileNameUpload);
+
+                            $resource = new MoodleActivityFile();
+                            $resource->activity_id = $request->input('activity_id');
+                            $resource->moodle_id = $updateResourceMoodle['cmid'];
+                            $resource->moodle_type = 'resource';
+                            $resource->file_name = $file->getClientOriginalName();
+                            $resource->file_path = $filePath;
+                            $resource->file_type = $file->getMimeType();
+                            $resource->file_size = $file->getSize();
+                            $resource->uploaded_by = $request->input('currentUser');
+                            $resource->save();
+
+                            $uploadedFiles[] = $resource;
+                        }
+
+                        $uploadResourceFileMoodle = Common::uploadFileActivityResource($dataUploaded);
+                        if($uploadResourceFileMoodle['status']){
+                            return response()->json(['success' => 'Cập nhật sản phẩm thành công']);
+                        }else{
+                            return response()->json(['error' => 'Upload file thất bại']);
+                        }
+                    }
+        
+                    return response()->json(['success' => 'Cập nhật sản phẩm thành công']);
+                } else {
+                    return response()->json(['error' => 'Cập nhật sản phẩm thất bại']);
+                }
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+            }
+        }
+        return response()->json(['error' => 'Không tìm thấy tệp nào được tải lên.']);
+    }
+
+    public function updateActivityAssign(Request $request)
+    {
+        $updateAssignMoodle = Common::local_custom_service_update_activity_assign($request);
+        if (isset($updateAssignMoodle['assignid'])) {
+            try {
+                $updateCourse = ApiMoodle::where('id', $request->input('activity_id'))->where('moodle_type', 'assign')->update([
+                    'moodle_name' => $request->input('assign_name'),
+                    'parent_id' => $request->input('assign_section'),
+                    'modifier' => $request->input('currentUser')
+                ]);
+            
+                if ($updateCourse) {
+                    $dataUploaded = [
+                        'cmid' => $updateAssignMoodle['cmid'],
+                        'component' => 'mod_assign',
+                        'filearea' => 'introattachment',
+                    ];
+                    $uploadedFiles = [];
+
+                    $oldResources = MoodleActivityFile::where('activity_id', $request->input('activity_id'))->get();
+
+                    // Xóa các file cũ trong Storage
+                    foreach ($oldResources as $resource) {
+                        $filePath = storage_path('app/' . $resource->file_path);
+                        if (file_exists($filePath)) {
+                            unlink($filePath); // Xóa file khỏi storage
+                        }
+                    }
+
+                    // Xóa bản ghi cũ trong cơ sở dữ liệu
+                    MoodleActivityFile::where('activity_id', $request->input('activity_id'))->delete();
+
+                    if ($request->hasFile('files')) {
+                        $files = $request->file('files');
+                        $index = 0;
+                        foreach ($files as $file) {
+                            $fileNameUpload = $file->getClientOriginalName();
+                            $fileContent = base64_encode(file_get_contents($file->getPathname()));
+            
+                            $dataUploaded["files[$index][filename]"] = $fileNameUpload;
+                            $dataUploaded["files[$index][filecontent]"] = $fileContent;
+                            $index++;
+
+                            $filePath = $file->storeAs('public/activity/assign/activity_'.$request->input('activity_id'), $fileNameUpload);
+
+                            $resource = new MoodleActivityFile();
+                            $resource->activity_id = $request->input('activity_id');
+                            $resource->moodle_id = $updateAssignMoodle['cmid'];
+                            $resource->moodle_type = 'assign';
+                            $resource->file_name = $file->getClientOriginalName();
+                            $resource->file_path = $filePath;
+                            $resource->file_type = $file->getMimeType();
+                            $resource->file_size = $file->getSize();
+                            $resource->uploaded_by = $request->input('currentUser');
+                            $resource->save();
+
+                            $uploadedFiles[] = $resource;
+                        }
+
+                        $uploadResourceFileMoodle = Common::uploadFileActivityResource($dataUploaded);
+                        if($uploadResourceFileMoodle['status']){
+                            return response()->json(['success' => 'Cập nhật sản phẩm thành công']);
+                        }else{
+                            return response()->json(['error' => 'Upload file thất bại']);
+                        }
+                    }
+        
+                    return response()->json(['success' => 'Cập nhật sản phẩm thành công']);
+                } else {
+                    return response()->json(['error' => 'Cập nhật sản phẩm thất bại']);
+                }
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+            }
+        }
+    }
+
     function detailActivityMoodles(Request $request)
     {
         // Lấy dữ liệu `dataMain` từ DB
@@ -628,6 +972,7 @@ class ProductController extends Controller
         $currentDataActivityMoodle = Common::core_course_get_course_module($dataMain->moodle_id);
 
         if(!empty($currentDataActivityMoodle['cm']['availability'])){
+
             $availability = json_decode($currentDataActivityMoodle['cm']['availability'], true);
 
             if (isset($availability['c']) && is_array($availability['c'])) {
@@ -654,8 +999,118 @@ class ProductController extends Controller
             $moduleContent['cm']['parent_id'] = $dataMain->parent_id;
             $moduleContent['cm']['creator'] = $dataMain->creator;
             $moduleContent['cm']['modifier'] = $dataMain->modifier;
-        }
 
+            $detail = Common::local_custom_service_get_detail_module($dataMain->moodle_id, $request->input('activity_type'));
+            
+            $detailData = json_decode($detail['data'], true);
+            if($request->input('activity_type') == 'url'){
+                $moduleContent['cm']['intro'] = $detailData['intro'];
+                $moduleContent['cm']['introformat'] = $detailData['introformat'];
+                $moduleContent['cm']['externalurl'] = $detailData['externalurl'];
+                $moduleContent['cm']['display'] = $detailData['display'];
+            }
+
+            if($request->input('activity_type') == 'assign'){
+                $moduleContent['cm']['intro'] = $detailData['intro'];
+                $moduleContent['cm']['introformat'] = $detailData['introformat'];
+                $moduleContent['cm']['completionsubmit'] = $detailData['completionsubmit'];
+
+                $pluginConfigs = $detail['plugin_config'];
+                foreach ($pluginConfigs as $config) {
+                    if($config['plugin'] == 'onlinetext' && $config['name'] == 'enabled' && $config['subtype'] == 'assignsubmission'){
+                        $fieldKey = $config['plugin'];
+                        $moduleContent['cm'][$fieldKey] = $config['value'];
+                    }
+
+                    if($config['plugin'] == 'file' && $config['name'] == 'enabled' && $config['subtype'] == 'assignsubmission'){
+                        $fieldKey = $config['plugin'];
+                        $moduleContent['cm'][$fieldKey] = $config['value'];
+                    }
+
+                    if($config['plugin'] == 'file' && $config['name'] == 'filetypeslist' && $config['subtype'] == 'assignsubmission'){
+                        $fieldKey = $config['name'];
+                        $moduleContent['cm'][$fieldKey] = $config['value'];
+                    }
+                }
+
+                $assigns = MoodleActivityFile::where('activity_id', $request->input('activity_id'))->get();
+
+                $filesData = [];
+
+                foreach ($assigns as $assign) {
+                    // Đường dẫn file
+                    $path = storage_path('app/' . $assign->file_path);
+
+                    if (!file_exists($path)) {
+                        continue; // Bỏ qua file nếu không tồn tại
+                    }
+
+                    // Đọc nội dung file và mã hóa base64
+                    $fileContent = base64_encode(file_get_contents($path));
+                    $mimeType = mime_content_type($path);
+
+                    // Tạo cấu trúc file
+                    $filesData[] = [
+                        'name' => $assign->file_name,
+                        'size' => round(filesize($path) / 1024, 2) . ' KB',
+                        'type' => $mimeType,
+                        'url' => 'data:' . $mimeType . ';base64,' . $fileContent,
+                        'date' => $assign->created_at->format('Y-m-d H:i:s')
+                    ];
+                }
+
+                $moduleContent['cm']['filesuploaded'][] = $filesData;
+            }
+
+            if($request->input('activity_type') == 'quiz'){
+                $moduleContent['cm']['attempts'] = $detailData['attempts'];
+                $moduleContent['cm']['preferredbehaviour'] = $detailData['preferredbehaviour'];
+                $moduleContent['cm']['shuffleanswers'] = $detailData['shuffleanswers'];
+                $moduleContent['cm']['grademethod'] = $detailData['grademethod'];
+                $moduleContent['cm']['reviewattempt'] = $detailData['reviewattempt'];
+                $moduleContent['cm']['reviewcorrectness'] = $detailData['reviewcorrectness'];
+                $moduleContent['cm']['reviewmarks'] = $detailData['reviewmarks'];
+                $moduleContent['cm']['reviewmaxmarks'] = $detailData['reviewmaxmarks'];
+                $moduleContent['cm']['reviewrightanswer'] = $detailData['reviewrightanswer'];
+                $moduleContent['cm']['reviewspecificfeedback'] = $detailData['reviewspecificfeedback'];
+                $moduleContent['cm']['reviewgeneralfeedback'] = $detailData['reviewgeneralfeedback'];
+                $moduleContent['cm']['reviewoverallfeedback'] = $detailData['reviewoverallfeedback'];
+            }
+
+            if($request->input('activity_type') == 'resource'){
+                $resources = MoodleActivityFile::where('activity_id', $request->input('activity_id'))->get();
+
+                // if ($resources->isEmpty()) {
+                //     return response()->json(['error' => 'Không có file nào liên quan đến activity này.']);
+                // }
+
+                $filesData = [];
+
+                foreach ($resources as $resource) {
+                    // Đường dẫn file
+                    $path = storage_path('app/' . $resource->file_path);
+
+                    if (!file_exists($path)) {
+                        continue; // Bỏ qua file nếu không tồn tại
+                    }
+
+                    // Đọc nội dung file và mã hóa base64
+                    $fileContent = base64_encode(file_get_contents($path));
+                    $mimeType = mime_content_type($path);
+
+                    // Tạo cấu trúc file
+                    $filesData[] = [
+                        'name' => $resource->file_name,
+                        'size' => round(filesize($path) / 1024, 2) . ' KB',
+                        'type' => $mimeType,
+                        'url' => 'data:' . $mimeType . ';base64,' . $fileContent,
+                        'date' => $resource->created_at->format('Y-m-d H:i:s')
+                    ];
+                }
+
+                $moduleContent['cm']['filesuploaded'][] = $filesData;
+            }
+        }
 
         $getCourseContent = Common::core_course_get_contents($courseData->moodle_id);
 
@@ -716,6 +1171,11 @@ class ProductController extends Controller
         $section_id = $request->input('section_id');
         $course_id = ApiMoodle::where('id', $request->input('course_id'))->value('moodle_id');
 
+        $level = 0;
+        if(!empty($request->input('level'))){
+            $level = $request->input('level');
+        }
+
         $sections = ApiMoodle::where('moodle_type', 'section')
             ->where('parent_id', $request->input('course_id'))
             ->pluck('id');
@@ -751,11 +1211,12 @@ class ProductController extends Controller
                 'moodle_name' => $questionName,
                 'moodle_type' => 'quiz',
                 'parent_id' => $parent_id,
-                'creator' => $request->input('currentUser')
+                'creator' => $request->input('currentUser'),
+                'level' => $level
             ]);
         
             if (!$newQuiz) {
-                return response()->json(['error' => 'Failed to create quiz in Moodle'], 500);
+                return response()->json(['error' => 'Failed to create quiz in Moodle']);
             }
         
             // Tạo mới Quiz trong ElasticSearch
@@ -766,7 +1227,7 @@ class ProductController extends Controller
             ]);
         
             if (!$newQuizEs) {
-                return response()->json(['error' => 'Failed to create quiz in ElasticSearch'], 500);
+                return response()->json(['error' => 'Failed to create quiz in Es']);
             }
         
             // Tạo mối quan hệ giữa Moodle Quiz và ElasticSearch Quiz
@@ -777,7 +1238,7 @@ class ProductController extends Controller
             ]);
         
             if (!$newMoodleEms) {
-                return response()->json(['error' => 'Failed to link Moodle and ElasticSearch'], 500);
+                return response()->json(['error' => 'Failed to link Moodle and Es']);
             }
         
             // Nếu tất cả các bước trên thành công, trả về dữ liệu Quiz vừa tạo
@@ -787,10 +1248,10 @@ class ProductController extends Controller
                 'moodle_ems' => $newMoodleEms
             ]);
         } else {
-            return response()->json(['error' => 'Invalid cmid'], 400);
+            return response()->json(['error' => 'Invalid cmid']);
         }
 
-        return response()->json(['error' => 'Invalid data received from LMS'], 500);
+        return response()->json(['error' => 'Invalid data received from LMS']);
     }
 
     public function createActivityUrl($request)
@@ -798,6 +1259,11 @@ class ProductController extends Controller
         $parent_id = $request->input('parent_id') ?? 0;
         $section_id = $request->input('section_id');
         $course_id = ApiMoodle::where('id', $request->input('course_id'))->value('moodle_id');
+
+        $level = 0;
+        if(!empty($request->input('level'))){
+            $level = $request->input('level');
+        }
 
         $sections = ApiMoodle::where('moodle_type', 'section')
             ->where('parent_id', $request->input('course_id'))
@@ -822,7 +1288,7 @@ class ProductController extends Controller
             'visible' => 1
         ];
 
-        $createactivityUrl = Common::local_custom_service_create_activity_url($data);
+        $createactivityUrl = Common::local_custom_service_create_activity($data);
 
         if (isset($createactivityUrl['cmid'])) {
             $urlId = $createactivityUrl['cmid'];
@@ -833,19 +1299,142 @@ class ProductController extends Controller
                 'moodle_name' => $urlName,
                 'moodle_type' => 'url',
                 'parent_id' => $parent_id,
-                'creator' => $request->input('currentUser')
+                'creator' => $request->input('currentUser'),
+                'level' => $level
             ]);
         
             if (!$newUrl) {
-                return response()->json(['error' => 'Failed to create quiz in Moodle'], 500);
+                return response()->json(['error' => 'Failed to create quiz in Moodle']);
             }
         
             return response()->json($newUrl);
         } else {
-            return response()->json(['error' => 'Invalid cmid'], 400);
+            return response()->json(['error' => 'Invalid cmid']);
         }
 
-        return response()->json(['error' => 'Invalid data received from LMS'], 500);
+        return response()->json(['error' => 'Invalid data received from LMS']);
+    }
+
+    public function createActivityResource($request)
+    {
+        $parent_id = $request->input('parent_id') ?? 0;
+        $section_id = $request->input('section_id');
+        $course_id = ApiMoodle::where('id', $request->input('course_id'))->value('moodle_id');
+
+        $level = 0;
+        if(!empty($request->input('level'))){
+            $level = $request->input('level');
+        }
+
+        $sections = ApiMoodle::where('moodle_type', 'section')
+            ->where('parent_id', $request->input('course_id'))
+            ->pluck('id');
+
+        // Đếm số lượng `url` có `parent_id` nằm trong danh sách `sections`
+        $qurlCount = ApiMoodle::where('moodle_type', 'resource')
+            ->whereIn('parent_id', $sections)
+            ->count();
+
+        $resourceName = 'File ' . ($qurlCount + 1);
+
+        $sectionData = $this->getSectionById($section_id, $course_id);
+
+        $data = [
+            'courseid' => $course_id,
+            'content' => '',
+            'name' => $resourceName,
+            'section' => $sectionData['sectionnum'],
+            'module' => 'resource',
+            'display' => 1,
+            'visible' => 1
+        ];
+
+        $createactivityResource = Common::local_custom_service_create_activity($data);
+
+        if (isset($createactivityResource['cmid'])) {
+            $resourceId = $createactivityResource['cmid'];
+            
+            // Tạo mới Quiz trong Moodle
+            $newUrl = ApiMoodle::create([
+                'moodle_id' => $resourceId,
+                'moodle_name' => $resourceName,
+                'moodle_type' => 'resource',
+                'parent_id' => $parent_id,
+                'creator' => $request->input('currentUser'),
+                'level' => $level
+            ]);
+        
+            if (!$newUrl) {
+                return response()->json(['error' => 'Failed to create quiz in Moodle']);
+            }
+        
+            return response()->json($newUrl);
+        } else {
+            return response()->json(['error' => 'Invalid cmid']);
+        }
+
+        return response()->json(['error' => 'Invalid data received from LMS']);
+    }
+
+    public function createActivityAssign($request)
+    {
+        $parent_id = $request->input('parent_id') ?? 0;
+        $section_id = $request->input('section_id');
+        $course_id = ApiMoodle::where('id', $request->input('course_id'))->value('moodle_id');
+
+        $level = 0;
+        if(!empty($request->input('level'))){
+            $level = $request->input('level');
+        }
+
+        $sections = ApiMoodle::where('moodle_type', 'section')
+            ->where('parent_id', $request->input('course_id'))
+            ->pluck('id');
+
+        // Đếm số lượng `url` có `parent_id` nằm trong danh sách `sections`
+        $qurlCount = ApiMoodle::where('moodle_type', 'assign')
+            ->whereIn('parent_id', $sections)
+            ->count();
+
+        $assignName = 'Bài tập ' . ($qurlCount + 1);
+
+        $sectionData = $this->getSectionById($section_id, $course_id);
+
+        $data = [
+            'courseid' => $course_id,
+            'content' => '',
+            'name' => $assignName,
+            'section' => $sectionData['sectionnum'],
+            'module' => 'assign',
+            'display' => 1,
+            'visible' => 1
+        ];
+
+        $createactivityAssign = Common::local_custom_service_create_activity($data);
+
+        if (isset($createactivityAssign['cmid'])) {
+            $assignId = $createactivityAssign['cmid'];
+            
+            // Tạo mới Quiz trong Moodle
+            $newUrl = ApiMoodle::create([
+                'moodle_id' => $assignId,
+                'moodle_name' => $assignName,
+                'moodle_type' => 'assign',
+                'parent_id' => $parent_id,
+                'creator' => $request->input('currentUser'),
+                'level' => $level
+            ]);
+        
+            if (!$newUrl) {
+                return response()->json(['error' => 'Failed to create quiz in Moodle']);
+            }
+        
+            return response()->json($newUrl);
+        } else {
+            return response()->json(['error' => 'Invalid cmid']);
+        }
+
+        return response()->json(['error' => 'Invalid data received from LMS']);
     }
 
     public function convertDateToBigInt($dateTime){
@@ -1198,5 +1787,46 @@ class ProductController extends Controller
             }
         }
         return $arr;
+    }
+
+    public function deleteSection(Request $request)
+    {
+        $id = $request->input('id');
+        $section_id = $request->input('section_id');
+        $course_id = $request->input('course_id');
+        if (!$id) {
+            return response()->json(['message' => 'ID is required'], 400);
+        }
+
+        $deleteSection = Common::core_course_delete_sections($course_id, $section_id);
+
+        if(!empty($deleteSection)){
+            ApiMoodle::where('id', $id)->delete();
+
+            // Xóa các bản ghi con (có parent_id = $id)
+            ApiMoodle::where('parent_id', $id)->delete();
+    
+            return response()->json(['message' => 'Section deleted successfully'], 200);
+        }
+        return response()->json(['error' => 'Failed to delete section on Moodle'], 500);
+    }
+
+    public function deleteModule(Request $request)
+    {
+        $cmid = $request->input('cmid');
+        $parent_id = $request->input('parent_id');
+        $module_id = ApiMoodle::where('moodle_id', $cmid)->value('id');
+        // var_dump($module_id);die;
+        if (!$module_id) {
+            return response()->json(['error' => 'Module not found'], 404);
+        }
+
+        $deleteModule = Common::core_course_delete_modules($cmid);
+        if($deleteModule == null){
+            ApiMoodle::where('id', $module_id)->delete();
+            return response()->json(['success' => 'Module deleted successfully']);
+        }
+
+        return response()->json(['error' => 'Failed to delete module on Moodle'], 500);
     }
 }

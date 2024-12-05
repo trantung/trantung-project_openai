@@ -7,6 +7,11 @@
     z-index: 11;
 }
 
+.modal-dialog.modal-md {
+    width: 900px !important;
+    max-width: 95% !important;
+}
+
 .btn-primary.btn-secondary,
 input[type="submit"].btn-secondary,
 button[type="submit"].btn-secondary,
@@ -2268,6 +2273,7 @@ table.discussion-list th {
 }
 
 .filemanager .yui3-datatable-header {
+    padding: 8px 10px;
     border-bottom: 1px solid #ccc !important;
     border-left: 0 solid #fff !important;
     color: #555 !important;
@@ -2482,4 +2488,316 @@ table.discussion-list td {
 
 .text-danger {
     color: #da258f !important;
+}
+
+#fitem_id_overviewfiles_filemanager {
+    margin-left: 0;
+}
+#fitem_id_overviewfiles_filemanager .col-md-3 {
+    display: none !important;
+    width: 0;
+}
+
+#fitem_id_overviewfiles_filemanager .col-md-9 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-left: 0;
+}
+
+table.ygtvtable {
+    margin-bottom: 0;
+    border: 0;
+    border-collapse: collapse;
+}
+.ygtvlm {
+    width: 18px;
+    height: 22px;
+    cursor: pointer;
+    background: url(/classroom/theme/yui_image.php?file=2.9.0/treeview-sprite.gif) 0 0 no-repeat;
+}
+td.ygtvcell {
+    border: 0;
+    padding: 0;
+}
+.file-picker .ygtvlm, .filemanager .ygtvlm {
+    background: url(/images/arrow-down.png) 0 10px no-repeat;
+    width: 13px;
+    height: 12px;
+    cursor: pointer;
+}
+.ygtvspacer {
+    height: 22px;
+    width: 18px;
+}
+a.ygtvspacer {
+    text-decoration: none;
+    outline-style: none;
+    display: block;
+}
+.ygtvcontent {
+    cursor: default;
+}
+td.ygtvcell {
+    border: 0;
+    padding: 0;
+}
+.fp-filename-icon {
+    margin-top: 10px;
+    display: block;
+    position: relative;
+}
+.fp-icon {
+    float: left;
+    margin-top: -7px;
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    text-align: center;
+    line-height: 24px;
+}
+.fp-icon img {
+    max-height: 24px;
+    max-width: 24px;
+    vertical-align: middle;
+}
+.ygtvcell .icon {
+    margin-left: 0 !important;
+}
+
+.file-picker .ygtvblankdepthcell, .filemanager .ygtvblankdepthcell {
+    width: 17px;
+    height: 22px;
+}
+.ygtvspacer {
+    height: 22px;
+    width: 18px;
+}
+.file-picker .ygtvln, .filemanager .ygtvln {
+    background: url(/images/ln.gif) 0 0 no-repeat;
+    width: 19px;
+    height: 32px;
+}
+.filemanager .fp-contextmenu {
+    display: none;
+}
+
+.fp-iconview .fp-file {
+    float: left;
+    text-align: center;
+    position: relative;
+    margin: 10px 10px 35px;
+}
+
+.filemanager .fp-content a {
+    color: inherit !important;
+}
+
+.fp-iconview .fp-thumbnail {
+    min-width: 110px;
+    min-height: 110px;
+    line-height: 110px;
+    text-align: center;
+    border: 1px solid #fff;
+    display: block;
+}
+
+.filemanager .fp-content .fp-iconview .fp-thumbnail {
+    border-color: rgba(0, 0, 0, .1);
+    min-width: 112px;
+    min-height: 112px;
+    line-height: 112px;
+}
+
+.fp-iconview .fp-thumbnail img {
+    border: 1px solid #ddd;
+    padding: 3px;
+    vertical-align: middle;
+}
+
+.filemanager .fp-content .fp-iconview .fp-thumbnail img {
+    padding: 0;
+    border: 0;
+}
+
+.fp-iconview .fp-filename-field {
+    height: 33px;
+    margin-top: 3px;
+    word-wrap: break-word;
+    overflow: hidden;
+    position: absolute;
+}
+
+.filemanager .fp-content .fp-iconview .fp-filename-field {
+    margin-top: 0;
+}
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.fp-filename {
+    padding-right: 10px;
+}
+.fp-iconview .fp-filename-field .fp-filename {
+    background: #fff;
+    padding-top: 5px;
+    padding-bottom: 12px;
+    min-width: 112px;
+}
+.filemanager .fp-content .fp-iconview .fp-filename {
+    background-color: rgba(0, 0, 0, .1);
+    padding: .25rem;
+}
+
+div.disabled .box-name {
+    color: #cccccc;
+    cursor: default;
+}
+
+div.disabled.active .box-name {
+    color: #ffffff;
+}
+
+.tree-item.active.disabled {
+    color: #ffffff;
+}
+
+.select2-selection__rendered {
+    line-height: 31px !important;
+}
+
+.select2-container .select2-selection--single {
+    height: 35px !important;
+}
+
+.select2-selection__arrow {
+    height: 34px !important;
+}
+
+.box-total-item {
+    color: #da258f;
+    font-weight: bold;
+}
+
+.wrapper-table-scroll {
+    overflow: auto;
+    position: relative;
+    max-height: 30em;
+}
+
+.wrapper-table-scroll .table-scroll {
+    position: relative;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    font-size: .88rem;
+}
+
+.wrapper-table-scroll .table-scroll {
+    position: relative;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    font-size: .88rem;
+}
+
+.wrapper-table-scroll .table-scroll td, .wrapper-table-scroll .table-scroll th {
+    padding: 0.25em;
+    vertical-align: middle;
+    border-right: 1px solid #fff;
+    border-bottom: 1px solid #fff;
+}
+
+.table-class tr:first-child th:nth-child(1), .table-class tr:first-child th:nth-child(1) div {
+    width: 50px;
+}
+
+.wrapper-table-scroll .table-scroll thead tr:nth-child(1) th {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    color: #fff;
+    background: #5e5e5e;
+    font-weight: bold;
+    text-align: center;
+    z-index: 1;
+}
+
+.wrapper-table-scroll table tbody tr:nth-child(odd) {
+    background-color: #eaeaea;
+}
+
+.wrapper-table-scroll .table-scroll tbody td {
+    color: #000;
+}
+
+.fa-list {
+    color: #495057;
+}
+
+.table-class tr:first-child th:nth-child(5), .table-class tr:first-child th:nth-child(5) div {
+    text-align: center;
+    width: 100%;
+    min-width: 150px;
+}
+
+.table-class tr:first-child th:nth-child(1), .table-class tr:first-child th:nth-child(1) div {
+    width: 50px;
+}
+
+.table-class tr:first-child th:nth-child(2), .table-class tr:first-child th:nth-child(2) div {
+    text-align: center;
+    min-width: 300px;
+}
+
+.table-class tr:first-child th:nth-child(3), .table-class tr:first-child th:nth-child(3) div {
+    width: 80px;
+}
+
+.table-class tr:first-child th:nth-child(4), .table-class tr:first-child th:nth-child(4) div {
+    width: 160px;
+}
+
+.table-class tr:first-child th:nth-child(6), .table-class tr:first-child th:nth-child(6) div, .table-class tr:first-child th:nth-child(7), .table-class tr:first-child th:nth-child(7) div {
+    width: 100px;
+}
+
+.table-class tr:first-child th:nth-child(6), .table-class tr:first-child th:nth-child(6) div, .table-class tr:first-child th:nth-child(7), .table-class tr:first-child th:nth-child(7) div {
+    width: 100px;
+}
+
+.table-class tr:first-child th:nth-child(8), .table-class tr:first-child th:nth-child(8) div {
+    width: 80px;
+}
+
+.table-class tr:first-child th:nth-child(9), .table-class tr:first-child th:nth-child(9) div {
+    width: 120px;
+}
+
+#tabs{
+    margin: 20px 5px;
+}
+
+#tabs a.nav-link {
+    color: #999;
+}
+
+#tabs .nav-link.active {
+    background-color: #F5F5F5;
+    font-weight: bold;
+    color: #242424;
+}
+
+#tabs-content .tab-pane-content {
+    border-bottom: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    padding: 10px;
+    margin-top: -17px;
+    border-top: 1px solid #ccc;
+    min-height: 200px;
+}
+
+.asterisk {
+    color: red;
 }

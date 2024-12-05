@@ -292,15 +292,27 @@
             console.log("removeClass dndupload-ready dndupload-over");
 
             const files = e.originalEvent.dataTransfer.files;
-            handleFiles(files);
-            assignFilesToInput(files);
-            // Xóa class fm-noitems khi ảnh được thả vào
-            $fileManager.removeClass("fm-noitems");
-            // console.log("removeClass fm-noitems");
-            
+            const validFiles = [];
+
+            // Kiểm tra từng file
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith("image/")) {
+                    validFiles.push(file);
+                } else {
+                    alert(`File "${file.name}" không phải là file ảnh. Vui lòng chỉ thả file ảnh.`);
+                }
+            });
+
+            // Nếu có file hợp lệ thì xử lý
+            if (validFiles.length > 0) {
+                handleFiles(validFiles);
+                assignFilesToInput(validFiles);
+                // Xóa class fm-noitems khi ảnh được thả vào
+                $fileManager.removeClass("fm-noitems");
+            }
+
             dragCounter = 0; // Reset counter khi thả file
         });
-
 
         function assignFilesToInput(files) {
             // Tạo một DataTransfer để gán file vào
@@ -392,6 +404,7 @@
             }
 
             $('#table-image-upload tbody').empty();
+            console.log(uploadedFiles);
             $.each(uploadedFiles, function(index, file) {
                 var fileSize = (file.size / 1024).toFixed(2) + " KB";
                 var fileType = file.type || "Không xác định";

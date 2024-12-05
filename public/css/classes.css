@@ -1,0 +1,36 @@
+#form_tab_info label {
+    width: 15%;
+}
+#form_tab_info input, #form_tab_info select {
+    width: 350px;
+}
+
+#tabs-content .tab-pane-content {
+    border-bottom: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    padding: 10px;
+    margin-top: -17px;
+    border-top: 1px solid #ccc;
+    min-height: 200px;
+}
+
+.row-total-add, .row-search-create {
+    display: flex;
+    justify-content: space-between;
+}
+
+.row-search-create {
+    align-items: flex-start;
+}
+
+.section-info {
+    border-radius: 4px;
+    background-color: #EDEDED;
+    padding: 8px 16px;
+    margin: 8px 8px 16px;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}

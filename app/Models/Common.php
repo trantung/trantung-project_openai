@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use \OpenAI;
 use App\Models\Question;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class Common extends Model
 {
@@ -136,6 +137,12 @@ class Common extends Model
         // $fields[0][completion] = 2;
         // $fields[0][completionview] = 1;
         // $fields[0][completionexpected] = 1731812580;
+        $completionview = $dataRequest['completionview'];
+        $completionpassgrade = $dataRequest['completionpass'];
+        if(empty($dataRequest['completion'])){
+            $completionView = 0;
+            $completionpassgrade = 0;
+        }
 
         $data = [
             'cmid' => $activityIdMoodle->moodle_id,
@@ -150,7 +157,8 @@ class Common extends Model
             // 'fields[0][questionsperpage]' => $dataRequest['quiz_name'],
             'fields[0][section]' => $arr['sections']['sectionnum'],
             'fields[0][visible]' => $dataRequest['quiz_visible'],
-            'fields[0][grade]' => $dataRequest['gradeQuiz'],
+            'fields[0][grade]' => intval($dataRequest['gradeQuiz']),
+            'fields[0][gradepass]' => intval($dataRequest['gradePass']),
             // 'fields[0][sumgrades]' => $dataRequest['quiz_name'],
             'fields[0][preferredbehaviour]' => $dataRequest['preferredbehaviour'],
             'fields[0][attemptimmediately]' => $dataRequest['attemptimmediatelyopen'],
@@ -159,8 +167,9 @@ class Common extends Model
             'fields[0][generalfeedbackimmediately]' => $dataRequest['generalfeedbackimmediatelyopen'],
             'fields[0][rightanswerimmediately]' => $dataRequest['rightanswerimmediatelyopen'], 
             'fields[0][completion]' => $dataRequest['completion'], 
-            'fields[0][completionview]' => $dataRequest['completionview'], 
-            'fields[0][completionexpected]' => $dataRequest['completionpass'], 
+            'fields[0][completionview]' => $completionview, 
+            // 'fields[0][completionexpected]' => $dataRequest['completionpass'], 
+            'fields[0][completionpassgrade]' => $completionpassgrade,
         ];
 
         if (!empty($dataRequest['availability_item'])) {
@@ -177,6 +186,80 @@ class Common extends Model
         // Gửi dữ liệu qua POST
         $method = 'POST';
         $url = getenv('URL_API_LMS') . 'local_custom_service_update_activity_quiz';
+        $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
+        return $response;
+    }
+
+    public static function convertDateToBigInt($dateTime){
+        $date = new \DateTime($dateTime);
+        $timestamp = $date->getTimestamp();
+        return $timestamp;
+    }
+
+    public static function local_custom_service_update_activity_url($dataRequest)
+    {
+        $sectionIdMoodle = ApiMoodle::where('id', $dataRequest['url_section'])->where('moodle_type', 'section')->first();
+
+        $activityIdMoodle = ApiMoodle::where('id', $dataRequest['activity_id'])->where('moodle_type', 'url')->first();
+
+        $courseIdMoodle = ApiMoodle::where('id', $dataRequest['course_id'])->where('moodle_type', 'course')->first();
+
+        $sectionData = self::local_custom_service_get_sections($courseIdMoodle->moodle_id);
+        
+        $arr = [
+            'sections' => [],
+        ];
+
+        if (!isset($sectionData['errorcode'])) {
+            foreach ($sectionData as $section) {
+                if (isset($section['id']) && $section['id'] == $sectionIdMoodle->moodle_id) {
+                    $arr['sections'] = $section;
+                    break;
+                }
+            }
+        }
+
+        $completionexpected = 0;
+
+        if($dataRequest['completionexpected'] == 1){
+            $completionexpected = self::convertDateToBigInt($dataRequest['completionexpected_date'] . $dataRequest['completionexpected_starthour'] . $dataRequest['completionexpected_startminute']);
+        }
+
+        $completionview = $dataRequest['completionview'];
+        if(empty($dataRequest['completion'])){
+            $completionview = 0;
+        }
+
+        $data = [
+            'cmid' => $activityIdMoodle->moodle_id,
+            'fields[0][name]' => $dataRequest['url_name'],
+            'fields[0][intro]' => $dataRequest['url_intro'],
+            'fields[0][section]' => $arr['sections']['sectionnum'],
+            'fields[0][visible]' => $dataRequest['url_visible'],
+            'fields[0][completion]' => $dataRequest['completion'],
+            'fields[0][completionview]' => $completionview,
+            'fields[0][completionexpected]' => $completionexpected,
+            'fields[0][introformat]' => 1,
+            'fields[0][externalurl]' => $dataRequest['externalurl'],
+            'fields[0][display]' => $dataRequest['url_display'],
+            'fields[0][showdescription]' => $dataRequest['url_printintro'],
+        ];
+
+        if (!empty($dataRequest['availability_item'])) {
+            $availability_item = explode(',', $dataRequest['availability_item']);  // Tách chuỗi thành mảng
+            $index = 0;  // Chỉ mục cho các phần tử availability_item
+        
+            foreach ($availability_item as $item) {
+                $data["fields[0][availability][completioncmid][$index]"] = $item;
+                $index++;
+            }
+        }
+
+        // dd($data);
+
+        // Gửi dữ liệu qua POST
+        $method = 'POST';
+        $url = getenv('URL_API_LMS') . 'local_custom_service_update_activity_url';
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
     }
@@ -323,6 +406,162 @@ class Common extends Model
         return json_decode(self::execute_curl($url, $dataJson, $contentType, false, $method),true);
     }
 
+    public static function local_custom_service_update_activity_resource($dataRequest)
+    {
+        $sectionIdMoodle = ApiMoodle::where('id', $dataRequest['resource_section'])->where('moodle_type', 'section')->first();
+
+        $activityIdMoodle = ApiMoodle::where('id', $dataRequest['activity_id'])->where('moodle_type', 'resource')->first();
+
+        $courseIdMoodle = ApiMoodle::where('id', $dataRequest['course_id'])->where('moodle_type', 'course')->first();
+
+        $sectionData = self::local_custom_service_get_sections($courseIdMoodle->moodle_id);
+        
+        $arr = [
+            'sections' => [],
+        ];
+
+        if (!isset($sectionData['errorcode'])) {
+            foreach ($sectionData as $section) {
+                if (isset($section['id']) && $section['id'] == $sectionIdMoodle->moodle_id) {
+                    $arr['sections'] = $section;
+                    break;
+                }
+            }
+        }
+
+        $completionview = $dataRequest['completionview'];
+        if(empty($dataRequest['completion'])){
+            $completionview = 0;
+        }
+
+        $data = [
+            'cmid' => $activityIdMoodle->moodle_id,
+            'fields[0][name]' => $dataRequest['resource_name'],
+            'fields[0][intro]' => $dataRequest['resource_intro'],
+            'fields[0][section]' => $arr['sections']['sectionnum'],
+            'fields[0][visible]' => $dataRequest['resource_visible'],
+            'fields[0][completion]' => $dataRequest['completion'],
+            'fields[0][completionview]' => $completionview,
+            'fields[0][completionexpected]' => 0,
+            'fields[0][introformat]' => 1,
+            'fields[0][display]' => 0,
+            'fields[0][showdescription]' => 0,
+        ];
+
+        if (!empty($dataRequest['availability_item'])) {
+            $availability_item = explode(',', $dataRequest['availability_item']);  // Tách chuỗi thành mảng
+            $index = 0;  // Chỉ mục cho các phần tử availability_item
+        
+            foreach ($availability_item as $item) {
+                $data["fields[0][availability][completioncmid][$index]"] = $item;
+                $index++;
+            }
+        }
+
+        // $dataUploaded = [
+        //     'cmid' => $activityIdMoodle->moodle_id,
+        // ];
+
+        // if ($dataRequest->hasFile('files')) {
+        //     $files = $dataRequest->file('files');
+        //     $index = 0;
+        //     foreach ($files as $file) {
+        //         $fileNameUpload = $file->getClientOriginalName();
+        //         $fileContent = base64_encode(file_get_contents($file->getPathname()));
+
+        //         $dataUploaded["files[$index][filename]"] = $fileNameUpload;
+        //         $dataUploaded["files[$index][filecontent]"] = $fileContent;
+        //         $index++;
+        //     }
+        // }
+
+        // $upload = self::uploadFileActivityResource($dataUploaded);
+        
+        // Gửi dữ liệu qua POST
+        $method = 'POST';
+        $url = getenv('URL_API_LMS') . 'local_custom_service_update_activity_resource';
+        $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
+        return $response;
+    }
+
+    public static function local_custom_service_update_activity_assign($dataRequest)
+    {
+        $sectionIdMoodle = ApiMoodle::where('id', $dataRequest['assign_section'])->where('moodle_type', 'section')->first();
+
+        $activityIdMoodle = ApiMoodle::where('id', $dataRequest['activity_id'])->where('moodle_type', 'assign')->first();
+
+        $courseIdMoodle = ApiMoodle::where('id', $dataRequest['course_id'])->where('moodle_type', 'course')->first();
+
+        $sectionData = self::local_custom_service_get_sections($courseIdMoodle->moodle_id);
+        
+        $arr = [
+            'sections' => [],
+        ];
+
+        if (!isset($sectionData['errorcode'])) {
+            foreach ($sectionData as $section) {
+                if (isset($section['id']) && $section['id'] == $sectionIdMoodle->moodle_id) {
+                    $arr['sections'] = $section;
+                    break;
+                }
+            }
+        }
+
+        $completionview = $dataRequest['completionview'];
+        $completionsubmit = $dataRequest['completionsubmit'];
+        $completionpassgrade = $dataRequest['completionusegrade'];
+
+        if(empty($dataRequest['completion'])){
+            $completionview = 0;
+            $completionsubmit = 0;
+            $completionpassgrade = 0;
+        }
+
+        $data = [
+            'cmid' => $activityIdMoodle->moodle_id,
+            'fields[0][name]' => $dataRequest['assign_name'],
+            'fields[0][intro]' => $dataRequest['assign_intro'],
+            'fields[0][section]' => $arr['sections']['sectionnum'],
+            'fields[0][visible]' => intval($dataRequest['assign_visible']),
+            'fields[0][completion]' => intval($dataRequest['completion']),
+            'fields[0][completionview]' => intval($completionview),
+            'fields[0][completionsubmit]' => intval($completionsubmit),
+            'fields[0][introformat]' => 1,
+            'fields[0][display]' => 0,
+            'fields[0][showdescription]' => 0,
+            'fields[0][grade]' => intval($dataRequest['assign_grade']),
+            'fields[0][gradepass]' => intval($dataRequest['gradePass']),
+            'fields[0][completionpassgrade]' => intval($completionpassgrade),
+            'fields[0][assignsubmissiononlinetextenabled]' => intval($dataRequest['assignsubmission_onlinetext']),
+            'fields[0][assignsubmissionfileenabled]' => intval($dataRequest['assignsubmission_file']),
+            'fields[0][assignsubmissionfilefiletypes]' => $dataRequest['assignsubmission_file_filetypes'],
+            'fields[0][courseid]' => $courseIdMoodle->moodle_id,
+        ];
+
+        if (!empty($dataRequest['availability_item'])) {
+            $availability_item = explode(',', $dataRequest['availability_item']);  // Tách chuỗi thành mảng
+            $index = 0;  // Chỉ mục cho các phần tử availability_item
+        
+            foreach ($availability_item as $item) {
+                $data["fields[0][availability][completioncmid][$index]"] = $item;
+                $index++;
+            }
+        }
+        // dd($data);
+        // Gửi dữ liệu qua POST
+        $method = 'POST';
+        $url = getenv('URL_API_LMS') . 'local_custom_service_update_activity_assign';
+        $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
+        return $response;
+    }
+
+    public static function uploadFileActivityResource($dataJson){
+        $method = 'POST';
+        $contentType = "content-type: multipart/form-data";
+        $url = getenv('URL_API_LMS') . 'local_custom_service_add_file_resource';
+        return json_decode(self::execute_curl($url, $dataJson, $contentType, false, $method),true);
+    }
+
     public static function core_course_create_categories($categoriName, $categoriParent = 0)
     {
         $url = getenv('URL_API_LMS') . 'core_course_create_categories';
@@ -387,14 +626,14 @@ class Common extends Model
     }
 
 
-    public static function local_custom_service_create_activity_url($data)
+    public static function local_custom_service_create_activity($data)
     {
         $data = [
             'courseid' => $data['courseid'],
             'content' => $data['content'],
             'name' => $data['name'],
             'section' => $data['section'],
-            'module' => 'url',
+            'module' => $data['module'],
             'display' => 1,
             'visible' => 1
         ];
@@ -405,22 +644,58 @@ class Common extends Model
         return $response;
     }
 
-    public static function local_custom_service_update_url($data)
+    public static function local_custom_service_get_detail_module($cmid, $module)
+    {
+        $url = getenv('URL_API_LMS') . 'local_custom_service_get_detail_module&cmid='.$cmid.'&modulename='.$module;
+        $method = 'GET';
+        $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
+        return $response;
+    }
+
+    
+    public static function local_custom_service_get_uploaded_files($cmid, $component, $filearea)
+    {
+        $url = getenv('URL_API_LMS') . 'local_custom_service_get_uploaded_files' . '&cmid=' . $cmid . '&filearea='.$filearea.'&component=' . $component;
+        $method = 'POST';
+        $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
+        return $response;
+    }
+
+    public static function core_course_delete_sections($courseId, $sectionId)
     {
         $data = [
-            'courseid' => $data['courseid'],
-            'content' => $data['content'],
-            'name' => $data['name'],
-            'section' => $data['section'],
-            'module' => 'url',
-            'display' => $data['display'],
-            'visible' => $data['visible'],
-            'coursemoduleid' => $data['coursemoduleid']
+            'courseid' => $courseId,
+            'coursesectionids[0]' => $sectionId
         ];
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'local_custom_service_update_activity';
+        $url = getenv('URL_API_LMS') . 'local_custom_service_delete_sections';
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
+    }
+
+    public static function core_course_delete_modules($cmid)
+    {
+        $data = [
+            'cmids[0]' => $cmid
+        ];
+        // Gửi dữ liệu qua POST
+        $method = 'POST';
+        $url = getenv('URL_API_LMS') . 'core_course_delete_modules';
+        $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
+        return $response;
+    }
+
+    public static function getCurrentUser()
+    {
+        $user = Auth::user();
+
+        $arr = [
+            'user' => [],
+        ];
+        if ($user) {
+            $arr['user'] = $user;
+        }
+        return $arr['user'];
     }
 }

@@ -18,12 +18,24 @@ class HomeController extends Controller
     
     public function index()
     {
-        return view('admin.dashboard');
+        $breadcrumbs = [
+            [
+                'url' => route('dashboard'),
+                'text' => 'Tổng quan',
+            ]
+        ];
+        return view('admin.dashboard', compact('breadcrumbs'));
     }
 
     public function index1()
     {
-        return view('dashboard');
+        $breadcrumbs = [
+            [
+                'url' => route('dashboard'),
+                'text' => 'Tổng quan',
+            ]
+        ];
+        return view('dashboard', compact('breadcrumbs'));
     }
 
     public function testQueue(Request $request)
@@ -70,5 +82,15 @@ class HomeController extends Controller
     public function testStreaming()
     {
         return view('testStreaming');
+    }
+
+    public function testChat()
+    {
+        return view('testChat');
+    }
+
+    public function sendMessage(Request $request)
+    {
+        return response()->json(['status' => true, 'message' => 'Hi']);
     }
 }

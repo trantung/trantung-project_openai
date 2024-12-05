@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -24,13 +25,18 @@ Route::post("lms/section/create", [App\Http\Controllers\ProductController::class
 Route::post("lms/section/update", [App\Http\Controllers\ProductController::class,'updateSectionCourse']);
 Route::post("lms/section/list", [App\Http\Controllers\ProductController::class,'getSectionCourse']);
 Route::post("lms/section/detail", [App\Http\Controllers\ProductController::class,'detailSectionCourse']);
+Route::post("lms/section/delete", [App\Http\Controllers\ProductController::class,'deleteSection']);
 
 Route::post("lms/activity/create", [App\Http\Controllers\ProductController::class,'createActivityMoodles']);
 Route::post("lms/activity/update", [App\Http\Controllers\ProductController::class,'updateActivityMoodles']);
 Route::post("lms/activity/detail", [App\Http\Controllers\ProductController::class,'detailActivityMoodles']);
+Route::post("lms/activity/delete", [App\Http\Controllers\ProductController::class,'deleteModule']);
 
 Route::post("lms/availablity/detail", [App\Http\Controllers\ProductController::class,'detailAvailabilityMoodles']);
 
 Route::post("products/search", [App\Http\Controllers\ProductController::class,'search']);
+Route::post("productdetail/search", [App\Http\Controllers\ProductController::class,'searchProductDetail']);
 
 Route::get("ielts/exam/list", [App\Http\Controllers\ProductController::class,'listContestIelts']);
+
+Route::post("chat/sendMessage", [App\Http\Controllers\HomeController::class,'sendMessage']);
