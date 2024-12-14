@@ -10,8 +10,10 @@ use App\Models\Question;
 use Illuminate\Support\Facades\DB;
 use App\Jobs\DemoJob;
 use App\Models\ApiUserQuestion;
+
 use App\Models\ApiUserQuestionPart;
 use App\Models\Common;
+use App\Models\CommonHocmai;
 use Illuminate\Support\Facades\Log;
 
 class ApiTestController extends Controller
@@ -21,8 +23,8 @@ class ApiTestController extends Controller
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
-        // $model = 'gpt-4-turbo';
-        $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
+        $model = 'gpt-4-turbo';
+        // $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
         $question = $jsonData['question'];
         $introduction = $this->introduction($request);
         $task_response = $this->bandTaskResponse($request);
@@ -96,6 +98,7 @@ class ApiTestController extends Controller
         $jsonData = $this->getDataFromRequest($request);
         $chat = Common::responseConclusion($jsonData);
         $dataResponseChat = $chat->choices[0]->message->content;
+        // dd($dataResponseChat);
         $dataResponseChat = json_decode($dataResponseChat,true);
         return $this->responseSuccess(200, $dataResponseChat);
 
@@ -299,9 +302,70 @@ class ApiTestController extends Controller
     public function bandTaskResponse(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
-        $chat = Common::responseBandTaskResponse($jsonData);
+        $data = ApiUserQuestion::orderBy('id', 'desc')->first()->toArray();
+        $check = ApiUserQuestionPart::whereIn('user_question_id',[230,231])
+            ->where('part_number',8)
+            // ->where('writing_task_number',2)
+            // ->where('status', 0)
+            // ->where('user_question_id',177)
+            ->orderBy('user_question_id', 'desc')
+            // ->pluck('openai_response', 'part_number');
+            ->get();
+            // $openai_response = $check->openai_response;
+        dd($check->toArray());
+
+        //     $test = json_decode($openai_response);
+        // dd(json_decode($openai_response));
+        $chat = Common::task2IdentifyErrors($jsonData);
         $dataResponseChat = $chat->choices[0]->message->content;
-        $dataResponseChat = json_decode($dataResponseChat,true);
+        // dd($dataResponseChat);
+        $dataResponseChat1 = json_decode($dataResponseChat,true);
+        dd($dataResponseChat1);
+        $data = [
+            'question_id' => 123,
+            'part_number' => 4,
+            'part_info' => 4,
+            'data' => $dataResponseChat1
+        ];
+
+        $formattedJson = json_encode($data);
+        // $data = [
+        //     // 'question_id' => $questionId,
+        //     'part_number' => 7,
+        //     // 'part_info' => $partInfo,
+        //     'data' => $dataResponseChat
+        // ];
+
+        // $data_string = json_encode($data);
+        dd($dataResponseChat, $dataResponseChat1, $formattedJson);
+
+        var_dump($dataResponseChat);
+        var_dump('bandFormatData');
+        $dataResponseChat = Common::bandFormatData($dataResponseChat);
+        $checkData = true;
+        if(empty($dataResponseChat)) {
+            //call lai openai
+            $chatCallAgain = Common::responseBandTaskResponse($jsonData);
+            $dataResponseChatAgain = $chatCallAgain->choices[0]->message->content;
+            $dataResponseChatAgain = Common::bandFormatData($dataResponseChatAgain);
+            if(empty($dataResponseChatAgain)) {
+                $checkData = false;
+            } else {
+                $dataResponseChat = $dataResponseChatAgain;
+            }
+        }
+        //check thanh phan trong dataResponseChat
+        var_dump($dataResponseChat);
+        $dataResponseChat = json_encode($dataResponseChat,true);
+        var_dump('json_encode');
+        var_dump($dataResponseChat);
+        $checkValueChild = Common::checkChildValue('test', $dataResponseChat);
+        if(empty($checkValueChild)) {
+            $checkData = false;
+        }
+        // $dataResponseChat = json_decode($dataResponseChat,true);
+        dd($dataResponseChat, $checkValueChild);
+
         return $this->responseSuccess(200, $dataResponseChat);
     }
 
@@ -309,6 +373,7 @@ class ApiTestController extends Controller
     {
         $jsonData = $this->getDataFromRequest($request);
         $chat = Common::responseCoherenceCohesion($jsonData);
+        dd($chat);
         $dataResponseChat = $chat->choices[0]->message->content;
         $dataResponseChat = json_decode($dataResponseChat,true);
         return $this->responseSuccess(200, $dataResponseChat);
@@ -332,11 +397,134 @@ class ApiTestController extends Controller
         return $this->responseSuccess(200, $dataResponseChat);
     }
 
+    public function task1Test(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $question = $jsonData['question'];
+        $topic = $jsonData['topic'];
+        if(isset($jsonData['test'])) {
+            // $question_id = $jsonData['question_id'];
+            // $checkQuestion = ApiUserQuestion::find($question_id);
+            // if($checkQuestion) {
+            //     $checkQuestionId = $checkQuestion->id;
+            //     $checkPart = ApiUserQuestionPart::where('user_question_id', $checkQuestionId)
+            //         ->get()->toArray();
+            //     dd($checkPart);
+            // }
+        }
+        // $analyze = $this->image($request);
+        $analyze = $jsonData['image_content'];
+        $messageTopic = $topic . "\n" . "This is the content of the chart:\n" . $analyze;
+        $jsonData['topic'] = $messageTopic;
+        if(isset($jsonData['test'])) {
+            dd($jsonData['topic']);
+        }
+        $jsonData['question'] = strtr( $jsonData['question'], array(  "\n" => "\\n",  "\r" => "\\r"  ));
+        $jsonData['topic'] = strtr( $jsonData['topic'], array(  "\n" => "\\n",  "\r" => "\\r"  ));
+        DB::beginTransaction();
+        try {
+            // Insert v�o b?ng ApiUserQuestion
+            $data = [
+                'question' => $jsonData['question'],
+                'topic' => $jsonData['topic'],
+                'user_id' => $jsonData['user_id'],
+                'username' => $jsonData['username'],
+                'writing_task_number' => ApiUserQuestion::TASK_1,
+                'status' => 0
+            ];
+            $questionTable = ApiUserQuestion::create($data);
+            if ($questionTable->id) {
+                // Insert v�o b?ng ApiUserQuestionPart
+                for ($i = 1; $i <= 8; $i++) {
+                    $data1 = [
+                        'user_question_id' => $questionTable->id,
+                        'question' => $jsonData['question'],
+                        'topic' => $jsonData['topic'],
+                        'part_number' => $i,
+                        'writing_task_number' => ApiUserQuestionPart::WRITING_TASK_1,
+                        'status' => 0
+                    ];
+                    ApiUserQuestionPart::create($data1);
+                }
+            }
+    
+            // Commit transaction tru?c khi dispatch job
+            DB::commit();
+            // Dispatch job
+            $chat = Common::task1IdentifyErrors($jsonData);
+            $dataResponseChat = $chat->choices[0]->message->content;
+            $totalToken = $chat->usage->totalTokens;
+            $completionTokens = $chat->usage->completionTokens;
+            $promptTokens = $chat->usage->promptTokens;
+            $checkData = ApiUserQuestionPart::where('user_question_id', $questionTable->id)
+                ->where('part_number', 8)
+                ->where('writing_task_number', 1)
+                ->first();
+            if (!empty($checkData)) {
+                $updateData = [
+                    'openai_response' => $dataResponseChat,
+                    'total_token' => $totalToken,
+                    'prompt_token' => $promptTokens,
+                    'complete_token' => $completionTokens,
+                    'status' => 1
+                ];
+
+                // Perform the update operation
+                ApiUserQuestionPart::where('user_question_id', $checkData->id)->update($updateData);
+                // Common::callCmsTask1($dataResponseChat, $questionTable->id, Common::PART_IDENTIFY_ERROR_RESPONSE);
+                dd($dataResponseChat);
+                // CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writing_task_number);
+                // Log::info('Part' . $this->partNumber . 'end');
+                
+            }
+
+            dd($dataResponseChat);
+            // dispatch(new Task1Job($jsonData, $questionTable->id, ApiUserQuestion::TASK_1));
+            return $this->responseSuccess(200, $questionTable->id);
+            // return response()->json(['message' => 'Data inserted and job dispatched successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Transaction failed: ' . $e->getMessage());
+            return $this->responseSuccess(403, $e->getMessage());
+            // return response()->json(['message' => 'An error occurred', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function task1Test8(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $question_id = $jsonData['question_id'];
+        $check = ApiUserQuestionPart::where('writing_task_number',1)
+            // where('writing_task_number',2)
+            // ->where('status', 0)
+            ->where('part_number',8)
+            ->where('user_question_id',$question_id)
+            ->orderBy('id', 'desc')
+            ->get()->toArray();
+        dd($check);
+    }
+
     public function test(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
         $client = OpenAI::client($yourApiKey);
+        // dd($jsonData);
+        // $chat = Common::task1IdentifyErrors($jsonData);
+        // $dataResponseChat = $chat->choices[0]->message->content;
+        // dd($dataResponseChat);
+
+        // $dataResponseChat = Common::formatData($dataResponseChat);
+        // dd($dataResponseChat);
+        $data = ApiUserQuestion::orderBy('id', 'desc')->first()->toArray();
+        $check = ApiUserQuestionPart::where('writing_task_number',2)
+            // where('writing_task_number',2)
+            // ->where('status', 0)
+            ->where('part_number',8)
+            // ->where('user_question_id',15)s
+            ->orderBy('id', 'desc')
+            ->get()->toArray();
+        dd($check, $data);
         // $model = 'gpt-4-turbo';
         // $model = 'gpt-3.5-turbo';
         $model = 'ft:gpt-3.5-turbo-0125:openai-startup::9I8gnIVb';
@@ -530,33 +718,58 @@ class ApiTestController extends Controller
     {
         $jsonData = $this->getDataFromRequest($request);
         $yourApiKey = getenv('OPENAI_API_KEY');
+        //todo
+        // $test = ApiUserQuestion::all()->toArray();
+        // dd($test);
         $client = OpenAI::client($yourApiKey);
-        $model = getenv('OPENAI_API_MODEL');
+        // $model = getenv('OPENAI_API_MODEL');
+        $model = 'gpt-4o';
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
         // $analyze = $this->image($request);
         // // dd($analyze->data);
         // $messageTopic = $topic . "\n" . "This is the content of the chart:\n" . $analyze;
-        // $chat = Common::task1LexicalResource($jsonData,$messageTopic);
+        $chat = Common::task2IdentifyErrors($jsonData);
         // $analyze = $this->image($request);
-        $chat = $client->chat()->create([
-            'model' => $model,
-           'response_format'=>["type"=>"json_object"],
-           'messages' => [
-               [
-                   "role" => "system",
-                   "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "This is my IELTS Writing Task 2: \n" . $question  ." \nIdentify vocabulary and grammar errors, then provide explanations and suggestion correction. Reponse is json format structured as: error, explanations, suggestion for each error"
-               ],
-               [
-                   "role" => "user",
-                   "content" => "This is my IELTS Writing Task 2: \n" . $question
-               ],
+        // $chat = $client->chat()->create([
+        //     'model' => $model,
+        //    'response_format'=>["type"=>"json_object"],
+        //    'messages' => [
+        //        [
+        //            "role" => "system",
+        //         //    "content" => "I want to improve the vocabulary and grammar in my IELTS Writing Task 2 essay. Please help me identify all incorrect or improvable vocabulary and grammar with quotes, limited to 20 words per quote. Then, then explanation for each error after that fix each error. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar error, explanations is the explanation of vocabulary or grammar error, correction is the fixed content. Please sure that fixed content is different error" . "This is my IELTS Writing Task 2 essay: \n" . $question
+        //         //test
+        //         // "content" => "I want to improve the vocabulary and grammar in my IELTS Writing Task 2 essay. Please help me identify any incorrect or improvable vocabulary and grammar with quotes, limited to 20 words per quote. Then, then explanation in about 3-4 sentences for each error after that fix each error. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar error, explanation is the explanation of vocabulary or grammar error, correction is the fixed content. Please sure that fixed content is different error" . "This is my IELTS Writing Task 2 essay: \n" . $question
+        //         //end test
+                
+                
+        //         //gan dung nhat
+        //         "content" => "I want to improve the vocabulary and grammar in my IELTS Writing Task 2 essay. Please help me identify any incorrect or improvable vocabulary and grammar with quotes, limited to 20 words per quote. Then, then explanation for each error after that fix each error. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar error, explanations is the explanation of vocabulary or grammar error, correction is the fixed content. Please sure that fixed content is different error" . "This is my IELTS Writing Task 2 essay: \n" . $question
 
-            ],
-           'temperature' => 0,
-           'max_tokens' => 1000
-        ]);
+
+        //         //    "content" => "I want to improve the vocabulary and grammar in my IELTS Writing Task 2 essay. Please help me identify any incorrect or improvable vocabulary and grammar with quotes, limited to 20 words per quote. Then, then explanation for each error after that fix each error. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar error, explanations is the explanation of vocabulary or grammar error, correction is the fixed content" . "This is my IELTS Writing Task 2 essay: \n" . $question
+        //         //    "content" => "You are a friendly IELTS preparation teacher and today you are very happy. I want you identify only vocabulary and gramma error in my IELTS Writing Task 2 essay then fix it. This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "This is my IELTS Writing Task 2: \n" . $question  ." \n Identify vocabulary and grammar errors in my essay then explanation for each error after that fix each error. Error content is limited 10 words and not same fixed content. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar error, explanations is the explanation of vocabulary or grammar error, correction is the fixed content"
+        //            //correct
+        //         //    "content" => "You are a friendly IELTS preparation teacher and today you are very happy. I want you identify only vocabulary and gramma error in my IELTS Writing Task 2 essay then fix it. This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "This is my IELTS Writing Task 2: \n" . $question  ." \n Identify vocabulary and grammar errors in my essay then explanation for each error after that fix each error. Error content not same fixed content. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar error, explanations is the explanation of vocabulary or grammar error, correction is the fixed content"
+        //         //    "content" => "You are a friendly IELTS preparation teacher and today you are very happy. I want to improve my vocabulary and gramma for IELTS writing task 2. This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "This is my IELTS Writing Task 2: \n" . $question  ." \n Only identify vocabulary and grammar errors in my essay then explanation for each error and fix each one and content fix not same error. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar error, explanations is the explanation of vocabulary or grammar error, correction is the fixed content"
+        //         //    "content" => "You are a friendly IELTS preparation teacher and today you are very happy. I want to improve my vocabulary and gramma for IELTS writing task 2. This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "This is my IELTS Writing Task 2: \n" . $question  ." \n Identify vocabulary and grammar errors in my essay after that give me an explanation for each error and suggestion improvement for each one and suggestion improvement not same error. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar need to improvement, explanations is the explanation of vocabulary or grammar need to improvement, correction is the corrected content"
+        //         //    "content" => "You are a friendly IELTS preparation teacher and today you are very happy. I want to improve my vocabulary and gramma for IELTS writing task 2. This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "This is my IELTS Writing Task 2: \n" . $question  ." \n Identify vocabulary and grammar errors in my essay after that give me an explanation for each error and suggestion improvement for each one and suggestion improvement not same error. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar need to improvement, explanations is the explanation of vocabulary or grammar need to improvement, correction is the corrected content"
+        //         //    "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "This is my IELTS Writing Task 2: \n" . $question  ." \n Identify vocabulary and grammar errors, then provide an explanation for each error and suggestion for fix each one. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the mistake, explanations is the explanation of the mistake, correction is the corrected content"
+        //         //    "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "This is my IELTS Writing Task 2: \n" . $question  ." \n Identify vocabulary and grammar errors, then provide an explanation for each error and correct each one. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the mistake, explanations is the explanation of the mistake, correction is the corrected content"
+        //         //    "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "This is my IELTS Writing Task 2: \n" . $question  ." \nIdentify vocabulary and grammar errors, then provide explanations and suggestion correction. Reponse is json format structured as: error, explanations, suggestion for each error"
+        //             // "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 2 essay: \n" . $topic . "This is my IELTS Writing Task 2: \n" . $question  ." \n Identify vocabulary and grammar errors, then provide an explanation for each error and correct each one. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the error, explanations is the explanation of the error, correction is the corrected content"
+        //         ],
+        //        [
+        //            "role" => "user",
+        //            "content" => "This is my IELTS Writing Task 2: \n" . $question
+        //        ],
+
+        //     ],
+        //    'temperature' => 0,
+        //    'max_tokens' => 1000
+        // ]);
         $dataResponseChat = $chat->choices[0]->message->content;
+        dd($dataResponseChat);
         $response = json_decode($dataResponseChat, true);
         return $this->responseSuccess(200, $response);
     }
@@ -688,4 +901,79 @@ class ApiTestController extends Controller
 
     }
 
+    //test hocmai
+    //vocabulary_grammar
+    public function hocmaiTask1VocabularyGramma(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $chat = CommonHocmai::hocmaiTask1VocabularyGramma($jsonData);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $res = [
+            'dataResponseChat' => $dataResponseChat,
+            'totalToken' => $chat->usage->totalTokens,
+            'completionTokens' => $chat->usage->completionTokens,
+            'promptTokens' => $chat->usage->promptTokens,
+        ];
+        return $this->responseSuccess(200, $res);
+    }
+    //task_achiement
+    public function hocmaiTask1TaskAchiement(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $chat = CommonHocmai::hocmaiTask1BandTaskAchiement($jsonData);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $res = [
+            'dataResponseChat' => $dataResponseChat,
+            'totalToken' => $chat->usage->totalTokens,
+            'completionTokens' => $chat->usage->completionTokens,
+            'promptTokens' => $chat->usage->promptTokens,
+        ];
+        return $this->responseSuccess(200, $res);
+    }
+    //coherence_cohesion
+    public function hocmaiTask1CoherenceCohesion(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $chat = CommonHocmai::hocmaiTask1BandCoherenceCohesion($jsonData);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $res = [
+            'dataResponseChat' => $dataResponseChat,
+            'totalToken' => $chat->usage->totalTokens,
+            'completionTokens' => $chat->usage->completionTokens,
+            'promptTokens' => $chat->usage->promptTokens,
+        ];
+        return $this->responseSuccess(200, $res);
+    }
+    //lexical_resource
+    public function hocmaiTask1LexicalResource(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $chat = CommonHocmai::hocmaiTask1BandLexicalResource($jsonData);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $res = [
+            'dataResponseChat' => $dataResponseChat,
+            'totalToken' => $chat->usage->totalTokens,
+            'completionTokens' => $chat->usage->completionTokens,
+            'promptTokens' => $chat->usage->promptTokens,
+        ];
+
+        return $this->responseSuccess(200, $res);
+    }
+
+    //grammatical_range_accuracy
+    public function hocmaiTask1GrammaRange(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $chat = CommonHocmai::hocmaiTask1BandGrammaRange($jsonData);
+        $dataResponseChat = $chat->choices[0]->message->content;
+        $res = [
+            'dataResponseChat' => $dataResponseChat,
+            'totalToken' => $chat->usage->totalTokens,
+            'completionTokens' => $chat->usage->completionTokens,
+            'promptTokens' => $chat->usage->promptTokens,
+        ];
+
+        return $this->responseSuccess(200, $res);
+    }
+    
 }

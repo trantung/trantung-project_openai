@@ -85,7 +85,7 @@ class TaskPart5Job implements ShouldQueue
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
             }
-            Log::error('Part' . $this->partNumber . 'Job failed for part: ' . $this->partNumber . ' with error: ' . $e->getMessage());
+            Log::error('Task 1 part ' . $this->partNumber . 'Job failed for part: ' . $this->partNumber . ' with error: ' . $e->getMessage());
         }
     }
 }

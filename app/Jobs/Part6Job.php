@@ -39,7 +39,7 @@ class Part6Job implements ShouldQueue
     public function handle(): void
     {
         try {
-            $chat = Common::responseCoherenceCohesion($this->jsonData);
+            $chat = Common::responseLexicalResource($this->jsonData);
             $dataResponseChat = $chat->choices[0]->message->content;
             $totalToken = $chat->usage->totalTokens;
             $completionTokens = $chat->usage->completionTokens;

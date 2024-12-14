@@ -32,7 +32,6 @@ class Part5Job implements ShouldQueue
         $this->apiUserQuestionId = $apiUserQuestionId;
         $this->writing_task_number = $writing_task_number;
     }
-
     /**
      * Execute the job.
      */
@@ -41,6 +40,38 @@ class Part5Job implements ShouldQueue
         try {
             $chat = Common::responseCoherenceCohesion($this->jsonData);
             $dataResponseChat = $chat->choices[0]->message->content;
+            $checkOverallScore = true;
+            // $chat = Common::responseCoherenceCohesion($jsonData);
+            // $dataResponseChat = $chat->choices[0]->message->content;
+            $dataResponseChatArray = json_decode($dataResponseChat,true);
+            if(empty($dataResponseChatArray['overall'])) {
+                Log::info('Part2 number ' . $this->partNumber . ' Job executed for question_id: ' . $this->apiUserQuestionId. ' empty overall');
+                $checkOverallScore = false;
+            }
+            if(!isset($dataResponseChatArray['overall']['overall_score'])) {
+                Log::info('Part2 number ' . $this->partNumber . ' Job executed for question_id: ' . $this->apiUserQuestionId. ' empty overall_score');
+                $checkOverallScore = false;
+            }
+            if(!isset($dataResponseChatArray['overall']['belower_score'])) {
+                Log::info('Part2 number ' . $this->partNumber . ' Job executed for question_id: ' . $this->apiUserQuestionId. ' empty belower_score');
+                $checkOverallScore = false;
+            }
+            if(!isset($dataResponseChatArray['overall']['higher_score'])) {
+                Log::info('Part2 number ' . $this->partNumber . ' Job executed for question_id: ' . $this->apiUserQuestionId. ' empty higher_score');
+                $checkOverallScore = false;
+            }
+            if(!isset($dataResponseChatArray['overall']['reason_not_belower_score'])) {
+                Log::info('Part2 number ' . $this->partNumber . ' Job executed for question_id: ' . $this->apiUserQuestionId. ' empty reason_not_belower_score');
+                $checkOverallScore = false;
+            }
+            if(!isset($dataResponseChatArray['overall']['reason_not_higher_score'])) {
+                Log::info('Part2 number ' . $this->partNumber . ' Job executed for question_id: ' . $this->apiUserQuestionId. ' empty reason_not_higher_score');
+                $checkOverallScore = false;
+            }
+            if(!$checkOverallScore) {
+                $chat = Common::responseCoherenceCohesion($this->jsonData);
+                $dataResponseChat = $chat->choices[0]->message->content;
+            }
             $totalToken = $chat->usage->totalTokens;
             $completionTokens = $chat->usage->completionTokens;
             $promptTokens = $chat->usage->promptTokens;

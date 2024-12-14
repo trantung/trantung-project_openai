@@ -51,6 +51,7 @@ class Part8Job implements ShouldQueue
                 ->first();
 
             if (!empty($checkData)) {
+                $dataResponseChat = Common::formatData($dataResponseChat);
                 $updateData = [
                     'openai_response' => $dataResponseChat,
                     'total_token' => $totalToken,
@@ -61,6 +62,7 @@ class Part8Job implements ShouldQueue
 
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
+                $dataResponseChat = json_encode($dataResponseChat,true);
                 Common::callCms($dataResponseChat, $this->apiUserQuestionId, Common::PART_IDENTIFY_ERROR_RESPONSE);
                 CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writing_task_number);
                 
@@ -70,7 +72,7 @@ class Part8Job implements ShouldQueue
             //event(new Part1JobCompleted($this->jsonData, $this->partNumber, $dataResponseChat, $this->apiUserQuestionId));
 
             // Log thành công
-            Log::info('Part' . $this->partNumber . 'Job executed for question_id: ' . $this->apiUserQuestionId);
+            Log::info('Part' . $this->partNumber . 'Job executed task 2 for question_id: ' . $this->apiUserQuestionId);
         } catch (\Exception $e) {
             // Xử lý lỗi và log
             $checkData = ApiUserQuestionPart::where('user_question_id', $this->apiUserQuestionId)

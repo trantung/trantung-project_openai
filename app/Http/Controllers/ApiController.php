@@ -663,11 +663,13 @@ class ApiController extends Controller
         }
         // dd(ApiUserQuestionPart::all());
         DB::beginTransaction();
+        // $db = strtr( $db, array(  "\n" => "\\n",  "\r" => "\\r"  ));
         try {
             // Insert v�o b?ng ApiUserQuestion
             $data = [
-                'question' => $jsonData['question'],
-                'topic' => $jsonData['topic'],
+                
+                'question' => strtr( $jsonData['question'], array(  "\n" => "\\n",  "\r" => "\\r"  )),
+                'topic' => strtr( $jsonData['topic'], array(  "\n" => "\\n",  "\r" => "\\r"  )),
                 'user_id' => $jsonData['user_id'],
                 'username' => $jsonData['username'],
                 'writing_task_number' => ApiUserQuestion::TASK_2,
@@ -680,8 +682,8 @@ class ApiController extends Controller
                 for ($i = 1; $i <= 8; $i++) {
                     $data1 = [
                         'user_question_id' => $questionTable->id,
-                        'question' => $jsonData['question'],
-                        'topic' => $jsonData['topic'],
+                        'question' => strtr( $jsonData['question'], array(  "\n" => "\\n",  "\r" => "\\r"  )),
+                        'topic' => strtr( $jsonData['topic'], array(  "\n" => "\\n",  "\r" => "\\r"  )),
                         'part_number' => $i,
                         'writing_task_number' => ApiUserQuestionPart::WRITING_TASK_2,
                         'status' => 0
@@ -712,20 +714,24 @@ class ApiController extends Controller
         $question = $jsonData['question'];
         $topic = $jsonData['topic'];
         if(isset($jsonData['test'])) {
-            $question_id = $jsonData['question_id'];
-            $checkQuestion = ApiUserQuestion::find($question_id);
-            if($checkQuestion) {
-                $checkQuestionId = $checkQuestion->id;
-                $checkPart = ApiUserQuestionPart::where('user_question_id', $checkQuestionId)
-                    ->get()->toArray();
-                dd($checkPart);
-            }
+            // $question_id = $jsonData['question_id'];
+            // $checkQuestion = ApiUserQuestion::find($question_id);
+            // if($checkQuestion) {
+            //     $checkQuestionId = $checkQuestion->id;
+            //     $checkPart = ApiUserQuestionPart::where('user_question_id', $checkQuestionId)
+            //         ->get()->toArray();
+            //     dd($checkPart);
+            // }
         }
         // $analyze = $this->image($request);
         $analyze = $jsonData['image_content'];
         $messageTopic = $topic . "\n" . "This is the content of the chart:\n" . $analyze;
         $jsonData['topic'] = $messageTopic;
-        
+        if(isset($jsonData['test'])) {
+            dd($jsonData['topic']);
+        }
+        $jsonData['question'] = strtr( $jsonData['question'], array(  "\n" => "\\n",  "\r" => "\\r"  ));
+        $jsonData['topic'] = strtr( $jsonData['topic'], array(  "\n" => "\\n",  "\r" => "\\r"  ));
         DB::beginTransaction();
         try {
             // Insert v�o b?ng ApiUserQuestion

@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class LmsCourse extends Model
+class LmsExercise extends Model
 {
     use HasFactory;
-    use SoftDeletes;
 
-    protected $table = "lms_course";
-    public $fillable = ['username', 'user_id', 'course_id', 'process'];
+    protected $table = "lms_exercise";
+    public $fillable = ['course_id', 'video_id', 'exercise_id'];
     public $timestamps = true;
+
 }

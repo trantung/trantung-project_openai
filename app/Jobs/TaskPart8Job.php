@@ -51,6 +51,7 @@ class TaskPart8Job implements ShouldQueue
                 ->first();
 
             if (!empty($checkData)) {
+                $dataResponseChat = Common::formatData($dataResponseChat);
                 $updateData = [
                     'openai_response' => $dataResponseChat,
                     'total_token' => $totalToken,
@@ -61,9 +62,10 @@ class TaskPart8Job implements ShouldQueue
 
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
+                $dataResponseChat = json_encode($dataResponseChat,true);
                 Common::callCmsTask1($dataResponseChat, $this->apiUserQuestionId, Common::PART_IDENTIFY_ERROR_RESPONSE);
                 CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writing_task_number);
-                Log::info('Part' . $this->partNumber . 'end');
+                Log::info('Task 1 part ' . $this->partNumber . 'end');
                 
             }
 
@@ -71,7 +73,7 @@ class TaskPart8Job implements ShouldQueue
             //event(new Part1JobCompleted($this->jsonData, $this->partNumber, $dataResponseChat, $this->apiUserQuestionId));
 
             // Log thành công
-            Log::info('Part' . $this->partNumber . 'Job executed for question_id: ' . $this->apiUserQuestionId);
+            Log::info('Part' . $this->partNumber . 'Job executed task 1 for question_id: ' . $this->apiUserQuestionId);
         } catch (\Exception $e) {
             // Xử lý lỗi và log
             $checkData = ApiUserQuestionPart::where('user_question_id', $this->apiUserQuestionId)
@@ -86,7 +88,7 @@ class TaskPart8Job implements ShouldQueue
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
             }
-            Log::error('Part' . $this->partNumber . 'Job failed for part: ' . $this->partNumber . ' with error: ' . $e->getMessage());
+            Log::error('Task 1 part ' . $this->partNumber . 'Job failed for part: ' . $this->partNumber . ' with error: ' . $e->getMessage());
         }
     }
 }

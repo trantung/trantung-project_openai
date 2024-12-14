@@ -45,24 +45,58 @@ class Part4Job implements ShouldQueue
             $completionTokens = $chat->usage->completionTokens;
             $promptTokens = $chat->usage->promptTokens;
 
-            $checkData = ApiUserQuestionPart::where('user_question_id', $this->apiUserQuestionId)
+            $checkDataQuestion = ApiUserQuestionPart::where('user_question_id', $this->apiUserQuestionId)
                 ->where('part_number', $this->partNumber)
                 ->where('writing_task_number', $this->writing_task_number)
                 ->first();
 
-            if (!empty($checkData)) {
+            if (!empty($checkDataQuestion)) {
+                $dataResponseChat = Common::bandFormatData($dataResponseChat);
+                $checkData = true;
+                if(empty($dataResponseChat)) {
+                    //call lai openai
+                    $chatCallAgain = Common::responseBandTaskResponse($this->jsonData);
+                    $dataResponseChatAgain = $chatCallAgain->choices[0]->message->content;
+                    $dataResponseChatAgain = Common::bandFormatData($dataResponseChatAgain);
+                    if(empty($dataResponseChatAgain)) {
+                        $checkData = false;
+                    } else {
+                        $dataResponseChat = $dataResponseChatAgain;
+                    }
+                }
+                //check thanh phan trong dataResponseChat
+                $dataResponseChatCall = $dataResponseChat = json_encode($dataResponseChat,true);
+                $checkValueChild = Common::checkChildValue($this->apiUserQuestionId, $dataResponseChat);
+                if(!$checkValueChild) {
+                    $checkData = false;
+                }
+                if(!$checkData) {
+                    //call lai openai
+                    $chatCallAgain = Common::responseBandTaskResponse($this->jsonData);
+                    $dataResponseChatAgain = $chatCallAgain->choices[0]->message->content;
+                    $checkValueChildAgain = Common::checkChildValue($this->apiUserQuestionId, $dataResponseChatAgain);
+                    if(empty($checkValueChildAgain)) {
+                        $checkData = false;
+                    }
+                    $dataResponseChat = json_encode($dataResponseChatAgain,true);
+                }
+                $updateStatus = 1;
+                if(empty($checkData)) {
+                    $status = 0;
+                }
                 $updateData = [
                     'openai_response' => $dataResponseChat,
                     'total_token' => $totalToken,
                     'prompt_token' => $promptTokens,
                     'complete_token' => $completionTokens,
-                    'status' => 1
+                    'status' => $updateStatus
                 ];
 
                 // Perform the update operation
-                ApiUserQuestionPart::find($checkData->id)->update($updateData);
-                
-                Common::callCms($dataResponseChat, $this->apiUserQuestionId, Common::PART_NUMBER_BAND_TASK_RESPONSE);
+                ApiUserQuestionPart::find($checkDataQuestion->id)->update($updateData);
+                // $dataResponseChat = json_encode($dataResponseChat,true);
+
+                Common::callCms($dataResponseChat, $this->apiUserQuestionId, Common::PART_NUMBER_BAND_TASK_RESPONSE, $checkData);
                 CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writing_task_number);
                 
             }

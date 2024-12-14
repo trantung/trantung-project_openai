@@ -70,7 +70,7 @@ class TaskPart1Job implements ShouldQueue
             //event(new Part1JobCompleted($this->jsonData, $this->partNumber, $dataResponseChat, $this->apiUserQuestionId));
 
             // Log thành công
-            Log::info('Part' . $this->partNumber . 'Job executed for question_id: ' . $this->apiUserQuestionId);
+            Log::info('Task 1 part ' . $this->partNumber . 'Job executed for question_id: ' . $this->apiUserQuestionId);
         } catch (\Exception $e) {
             // Xử lý lỗi và log
             $checkData = ApiUserQuestionPart::where('user_question_id', $this->apiUserQuestionId)
@@ -85,7 +85,7 @@ class TaskPart1Job implements ShouldQueue
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
             }
-            Log::error('Part' . $this->partNumber . 'Job failed for part: ' . $this->partNumber . ' with error: ' . $e->getMessage());
+            Log::error('Task 1 part ' . $this->partNumber . 'Job failed for part: ' . $this->partNumber . ' with error: ' . $e->getMessage());
         }
     }
 }
