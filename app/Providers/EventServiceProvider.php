@@ -17,7 +17,10 @@ class EventServiceProvider extends ServiceProvider
         'App\Events\Part1JobCompleted' => [
             'App\Listeners\HandlePart1JobCompletion',
         ],
-        // Các s? ki?n và listener khác có th? du?c dang ký t?i dây
+        \SocialiteProviders\Manager\SocialiteWasCalled::class => [
+            // ... other providers
+            \SocialiteProviders\Keycloak\KeycloakExtendSocialite::class.'@handle',
+        ],
     ];
 
     /**

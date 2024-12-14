@@ -37,6 +37,11 @@ class ProductController extends Controller
 
     public function index()
     {
+        $routeName = 'course.index';
+        $checkPermissionUser = checkPermissionUser($routeName);
+        if(!$checkPermissionUser){
+            return redirect()->route('dashboard');
+        }
         $products = [
             [
                 "id" => 1,
@@ -102,6 +107,11 @@ class ProductController extends Controller
 
     public function detail(Request $request, $course_id)
     {
+        $routeName = 'course.detail';
+        $checkPermissionUser = checkPermissionUser($routeName);
+        if(!$checkPermissionUser){
+            return redirect()->route('dashboard');
+        }
         $products = [
             [
                 "id" => 2,
@@ -1828,5 +1838,11 @@ class ProductController extends Controller
         }
 
         return response()->json(['error' => 'Failed to delete module on Moodle'], 500);
+    }
+
+    public function listCourseHocmai(){
+        $listCourse = ApiMoodle::where('moodle_type', 'course')->pluck('moodle_name', 'id')->toArray();
+
+        return $this->responseSuccess(200, $listCourse);
     }
 }

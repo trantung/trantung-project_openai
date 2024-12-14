@@ -69,8 +69,8 @@
                                                     </div>
                                                     <div class="mb-2">
                                                         <label>Khóa học <span class="asterisk">(*)</span></label>
-                                                        <select name="course_id" id="course_id" required="">
-                                                            <option value="" disabled selected>-- Chọn khóa học --</option>
+                                                        <select name="course_ids[]" id="course_ids" required="" multiple>
+                                                            <!-- <option value="" disabled selected>-- Chọn khóa học --</option> -->
                                                             @foreach($courses as $course)
                                                                 <option value="{{ $course->id }}">{{ $course->moodle_name }}</option>
                                                             @endforeach

@@ -34,3 +34,16 @@
 .form-group {
     margin-bottom: 1rem;
 }
+
+.choices {
+    z-index: 9999; /* Đặt giá trị z-index cao hơn để chắc chắn nó hiển thị trên các phần tử khác */
+}
+
+/* Cũng có thể thay đổi z-index của phần dropdown */
+.choices__list {
+    z-index: 9999; /* Đảm bảo dropdown không bị che khuất */
+}
+/* 
+.table-course-class-chosen-teacher .select2-container{
+    width: auto !important;
+} */

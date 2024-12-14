@@ -139,6 +139,7 @@ return [
         App\Providers\EventServiceProvider::class,
         //App\Providers\RouteServiceProvider::class,
         ProtoneMedia\LaravelFFMpeg\Support\ServiceProvider::class,
+        App\Providers\KeycloakProvider::class,
     ])->toArray(),
 
     /*

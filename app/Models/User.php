@@ -19,6 +19,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'username',
+        'moodle_user_id',
         'password',
         'type'
     ];
@@ -44,5 +46,16 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Mối quan hệ: Một người dùng có nhiều vai trò
+    public function roles()
+    {
+        return $this->belongsToMany(Roles::class, 'user_role', 'user_id', 'role_id');
+    }
+
+    public function teacher()
+    {
+        return $this->hasOne(Teachers::class, 'user_id');
     }
 }

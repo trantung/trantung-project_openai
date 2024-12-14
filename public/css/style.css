@@ -2801,3 +2801,45 @@ div.disabled.active .box-name {
 .asterisk {
     color: red;
 }
+
+/* #form_role_info label {
+    width: 15%;
+}
+
+#form_role_info input, #form_tab_info select {
+    width: 350px;
+} */
+
+.roleassigntable #buttonscell {
+    width: 16%;
+    vertical-align: top;
+    padding: .2em .3em;
+}
+
+#addcontrols {
+    margin-top: 11.25rem;
+    text-align: center;
+    margin-bottom: 3em;
+}
+
+#addcontrols input, #removecontrols input {
+    width: 100%;
+    margin: auto;
+}
+
+.generaltable tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, .03);
+}
+
+.roleassigntable .btn-secondary.disabled, .roleassigntable .btn-secondary:disabled {
+    color: #1d2125 !important;
+    background-color: #ced4da !important;
+    border-color: #ced4da !important;
+}
+
+.section-info {
+    border-radius: 4px;
+    background-color: #EDEDED;
+    padding: 8px 16px;
+    margin: 8px 8px 16px;
+}

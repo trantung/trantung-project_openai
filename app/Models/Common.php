@@ -42,7 +42,7 @@ class Common extends Model
     {
         $method = 'GET';
         $contentType = "Content-Type: application/json";
-        $url = getenv('URL_API_LMS') . 'core_course_get_courses';
+        $url = config('services.lms.URL_API_LMS') . 'core_course_get_courses';
         return json_decode(self::execute_curl($url, false, $contentType, false, $method), true);
     }
 
@@ -69,7 +69,7 @@ class Common extends Model
 
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'core_course_create_courses';
+        $url = config('services.lms.URL_API_LMS') . 'core_course_create_courses';
         // var_dump(self::execute_curl($url, $data, false, false, $method));die;
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
@@ -78,7 +78,7 @@ class Common extends Model
     public static function local_custom_service_create_activity_quiz($courseId, $name, $section)
     {
         $name = str_replace(' ', '%20', $name);
-        $url = getenv('URL_API_LMS') . 'local_custom_service_create_activity_quiz' . '&courseid=' . $courseId . '&name=' . $name . '&section=' . $section;
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_create_activity_quiz' . '&courseid=' . $courseId . '&name=' . $name . '&section=' . $section;
         // if(!empty($completioncmid)){
         //     $url .= '&completioncmid=' . $completioncmid;
         // }
@@ -185,7 +185,7 @@ class Common extends Model
         // dd($data);
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'local_custom_service_update_activity_quiz';
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_update_activity_quiz';
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
     }
@@ -259,14 +259,14 @@ class Common extends Model
 
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'local_custom_service_update_activity_url';
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_update_activity_url';
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
     }
 
     public static function core_course_get_contents($courseId)
     {
-        $url = getenv('URL_API_LMS') . 'core_course_get_contents' . '&courseid=' . $courseId;
+        $url = config('services.lms.URL_API_LMS') . 'core_course_get_contents' . '&courseid=' . $courseId;
         $method = 'GET';
         $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
         return $response;
@@ -274,7 +274,7 @@ class Common extends Model
         
     public static function local_custom_service_get_sections($courseId)
     {
-        $url = getenv('URL_API_LMS') . 'local_custom_service_get_sections' . '&courseid=' . $courseId;
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_get_sections' . '&courseid=' . $courseId;
         $method = 'GET';
         $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
         return $response;
@@ -282,7 +282,7 @@ class Common extends Model
 
     public static function core_course_get_course_module($cmid)
     {
-        $url = getenv('URL_API_LMS') . 'core_course_get_course_module' . '&cmid=' . $cmid;
+        $url = config('services.lms.URL_API_LMS') . 'core_course_get_course_module' . '&cmid=' . $cmid;
         $method = 'GET';
         $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
         return $response;
@@ -306,7 +306,7 @@ class Common extends Model
         ];
         $jsonEncoded = json_encode($dataJson, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $data = base64_encode($jsonEncoded);
-        $url = getenv('URL_API_LMS') . 'local_custom_service_update_sections' . '&jsonRequest=' . $data;
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_update_sections' . '&jsonRequest=' . $data;
         $method = 'POST';
         $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
         return $response;
@@ -314,7 +314,7 @@ class Common extends Model
 
     public static function getCourseMoodleById($courseId)
     {
-        $url = getenv('URL_API_LMS') . 'core_course_get_courses' . '&options[ids][0]=' . $courseId;
+        $url = config('services.lms.URL_API_LMS') . 'core_course_get_courses' . '&options[ids][0]=' . $courseId;
         $method = 'GET';
         $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
         return $response;
@@ -322,7 +322,7 @@ class Common extends Model
 
     public static function core_course_get_courses_by_field($courseId)
     {
-        $url = getenv('URL_API_LMS') . 'core_course_get_courses_by_field' . '&field=id&value=' . $courseId;
+        $url = config('services.lms.URL_API_LMS') . 'core_course_get_courses_by_field' . '&field=id&value=' . $courseId;
         $method = 'GET';
         $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
         return $response;
@@ -380,14 +380,14 @@ class Common extends Model
 
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'core_course_update_courses';
+        $url = config('services.lms.URL_API_LMS') . 'core_course_update_courses';
         $response = json_decode(self::execute_curl($url, $filteredData, false, false, $method), true);
         return $response;
     }
 
     public static function local_custom_service_create_sections($courseId, $number)
     {
-        $url = getenv('URL_API_LMS') . 'local_custom_service_create_sections' . '&courseid=' . $courseId . '&position=0&number=' . $number;
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_create_sections' . '&courseid=' . $courseId . '&position=0&number=' . $number;
         $method = 'POST';
         $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
         return $response;
@@ -402,7 +402,7 @@ class Common extends Model
     
         $method = 'POST';
         $contentType = "content-type: multipart/form-data";
-        $url = getenv('URL_API_LMS') . 'local_custom_service_add_image_course';
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_add_image_course';
         return json_decode(self::execute_curl($url, $dataJson, $contentType, false, $method),true);
     }
 
@@ -479,7 +479,7 @@ class Common extends Model
         
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'local_custom_service_update_activity_resource';
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_update_activity_resource';
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
     }
@@ -550,7 +550,7 @@ class Common extends Model
         // dd($data);
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'local_custom_service_update_activity_assign';
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_update_activity_assign';
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
     }
@@ -558,13 +558,13 @@ class Common extends Model
     public static function uploadFileActivityResource($dataJson){
         $method = 'POST';
         $contentType = "content-type: multipart/form-data";
-        $url = getenv('URL_API_LMS') . 'local_custom_service_add_file_resource';
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_add_file_resource';
         return json_decode(self::execute_curl($url, $dataJson, $contentType, false, $method),true);
     }
 
     public static function core_course_create_categories($categoriName, $categoriParent = 0)
     {
-        $url = getenv('URL_API_LMS') . 'core_course_create_categories';
+        $url = config('services.lms.URL_API_LMS') . 'core_course_create_categories';
         $params = "categories[0][name]=".$categoriName."&categories[0][parent]=".$categoriParent;
         $method = 'POST';
         $contentType = 'Content-Type: application/x-www-form-urlencoded';
@@ -575,7 +575,7 @@ class Common extends Model
 
     public static function core_course_get_categories($categoriID = null, $showSubCategory = 0) // showSub: 1
     {
-        $url = getenv('URL_API_LMS') . 'core_course_get_categories';
+        $url = config('services.lms.URL_API_LMS') . 'core_course_get_categories';
         if(!empty($categoriID)){
             $url .= '&criteria[0][key]=id&criteria[0][value]=' . $categoriID . '&addsubcategories=' . $showSubCategory;
         }
@@ -595,7 +595,7 @@ class Common extends Model
         ];
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'core_course_update_categories';
+        $url = config('services.lms.URL_API_LMS') . 'core_course_update_categories';
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
     }
@@ -608,7 +608,7 @@ class Common extends Model
         ];
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'core_course_delete_categories';
+        $url = config('services.lms.URL_API_LMS') . 'core_course_delete_categories';
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
     }
@@ -620,7 +620,7 @@ class Common extends Model
         ];
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'core_course_delete_courses';
+        $url = config('services.lms.URL_API_LMS') . 'core_course_delete_courses';
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
     }
@@ -639,14 +639,14 @@ class Common extends Model
         ];
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'local_custom_service_create_activity_label';
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_create_activity_label';
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
     }
 
     public static function local_custom_service_get_detail_module($cmid, $module)
     {
-        $url = getenv('URL_API_LMS') . 'local_custom_service_get_detail_module&cmid='.$cmid.'&modulename='.$module;
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_get_detail_module&cmid='.$cmid.'&modulename='.$module;
         $method = 'GET';
         $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
         return $response;
@@ -655,7 +655,7 @@ class Common extends Model
     
     public static function local_custom_service_get_uploaded_files($cmid, $component, $filearea)
     {
-        $url = getenv('URL_API_LMS') . 'local_custom_service_get_uploaded_files' . '&cmid=' . $cmid . '&filearea='.$filearea.'&component=' . $component;
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_get_uploaded_files' . '&cmid=' . $cmid . '&filearea='.$filearea.'&component=' . $component;
         $method = 'POST';
         $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
         return $response;
@@ -669,7 +669,7 @@ class Common extends Model
         ];
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'local_custom_service_delete_sections';
+        $url = config('services.lms.URL_API_LMS') . 'local_custom_service_delete_sections';
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
     }
@@ -681,7 +681,7 @@ class Common extends Model
         ];
         // Gửi dữ liệu qua POST
         $method = 'POST';
-        $url = getenv('URL_API_LMS') . 'core_course_delete_modules';
+        $url = config('services.lms.URL_API_LMS') . 'core_course_delete_modules';
         $response = json_decode(self::execute_curl($url, $data, false, false, $method), true);
         return $response;
     }
@@ -697,5 +697,275 @@ class Common extends Model
             $arr['user'] = $user;
         }
         return $arr['user'];
+    }
+
+    public static function core_user_create_users($dataJson)
+    {
+        // $dataJson = [
+        //     'users[0][username]' => $courseId,
+        //     'users[0][auth]' => 'manual',
+        //     'users[0][password]' => 'manual',
+        //     'users[0][firstname]' => 'manual',
+        //     'users[0][lastname]' => 'manual',
+        //     'users[0][email]' => 'manual',
+        // ];
+        // Gửi dữ liệu qua POST
+        $method = 'POST';
+        $url = config('services.lms.URL_API_LMS') . 'core_user_create_users';
+        $response = json_decode(self::execute_curl($url, $dataJson, false, false, $method), true);
+        return $response;
+    }
+
+    public static function core_user_update_users($dataJson)
+    {
+        // Gửi dữ liệu qua POST
+        $method = 'POST';
+        $url = config('services.lms.URL_API_LMS') . 'core_user_update_users';
+        $response = json_decode(self::execute_curl($url, $dataJson, false, false, $method), true);
+        return $response;
+    }
+
+    public static function enrol_manual_enrol_users($dataJson)
+    {
+        // $dataJson = [
+        //     'enrolments[0][roleid]' => $courseId,
+        //     'enrolments[0][userid]' => 'manual',
+        //     'enrolments[0][courseid]' => 'manual',
+        //     'enrolments[0][suspend]' => 0,
+        // ];
+        // Gửi dữ liệu qua POST
+        $method = 'POST';
+        $url = config('services.lms.URL_API_LMS') . 'enrol_manual_enrol_users';
+        $response = json_decode(self::execute_curl($url, $dataJson, false, false, $method), true);
+        return $response;
+    }
+
+    public static function enrol_manual_unenrol_users($dataJson)
+    {
+        // Gửi dữ liệu qua POST
+        $method = 'POST';
+        $url = config('services.lms.URL_API_LMS') . 'enrol_manual_unenrol_users';
+        $response = json_decode(self::execute_curl($url, $dataJson, false, false, $method), true);
+        return $response;
+    }
+
+    public static function core_user_get_users_by_field($stremail)
+    {
+        $url = config('services.lms.URL_API_LMS') . 'core_user_get_users_by_field&field=email&values[0]='.$stremail;
+        $method = 'GET';
+        $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
+        return $response;
+    }
+
+    public static function core_user_get_users($key, $value)
+    {
+        $url = config('services.lms.URL_API_LMS') . 'core_user_get_users&criteria[0][key]='.$key.'&criteria[0][value]='.$value;
+        $method = 'GET';
+        $response = json_decode(self::execute_curl($url, false, false, false, $method), true);
+        return $response;
+    }
+
+    public static function createClass($data, $course_ids)
+    {
+        // Kiểm tra lớp học đã tồn tại
+        $existingClass = Classes::byName($data['class_name'])->first();
+        if ($existingClass) {
+            return [
+                'status' => false,
+                'message' => "Tên lớp '{$data['class_name']}' đã tồn tại."
+            ];
+        }
+
+        // Tạo lớp học mới
+        $newClass = Classes::create([
+            'name' => $data['class_name'],
+            'year' => $data['year'],
+            'status' => $data['status'],
+        ]);
+
+        // Lấy danh sách khóa học
+        $courses = ApiMoodle::inIds($course_ids)->moodleType('course')->get();
+
+        // Liên kết các khóa học với lớp học
+        $newClass->courses()->sync($course_ids);
+
+        // Lấy danh sách tên khóa học
+        $course_name_string = $courses->pluck('moodle_name')->implode(', ');
+
+        return [
+            'status' => true,
+            'message' => "Lớp học '{$data['class_name']}' đã được tạo thành công với các khóa học: {$course_name_string}.",
+            'class' => $newClass
+        ];
+    }
+
+    public function updateClass($id, $data, $courseIds)
+    {
+        // Tìm lớp học cần cập nhật
+        $class = Classes::findOrFail($id);
+
+        // Kiểm tra trùng tên lớp
+        $existingClass = Classes::where('name', $data['class_name'])->where('id', '!=', $id)->first();
+
+        if ($existingClass) {
+            return [
+                'status' => false,
+                'message' => "Tên lớp '{$data['class_name']}' đã tồn tại."
+            ];
+        }
+
+        // Cập nhật thông tin lớp học
+        $updated = $class->update([
+            'name' => $data['class_name'],
+            'year' => $data['year'],
+            'status' => $data['status'],
+        ]);
+
+        if ($updated) {
+            // Cập nhật các khóa học liên kết với lớp học
+            $class->courses()->sync($courseIds); // sync sẽ tự động xóa và thêm các mối quan hệ khóa học mới
+
+            return [
+                'status' => true,
+                'message' => 'Lớp học đã được cập nhật thành công.'
+            ];
+        } else {
+            return [
+                'status' => false,
+                'message' => 'Không thể cập nhật lớp học. Vui lòng thử lại.'
+            ];
+        }
+    }
+
+    public static function generateUniqueShortName($name, $modelClass, $column = 'short_name')
+    {
+        // Tạo short_name từ tên, chuyển tất cả thành chữ thường và thay thế dấu cách bằng dấu gạch dưới
+        $shortName = strtolower(str_replace(' ', '_', $name));
+
+        // Kiểm tra xem short_name đã tồn tại trong bảng roles chưa
+        if ($modelClass::where($column, $shortName)->exists()) {
+            // Nếu đã tồn tại, trả về thông báo lỗi theo định dạng chung
+            return [
+                'status' => false,
+                'message' => "Short name '{$shortName}' đã tồn tại."
+            ];
+        }
+
+        return [
+            'status' => true,
+            'message' => 'Short name hợp lệ.',
+            'short_name' => $shortName // Trả về short_name hợp lệ
+        ];
+    }
+
+    public static function storeRole(array $data)
+    {
+        // Validate dữ liệu
+        if (empty($data['name'])) {
+            return [
+                'status' => false,
+                'message' => 'Tên vai trò là bắt buộc.'
+            ];
+        }
+
+        // Tạo short_name
+        $result = self::generateUniqueShortName($data['name'], Roles::class);
+        
+        if ($result['status'] === false) {
+            // Nếu short_name đã tồn tại, trả về thông báo lỗi
+            return $result;
+        }
+
+        // Lưu vai trò
+        try {
+            $role = new Roles();
+            $role->name = $data['name'];
+            $role->description = $data['description'] ?? null;
+            $role->short_name = $result['short_name']; // Sử dụng short_name hợp lệ
+            $role->save();
+
+            return [
+                'status' => true,
+                'message' => 'Vai trò đã được lưu thành công.'
+            ];
+        } catch (\Exception $e) {
+            // Nếu có lỗi xảy ra trong quá trình lưu, trả về thông báo lỗi
+            return [
+                'status' => false,
+                'message' => 'Không thể lưu vai trò. Vui lòng thử lại.'
+            ];
+        }
+    }
+
+    public static function updateRole(array $data, $id)
+    {
+        // Validate dữ liệu
+        if (empty($data['name'])) {
+            return [
+                'status' => false,
+                'message' => 'Tên vai trò là bắt buộc.'
+            ];
+        }
+
+        // Tìm vai trò cần cập nhật theo ID
+        $role = Roles::find($id);
+
+        if (!$role) {
+            return [
+                'status' => false,
+                'message' => 'Vai trò không tồn tại.'
+            ];
+        }
+
+        // Nếu tên vai trò có thay đổi, kiểm tra tính hợp lệ của short_name
+        if ($role->name !== $data['name']) {
+            // Kiểm tra và tạo short_name duy nhất
+            $result = self::generateUniqueShortName($data['name'], Roles::class);
+            
+            if ($result['status'] === false) {
+                // Nếu short_name đã tồn tại, trả về thông báo lỗi
+                return $result;
+            }
+
+            // Cập nhật short_name nếu tên vai trò thay đổi
+            $role->short_name = $result['short_name'];
+        }
+
+        // Cập nhật các thông tin còn lại
+        $role->name = $data['name'];
+        $role->description = $data['description'] ?? $role->description; // Nếu không có mô tả, giữ nguyên
+
+        // Lưu vai trò đã cập nhật
+        try {
+            $role->save();
+
+            return [
+                'status' => true,
+                'message' => 'Vai trò đã được cập nhật thành công.'
+            ];
+        } catch (Exception $e) {
+            // Nếu có lỗi trong quá trình cập nhật, trả về thông báo lỗi
+            return [
+                'status' => false,
+                'message' => 'Không thể cập nhật vai trò. Vui lòng thử lại.'
+            ];
+        }
+    }
+
+    public static function deleteRole(int $id)
+    {
+        // Tìm vai trò
+        $role = Roles::findOrFail($id);
+
+        // Kiểm tra ràng buộc nếu vai trò đang được sử dụng (nếu cần)
+        if ($role->users()->exists()) {
+            return [
+                'status' => false,
+                'message' => 'Vai trò này đang được sử dụng và không thể xóa.'
+            ];
+        }
+
+        // Xóa vai trò (Soft Delete hoặc Hard Delete)
+        return $role->delete();
     }
 }

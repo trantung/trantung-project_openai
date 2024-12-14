@@ -31,4 +31,18 @@ return [
         ],
     ],
 
+    'keycloak' => [
+        'client_id' => env('KEYCLOAK_CLIENT_ID'),
+        'client_secret' => env('KEYCLOAK_CLIENT_SECRET'),
+        'redirect' => env('KEYCLOAK_REDIRECT_URI'),
+        'base_url' => env('KEYCLOAK_BASE_URL'),
+        'realm' => env('KEYCLOAK_REALM', 'hocmai'),
+        'realms' => env('KEYCLOAK_REALM', 'hocmai'),
+    ],
+
+    'lms' => [
+        'URL_LMS' => env('URL_LMS'),
+        'TOKEN_LMS' => env('TOKEN_LMS'),
+        'URL_API_LMS' => env('URL_API_LMS'),
+    ],
 ];

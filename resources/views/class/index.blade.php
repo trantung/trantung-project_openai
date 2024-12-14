@@ -107,14 +107,14 @@
                                             </td>
                                             <td class="text-left">{{ $class->course_name ?? 'N/A' }}</td>
                                             <td class="text-center" id="yui_3_17_2_1_1733230172002_53">
-                                                <a href="#" 
+                                                <a href="{{ route('class.edit', ['id' => $class->id]) }}#tab_student" 
                                                 title="Danh sách học sinh" 
                                                 id="yui_3_17_2_1_1733230172002_52">
                                                     <i class="fas fa fa-lg fa-list" id="yui_3_17_2_1_1733230172002_51"></i>
                                                 </a>
                                             </td>
                                             <td class="text-center">
-                                                <a href="#" 
+                                                <a href="{{ route('class.edit', ['id' => $class->id]) }}#tab_teacher" 
                                                 title="Danh sách giáo viên">
                                                     <i class="fas fa fa-lg fa-list"></i>
                                                 </a>
@@ -126,14 +126,14 @@
                                                 </a>
                                             </td>
                                             <td>
-                                                <a href="#" 
+                                                <!-- <a href="#" 
                                                 title="Phân quyền học liệu">
                                                     <i class="fas fa fa-lg fa-eye"></i>
                                                 </a>
                                                 <a href="#" 
                                                 title="Thêm học sinh">
                                                     <i class="fas fa fa-lg fa-user-plus text-info"></i>
-                                                </a>
+                                                </a> -->
                                                 <a href="{{ route('class.edit', ['id' => $class->id]) }}" 
                                                 title="Chỉnh sửa lớp học">
                                                     <i class="fas fa fa-lg fa-edit text-success"></i>
@@ -151,6 +151,10 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            
+                        </div>
+                        <div class="pagination mt-4 justify-content-center">
+                            {{ $classes->links() }}
                         </div>
                     </div>
                 </div>

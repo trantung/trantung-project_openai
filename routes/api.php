@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\TeacherController;
+use App\Http\Controllers\RoleController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -40,3 +42,28 @@ Route::post("productdetail/search", [App\Http\Controllers\ProductController::cla
 Route::get("ielts/exam/list", [App\Http\Controllers\ProductController::class,'listContestIelts']);
 
 Route::post("chat/sendMessage", [App\Http\Controllers\HomeController::class,'sendMessage']);
+
+Route::get("class/teacher/search", [App\Http\Controllers\ClassController::class,'searchTeacher']);
+Route::post("class/teacher/enrol", [App\Http\Controllers\ClassController::class,'enrolTeacher']);
+Route::get("class/teacher/get_infor_teacher_class", [App\Http\Controllers\ClassController::class,'getInforTeacherInClass']);
+Route::post("class/teacher/update_infor_teacher_class", [App\Http\Controllers\ClassController::class,'updateInforTeacherInClass']);
+Route::post("class/teacher/unenrol", [App\Http\Controllers\ClassController::class,'unenrolTeacher']);
+
+Route::get("hocmai/course/list", [App\Http\Controllers\ProductController::class,'listCourseHocmai']);
+
+Route::post("role/assigns/search", [App\Http\Controllers\RoleController::class,'searchUserAssign']);
+
+Route::get("teacher/get_infor_user", [App\Http\Controllers\TeacherController::class,'getInforTeacherUser']);
+Route::post("teacher/update_infor_user", [App\Http\Controllers\TeacherController::class,'updateInforTeacherUser']);
+
+//api hocmai
+//Vocabulary & Grammar Correction
+Route::post("openai/hocmai/task1/vocabulary_grammar", [App\Http\Controllers\ApiController::class,'hocmaiTask1VocabularyGramma']);
+//task_achiement
+Route::post("openai/hocmai/task1/task_achiement", [App\Http\Controllers\ApiController::class,'hocmaiTask1TaskAchiement']);
+//coherence_cohesion
+Route::post("openai/hocmai/task1/coherence_cohesion", [App\Http\Controllers\ApiController::class,'hocmaiTask1CoherenceCohesion']);
+//lexical_resource
+Route::post("openai/hocmai/task1/lexical_resource", [App\Http\Controllers\ApiController::class,'hocmaiTask1LexicalResource']);
+//grammatical_range_accuracy
+Route::post("openai/hocmai/task1/grammatical_range_accuracy", [App\Http\Controllers\ApiController::class,'hocmaiTask1GrammaRange']);
