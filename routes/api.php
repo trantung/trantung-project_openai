@@ -57,6 +57,8 @@ Route::get("teacher/get_infor_user", [App\Http\Controllers\TeacherController::cl
 Route::post("teacher/update_infor_user", [App\Http\Controllers\TeacherController::class,'updateInforTeacherUser']);
 
 //api hocmai
+//task 1
+Route::post("openai/task1/all", [App\Http\Controllers\ApiController::class,'task1All']);
 //Vocabulary & Grammar Correction
 Route::post("openai/hocmai/task1/vocabulary_grammar", [App\Http\Controllers\ApiController::class,'hocmaiTask1VocabularyGramma']);
 //task_achiement
@@ -67,3 +69,5 @@ Route::post("openai/hocmai/task1/coherence_cohesion", [App\Http\Controllers\ApiC
 Route::post("openai/hocmai/task1/lexical_resource", [App\Http\Controllers\ApiController::class,'hocmaiTask1LexicalResource']);
 //grammatical_range_accuracy
 Route::post("openai/hocmai/task1/grammatical_range_accuracy", [App\Http\Controllers\ApiController::class,'hocmaiTask1GrammaRange']);
+
+//task 2

@@ -5,10 +5,58 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use \OpenAI;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class CommonHocmai extends Model
 {
-    //vocabulary_grammar start
+    //const task1
+    const VOCABULARY_GRAMMA_TASK_1 = 1;
+    const TASK_ACHIEMENT_TASK_1 = 2;
+    const COHERENCE_COHESION_TASK_1 = 3;
+    const LEXICAL_RESOURCE_TASK_1 = 4;
+    const GRAMMA_RANGE_TASK_1 = 5;
+
+    //const task2
+    const VOCABULARY_GRAMMA_TASK_2 = 1;
+    const TASK_ACHIEMENT_TASK_2 = 2;
+    const COHERENCE_COHESION_TASK_2 = 3;
+    const LEXICAL_RESOURCE_TASK_2 = 4;
+    const GRAMMA_RANGE_TASK_2 = 5;
+
+    public static function callCmsTask1($dataResponseChat, $questionId, $partNumber)
+    {
+        $errorJson = $dataResponseChat;
+        if($partNumber != self::VOCABULARY_GRAMMA_TASK_1) {
+            $dataResponseChat = json_decode($dataResponseChat,true);
+        }
+        $data = [
+            'question_id' => $questionId,
+            'part_number' => $partNumber,
+            'data' => $dataResponseChat
+        ];
+        $data_string = json_encode($data, true);
+        $data_string = trim($data_string, '"');
+        $curl = curl_init('https://apiems.microgem.io.vn/hook/resultWritingTask1');
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'x-api-key: d84c814c155bed7147115b5ec91c28246460cd8998ea6e57e89896362c164491',
+            'Content-Length: ' . strlen($data_string))
+        );
+        $result = curl_exec($curl);
+        if(empty($result)) {
+            $check = 'false';
+        } else {
+            $check = 'true';
+        }
+        curl_close($curl);
+        Log::info('task1 Part ' . $partNumber . ' of question_id: ' . $questionId . ' have status is ' . $check);
+    }
+
+    //task1 start
+    //vocabulary_grammar start 
     public static function hocmaiSystemPromptVocabularyGramma()
     {
         return "You are an IELTS examiner. Please review the student's **Task 1 Report**, identify specific lexical and grammatical errors, and suggest corrections.";
@@ -24,6 +72,7 @@ class CommonHocmai extends Model
 
         $chat = $client->chat()->create([
             'model' => $model,
+            // 'response_format'=>["type"=>"json_object"],
             'messages' => [
                 [
                    "role" => "system",
@@ -65,6 +114,7 @@ class CommonHocmai extends Model
         
         $chat = $client->chat()->create([
             'model' => $model,
+            'response_format'=>["type"=>"json_object"],
            'messages' => [
                 [
                    "role" => "system",
@@ -72,7 +122,7 @@ class CommonHocmai extends Model
                ],
                [
                    "role" => "user",
-                   "content" => "Please grade the IELTS Writing Task 1 essay without mentioning the Band 8 sample. This is my IELTS Writing Task 1 essay:\n" . $report
+                   "content" => "Please grade the IELTS Writing Task 1 essay without mentioning the Band 8 sample. After that, give me a response in JSON format with the following structure: score as the given score, and comment as the feedback about my essay. This is my IELTS Writing Task 1 essay:\n" . $report
                ],
             ],
            'temperature' => 0,
@@ -106,6 +156,7 @@ class CommonHocmai extends Model
         
         $chat = $client->chat()->create([
             'model' => $model,
+            'response_format'=>["type"=>"json_object"],
            'messages' => [
                 [
                    "role" => "system",
@@ -113,7 +164,7 @@ class CommonHocmai extends Model
                ],
                [
                    "role" => "user",
-                   "content" => "Please grade the Coherence & Cohesion of IELTS Writing Task 1 essay without mentioning the Band 8 sample. This is my IELTS Writing Task 1 essay:\n" . $report
+                   "content" => "Please grade the Coherence & Cohesion of IELTS Writing Task 1 essay without mentioning the Band 8 sample. After that, give me a response in JSON format with the following structure: score as the given score, and comment as the feedback about my essay. This is my IELTS Writing Task 1 essay:\n" . $report
                ],
             ],
            'temperature' => 0,
@@ -122,6 +173,7 @@ class CommonHocmai extends Model
 
         return $chat;
     }
+    //coherence_cohesion end
 
     //lexical_resource start
     public static function hocmaiSystemPromptLexicalResource()
@@ -146,14 +198,15 @@ class CommonHocmai extends Model
         
         $chat = $client->chat()->create([
             'model' => $model,
-           'messages' => [
+            'response_format'=>["type"=>"json_object"],
+            'messages' => [
                 [
                    "role" => "system",
                    "content" => $systeMessage . '\n Marking Rubric for Lexical Resource:' . $rule . '\n' . "This is Band 8 sample:\n" . $sample,
                ],
                [
                    "role" => "user",
-                   "content" => "Please grade the Lexical Resource of IELTS Writing Task 1 essay without mentioning the Band 8 sample. This is my IELTS Writing Task 1 essay:\n" . $report
+                   "content" => "Please grade the Lexical Resource of IELTS Writing Task 1 essay without mentioning the Band 8 sample. After that, give me a response in JSON format with the following structure: score as the given score, and comment as the feedback about my essay. This is my IELTS Writing Task 1 essay:\n" . $report
                ],
             ],
            'temperature' => 0,
@@ -187,20 +240,20 @@ class CommonHocmai extends Model
         
         $chat = $client->chat()->create([
             'model' => $model,
-           'messages' => [
+            'response_format'=>["type"=>"json_object"],
+            'messages' => [
                 [
                    "role" => "system",
                    "content" => $systeMessage . '\n Marking Rubric for Grammatical Range & Accuracy:' . $rule . '\n' . "This is Band 8 sample:\n" . $sample,
                ],
                [
                    "role" => "user",
-                   "content" => "Please grade the Grammatical Range & Accuracy of IELTS Writing Task 1 essay without mentioning the Band 8 sample. This is my IELTS Writing Task 1 essay:\n" . $report
+                   "content" => "Please grade the Grammatical Range & Accuracy of IELTS Writing Task 1 essay without mentioning the Band 8 sample. After that, give me a response in JSON format with the following structure: score as the given score, and comment as the feedback about my essay.This is my IELTS Writing Task 1 essay:\n" . $report
                ],
             ],
            'temperature' => 0,
            'max_tokens' => 1000
         ]);
-
         return $chat;
     }
     //grammatical_range_accuracy end

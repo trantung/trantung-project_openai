@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Events\Part1JobCompleted;
 use App\Models\ApiUserQuestionPart;
-use App\Models\Common;
+use App\Models\CommonHocmai;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -39,7 +39,7 @@ class TaskPart1Job implements ShouldQueue
     public function handle(): void
     {
         try {
-            $chat = Common::task1Introduction($this->jsonData);
+            $chat = CommonHocmai::hocmaiTask1VocabularyGramma($this->jsonData);
             $dataResponseChat = $chat->choices[0]->message->content;
             $totalToken = $chat->usage->totalTokens;
             $completionTokens = $chat->usage->completionTokens;
@@ -61,7 +61,7 @@ class TaskPart1Job implements ShouldQueue
 
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
-                Common::callCmsTask1($dataResponseChat, $this->apiUserQuestionId, Common::PART_NUMBER_INTRODUCTION_RESPONSE);
+                CommonHocmai::callCmsTask1($dataResponseChat, $this->apiUserQuestionId, CommonHocmai::VOCABULARY_GRAMMA_TASK_1);
                 CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writing_task_number);
                 
             }

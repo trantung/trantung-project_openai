@@ -46,33 +46,24 @@ class ProcessBatchResultsJob implements ShouldQueue
 
         $partsCompleted = true;
 
-        for ($i = 1; $i <= 8; $i++) {
+        for ($i = 1; $i <= 5; $i++) {
             if (isset($openAiResponses[$i]) && !empty($openAiResponses[$i]['openai_response'])) {
                 $openAiResponse = $openAiResponses[$i];
                 switch ($i) {
                     case 1:
-                        $response['introduction'] = $openAiResponse['openai_response'];
+                        $response['vocabulary_grammar'] = $openAiResponse['openai_response'];
                         break;
                     case 2:
-                        $response['topic_sentence']['topic_sentence'] = $openAiResponse['openai_response'];
+                        $response['task_achiement'] = $openAiResponse['openai_response'];
                         break;
                     case 3:
-                        $response['topic_sentence']['conclusion'] = $openAiResponse['openai_response'];
+                        $response['coherence_cohesion'] = $openAiResponse['openai_response'];
                         break;
                     case 4:
-                        $response['band_task_response'] = $openAiResponse['openai_response'];
+                        $response['lexical_resource'] = $openAiResponse['openai_response'];
                         break;
                     case 5:
-                        $response['coherence_cohesion_response'] = $openAiResponse['openai_response'];
-                        break;
-                    case 6:
-                        $response['lexical_response'] = $openAiResponse['openai_response'];
-                        break;
-                    case 7:
-                        $response['gramma_response'] = $openAiResponse['openai_response'];
-                        break;
-                    case 8:
-                        $response['identify_errors'] = $openAiResponse['openai_response'];
+                        $response['grammatical_range'] = $openAiResponse['openai_response'];
                         break;
                 }
             } else {

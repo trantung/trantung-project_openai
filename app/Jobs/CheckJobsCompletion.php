@@ -31,7 +31,7 @@ class CheckJobsCompletion implements ShouldQueue
             ->where('writing_task_number', $this->writing_task_number)
             ->count();
 
-        if ($completedJobs == 8) {
+        if ($completedJobs == 5) {
             Log::info("All parts completed for question ID: " . $this->apiUserQuestionId);
             ProcessBatchResultsJob::dispatch($this->apiUserQuestionId,$this->writing_task_number);
         }
