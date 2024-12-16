@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('task1_images', function (Blueprint $table) {
-            $table->text('image_base64')->nullable();
+        Schema::table('lms_course', function (Blueprint $table) {
+            $table->integer('process')->default(0);
         });
     }
 
@@ -21,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('lms_course', function (Blueprint $table) {
+            //
+        });
     }
 };

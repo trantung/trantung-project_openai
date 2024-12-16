@@ -11,10 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lms_section', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('lms_section')) {
+            Schema::create('lms_section', function (Blueprint $table) {
+                $table->id();
+                $table->string('course_id')->nullable();
+                $table->string('section_id')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

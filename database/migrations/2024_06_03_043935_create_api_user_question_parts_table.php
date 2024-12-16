@@ -23,7 +23,7 @@ return new class extends Migration
             $table->bigInteger('prompt_token')->nullable();
             $table->bigInteger('total_token')->nullable();
             $table->bigInteger('complete_token')->nullable();
-            $table->bigInteger('writing_task_number')->nullable();
+            $table->integer('writing_task_number')->default(2);
             $table->timestamps();
         });
     }

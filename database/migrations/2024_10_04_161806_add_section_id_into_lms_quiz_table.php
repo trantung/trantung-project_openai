@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('task1_images', function (Blueprint $table) {
-            $table->text('image_base64')->nullable();
+        Schema::table('lms_quiz', function (Blueprint $table) {
+            $table->string('section_id')->nullable();
         });
     }
 

@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('task1_images', function (Blueprint $table) {
+        Schema::create('lms_user_video', function (Blueprint $table) {
             $table->id();
-            $table->string('username')->nullable();
             $table->string('user_id')->nullable();
-            $table->text('question')->nullable();
-            $table->text('topic')->nullable();
-            $table->tinyInteger('status')->default(0);
+            $table->string('course_id')->nullable();
+            $table->string('video_id')->nullable();
+            $table->integer('status')->default(0);
             $table->timestamps();
+        });
+        Schema::table('lms_course', function (Blueprint $table) {
+            $table->string('process')->change();
         });
     }
 
@@ -27,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('task1_images');
+        Schema::dropIfExists('lms_user_video');
     }
 };

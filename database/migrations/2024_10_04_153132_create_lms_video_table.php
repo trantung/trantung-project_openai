@@ -11,14 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('test_openais', function (Blueprint $table) {
+        Schema::create('lms_video', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
-            $table->text('topic')->nullable();
-            $table->text('question')->nullable();
-            $table->text('answer')->nullable();
-            $table->bigInteger('category_id')->nullable();
-            $table->bigInteger('total_token')->nullable();
+            $table->string('course_id')->nullable();
+            $table->string('video_id')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('test_openais');
+        Schema::dropIfExists('lms_video');
     }
 };
