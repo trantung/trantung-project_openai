@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ExampleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -88,3 +89,7 @@ Route::post("openai/hocmai/task1/coherence_cohesion", [App\Http\Controllers\ApiT
 Route::post("openai/hocmai/task1/lexical_resource", [App\Http\Controllers\ApiTestController::class,'hocmaiTask1LexicalResource']);
 //grammatical_range_accuracy
 Route::post("openai/hocmai/task1/grammatical_range_accuracy", [App\Http\Controllers\ApiTestController::class,'hocmaiTask1GrammaRange']);
+
+
+Route::get('example', [ExampleController::class, 'index']);
+Route::get('example/{id}', [ExampleController::class, 'show']);

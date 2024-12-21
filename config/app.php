@@ -139,6 +139,7 @@ return [
         App\Providers\EventServiceProvider::class,
         //App\Providers\RouteServiceProvider::class,
         ProtoneMedia\LaravelFFMpeg\Support\ServiceProvider::class,
+        Prettus\Repository\Providers\RepositoryServiceProvider::class,
     ])->toArray(),
 
     /*

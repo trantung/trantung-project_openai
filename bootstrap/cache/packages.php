@@ -48,15 +48,33 @@
       0 => 'Termwind\\Laravel\\TermwindServiceProvider',
     ),
   ),
-  'spatie/laravel-ignition' => 
+  'pbmedia/laravel-ffmpeg' => 
+  array (
+    'aliases' => 
+    array (
+      'FFMpeg' => 'ProtoneMedia\\LaravelFFMpeg\\Support\\FFMpeg',
+    ),
+    'providers' => 
+    array (
+      0 => 'ProtoneMedia\\LaravelFFMpeg\\Support\\ServiceProvider',
+    ),
+  ),
+  'prettus/l5-repository' => 
   array (
     'providers' => 
     array (
-      0 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
+      0 => 'Prettus\\Repository\\Providers\\RepositoryServiceProvider',
     ),
+  ),
+  'spatie/laravel-ignition' => 
+  array (
     'aliases' => 
     array (
       'Flare' => 'Spatie\\LaravelIgnition\\Facades\\Flare',
+    ),
+    'providers' => 
+    array (
+      0 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
     ),
   ),
 );
