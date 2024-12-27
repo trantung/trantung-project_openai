@@ -11,7 +11,21 @@ class ApiMoodle extends Model
     public $paginate = 10;
     protected $table = 'api_moodle';
 
-    protected $fillable = ['moodle_id', 'moodle_name', 'moodle_type', 'parent_id', 'creator', 'modifier', 'level'];
+    protected $fillable = [
+        'moodle_id', 
+        'moodle_name', 
+        'moodle_type', 
+        'parent_id', 
+        'creator', 
+        'modifier', 
+        'level', 
+        'quiz_submitearly', // Cho phép nộp bài trước thời gian
+        'quiz_submitbuttontime', // Thời gian hiển thị nút submit (Phút)
+        'quiz_allquestions', // Nộp bài sau khi hoàn thành (Tất cả câu hỏi)
+        'quiz_requiredquestions', // Nộp bài sau khi hoàn thành (Yêu cầu số lượng câu hỏi để hoàn thành)
+        'quiz_requiredquestionsPass',// Số lượng câu hỏi cần hoàn thành
+        'quiz_settings_type' // Loại học liệu
+    ];
 
     public function classes()
     {

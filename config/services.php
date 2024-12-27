@@ -40,6 +40,13 @@ return [
         'realms' => env('KEYCLOAK_REALM', 'hocmai'),
     ],
 
+    'icanid' => [
+        'domain' => env('ICANID_DOMAIN'),
+        'client_id' => env('ICANID_CLIENT_ID'),
+        'client_secret' => env('ICANID_CLIENT_SECRET'),
+        'redirect' => env('ICANID_REDIRECT_URI'),
+    ],
+
     'lms' => [
         'URL_LMS' => env('URL_LMS'),
         'TOKEN_LMS' => env('TOKEN_LMS'),

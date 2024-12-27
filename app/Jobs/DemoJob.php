@@ -37,7 +37,7 @@ class DemoJob implements ShouldQueue
      */
     public function handle()
     {
-        Log::info('DemoJob started for question ID: ' . $this->apiUserQuestionId);
+        Log::info('Part 2 all job started for question ID: ' . $this->apiUserQuestionId);
         
         dispatch(new Part1Job($this->jsonData, 1, $this->apiUserQuestionId, $this->writing_task_number));
         dispatch(new Part2Job($this->jsonData, 2, $this->apiUserQuestionId, $this->writing_task_number));
@@ -45,9 +45,6 @@ class DemoJob implements ShouldQueue
         dispatch(new Part4Job($this->jsonData, 4, $this->apiUserQuestionId, $this->writing_task_number));
         dispatch(new Part5Job($this->jsonData, 5, $this->apiUserQuestionId, $this->writing_task_number));
         dispatch(new Part6Job($this->jsonData, 6, $this->apiUserQuestionId, $this->writing_task_number));
-        dispatch(new Part7Job($this->jsonData, 7, $this->apiUserQuestionId, $this->writing_task_number));
-        dispatch(new Part8Job($this->jsonData, 8, $this->apiUserQuestionId, $this->writing_task_number));
-        // dispatch(new ProcessBatchResultsJob($this->apiUserQuestionId));
     }
 
     /**
@@ -64,30 +61,27 @@ class DemoJob implements ShouldQueue
 
         $partsCompleted = true;
 
-        for ($i = 1; $i <= 8; $i++) {
+        for ($i = 1; $i <= 6; $i++) {
             if (isset($openAiResponses[$i]) && !empty($openAiResponses[$i]['openai_response'])) {
                 $openAiResponse = $openAiResponses[$i];
                 switch ($i) {
                     case 1:
-                        $response['introduction'] = $openAiResponse['openai_response'];
+                        $response['vocabulary_grammar'] = $openAiResponse['openai_response'];
                         break;
                     case 2:
-                        $response['topic_sentence']['topic_sentence'] = $openAiResponse['openai_response'];
+                        $response['task_achiement'] = $openAiResponse['openai_response'];
                         break;
                     case 3:
-                        $response['topic_sentence']['conclusion'] = $openAiResponse['openai_response'];
+                        $response['coherence_cohesion'] = $openAiResponse['openai_response'];
                         break;
                     case 4:
-                        $response['band_task_response'] = $openAiResponse['openai_response'];
+                        $response['lexical_resource'] = $openAiResponse['openai_response'];
                         break;
                     case 5:
-                        $response['coherence_cohesion_response'] = $openAiResponse['openai_response'];
+                        $response['grammatical_range'] = $openAiResponse['openai_response'];
                         break;
                     case 6:
-                        $response['lexical_response'] = $openAiResponse['openai_response'];
-                        break;
-                    case 7:
-                        $response['gramma_response'] = $openAiResponse['openai_response'];
+                        $response['improved_essay'] = $openAiResponse['openai_response'];
                         break;
                 }
             } else {

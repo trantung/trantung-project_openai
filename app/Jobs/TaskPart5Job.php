@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Events\Part1JobCompleted;
 use App\Models\ApiUserQuestionPart;
-use App\Models\Common;
+use App\Models\CommonHocmai;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -39,8 +39,9 @@ class TaskPart5Job implements ShouldQueue
     public function handle(): void
     {
         try {
-            $chat = Common::task1BandCoherenceCohesion($this->jsonData);
+            $chat = CommonHocmai::hocmaiBandGrammaRange($this->jsonData);
             $dataResponseChat = $chat->choices[0]->message->content;
+            $dataResponseChat = json_decode($dataResponseChat, true);
             $totalToken = $chat->usage->totalTokens;
             $completionTokens = $chat->usage->completionTokens;
             $promptTokens = $chat->usage->promptTokens;
@@ -52,7 +53,7 @@ class TaskPart5Job implements ShouldQueue
 
             if (!empty($checkData)) {
                 $updateData = [
-                    'openai_response' => $dataResponseChat,
+                    'openai_response' => json_encode($dataResponseChat,true),
                     'total_token' => $totalToken,
                     'prompt_token' => $promptTokens,
                     'complete_token' => $completionTokens,
@@ -61,7 +62,7 @@ class TaskPart5Job implements ShouldQueue
 
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
-                Common::callCmsTask1($dataResponseChat, $this->apiUserQuestionId, Common::PART_NUMBER_COHERENCE_COHESION_RESPONSE);
+                CommonHocmai::callCmsTask1($dataResponseChat, $this->apiUserQuestionId, CommonHocmai::GRAMMA_RANGE_TASK_1);
                 CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writing_task_number);
                 
             }

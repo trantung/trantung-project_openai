@@ -16,6 +16,7 @@ use App\Models\Roles;
 use App\Models\Permission;
 use App\Models\UserRole;
 use App\Models\RolePermission;
+use App\Models\Students;
 use DB;
 
 class ClassController extends Controller

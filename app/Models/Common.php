@@ -139,9 +139,11 @@ class Common extends Model
         // $fields[0][completionexpected] = 1731812580;
         $completionview = $dataRequest['completionview'];
         $completionpassgrade = $dataRequest['completionpass'];
+        $completionminattempts = $dataRequest['completionminattempts'];
         if(empty($dataRequest['completion'])){
             $completionView = 0;
             $completionpassgrade = 0;
+            $completionminattempts = 0;
         }
 
         $data = [
@@ -153,7 +155,7 @@ class Common extends Model
             // 'fields[0][timeclose]' => $dataRequest['quiz_name'],
             'fields[0][attempts]' => $dataRequest['attempts'],
             'fields[0][grademethod]' => $dataRequest['grademethod'],
-            'fields[0][shufflequestions]' => $dataRequest['shuffleanswers'],
+            'fields[0][shufflequestions]' => $dataRequest['shuffleanswers'] ?? 0,
             // 'fields[0][questionsperpage]' => $dataRequest['quiz_name'],
             'fields[0][section]' => $arr['sections']['sectionnum'],
             'fields[0][visible]' => $dataRequest['quiz_visible'],
@@ -161,15 +163,16 @@ class Common extends Model
             'fields[0][gradepass]' => intval($dataRequest['gradePass']),
             // 'fields[0][sumgrades]' => $dataRequest['quiz_name'],
             'fields[0][preferredbehaviour]' => $dataRequest['preferredbehaviour'],
-            'fields[0][attemptimmediately]' => $dataRequest['attemptimmediatelyopen'],
-            'fields[0][correctnessimmediately]' => $dataRequest['correctnessimmediatelyopen'],
-            'fields[0][marksimmediately]' => $dataRequest['marksimmediatelyopen'],
-            'fields[0][generalfeedbackimmediately]' => $dataRequest['generalfeedbackimmediatelyopen'],
-            'fields[0][rightanswerimmediately]' => $dataRequest['rightanswerimmediatelyopen'], 
+            'fields[0][attemptimmediately]' => $dataRequest['attemptimmediatelyopen'] ?? 0,
+            'fields[0][correctnessimmediately]' => $dataRequest['correctnessimmediatelyopen'] ?? 0,
+            'fields[0][marksimmediately]' => $dataRequest['marksimmediatelyopen'] ?? 0,
+            'fields[0][generalfeedbackimmediately]' => $dataRequest['generalfeedbackimmediatelyopen'] ?? 0,
+            'fields[0][rightanswerimmediately]' => $dataRequest['rightanswerimmediatelyopen'] ?? 0, 
             'fields[0][completion]' => $dataRequest['completion'], 
             'fields[0][completionview]' => $completionview, 
             // 'fields[0][completionexpected]' => $dataRequest['completionpass'], 
             'fields[0][completionpassgrade]' => $completionpassgrade,
+            'fields[0][completionminattempts]' => $completionminattempts,
         ];
 
         if (!empty($dataRequest['availability_item'])) {

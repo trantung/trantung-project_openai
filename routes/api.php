@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ICANIDController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -58,7 +59,7 @@ Route::post("teacher/update_infor_user", [App\Http\Controllers\TeacherController
 
 //api hocmai
 //task 1
-Route::post("openai/task1/all", [App\Http\Controllers\ApiController::class,'task1All']);
+Route::post("openai/hocmai/task1/all", [App\Http\Controllers\ApiController::class,'task1All']);
 //Vocabulary & Grammar Correction
 Route::post("openai/hocmai/task1/vocabulary_grammar", [App\Http\Controllers\ApiController::class,'hocmaiTask1VocabularyGramma']);
 //task_achiement
@@ -71,3 +72,22 @@ Route::post("openai/hocmai/task1/lexical_resource", [App\Http\Controllers\ApiCon
 Route::post("openai/hocmai/task1/grammatical_range_accuracy", [App\Http\Controllers\ApiController::class,'hocmaiTask1GrammaRange']);
 
 //task 2
+Route::post("openai/hocmai/task2/all", [App\Http\Controllers\ApiController::class,'task2All']);
+//Vocabulary & Grammar Correction
+Route::post("openai/hocmai/task2/vocabulary_grammar", [App\Http\Controllers\ApiController::class,'hocmaiTask2VocabularyGramma']);
+//task_achiement
+Route::post("openai/hocmai/task2/task_response", [App\Http\Controllers\ApiController::class,'hocmaiTask2TaskResponse']);
+//coherence_cohesion
+Route::post("openai/hocmai/task2/coherence_cohesion", [App\Http\Controllers\ApiController::class,'hocmaiTask2CoherenceCohesion']);
+//lexical_resource
+Route::post("openai/hocmai/task2/lexical_resource", [App\Http\Controllers\ApiController::class,'hocmaiTask2LexicalResource']);
+//grammatical_range_accuracy
+Route::post("openai/hocmai/task2/grammatical_range_accuracy", [App\Http\Controllers\ApiController::class,'hocmaiTask2GrammaRange']);
+//Improved essay
+Route::post("openai/hocmai/task2/improve_essay", [App\Http\Controllers\ApiController::class,'hocmaiTask2ImprovedEssay']);
+
+//get log
+Route::post("openai/hocmai/task2/getlog", [App\Http\Controllers\ApiController::class,'getLog']);
+
+// Route::post("test/upload/pdf", [App\Http\Controllers\ApiController::class,'uploadPDFLms']);
+Route::post('fe/studen/get-info-user-by-token', [ICANIDController::class, 'getInfoUserByToken'])->name('getInfoUserByToken');

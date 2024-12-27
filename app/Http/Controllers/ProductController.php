@@ -757,11 +757,28 @@ class ProductController extends Controller
     {
         $updateQuizMoodle = Common::local_custom_service_update_activity_quiz($request);
         if (isset($updateQuizMoodle['quizid'])) {
+            $quiz_submitearly = $request->input('submitearly');
+            $quiz_submitbuttontime = $request->input('submitbuttontime');
+            $quiz_allquestions = $request->input('allquestions');
+            $quiz_requiredquestions = $request->input('requiredquestions');
+            $quiz_requiredquestionsPass = $request->input('requiredquestionsPass');
+            $quiz_settings_type = $request->input('quiz_settings_type');
+            if($quiz_allquestions){
+                $quiz_requiredquestions = 0;
+                $quiz_requiredquestionsPass = 0;
+            }
+            
             try {
                 $updateCourse = ApiMoodle::where('id', $request->input('activity_id'))->where('moodle_type', 'quiz')->update([
                     'moodle_name' => $request->input('quiz_name'),
                     'parent_id' => $request->input('quiz_section'),
-                    'modifier' => $request->input('currentUser')
+                    'modifier' => $request->input('currentUser'),
+                    'quiz_settings_type' => $quiz_settings_type,
+                    'quiz_submitearly' => $quiz_submitearly,
+                    'quiz_submitbuttontime' => $quiz_submitbuttontime,
+                    'quiz_allquestions' => $quiz_allquestions,
+                    'quiz_requiredquestions' => $quiz_requiredquestions,
+                    'quiz_requiredquestionsPass' => $quiz_requiredquestionsPass,
                 ]);
             
                 if ($updateCourse) {
@@ -1009,7 +1026,13 @@ class ProductController extends Controller
             $moduleContent['cm']['parent_id'] = $dataMain->parent_id;
             $moduleContent['cm']['creator'] = $dataMain->creator;
             $moduleContent['cm']['modifier'] = $dataMain->modifier;
-
+            $moduleContent['cm']['quiz_allquestions'] = $dataMain->quiz_allquestions;
+            $moduleContent['cm']['quiz_requiredquestions'] = $dataMain->quiz_requiredquestions;
+            $moduleContent['cm']['quiz_requiredquestionsPass'] = $dataMain->quiz_requiredquestionsPass;
+            $moduleContent['cm']['quiz_submitbuttontime'] = $dataMain->quiz_submitbuttontime;
+            $moduleContent['cm']['quiz_submitearly'] = $dataMain->quiz_submitearly;
+            $moduleContent['cm']['quiz_settings_type'] = $dataMain->quiz_settings_type;
+            
             $detail = Common::local_custom_service_get_detail_module($dataMain->moodle_id, $request->input('activity_type'));
             
             $detailData = json_decode($detail['data'], true);
@@ -1073,6 +1096,7 @@ class ProductController extends Controller
             }
 
             if($request->input('activity_type') == 'quiz'){
+                $moduleContent['cm']['completionminattempts'] = $detailData['completionminattempts'];
                 $moduleContent['cm']['attempts'] = $detailData['attempts'];
                 $moduleContent['cm']['preferredbehaviour'] = $detailData['preferredbehaviour'];
                 $moduleContent['cm']['shuffleanswers'] = $detailData['shuffleanswers'];

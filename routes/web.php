@@ -10,6 +10,8 @@ use App\Http\Controllers\AuthSSOController;
 use App\Http\Controllers\RoleController;
 use App\Jobs\DemoJob;
 use Illuminate\Support\Facades\Route;
+use App\Services\ICANIDService;
+use App\Http\Controllers\ICANIDController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -85,22 +87,29 @@ Route::post('/ssologout', function () {
 })->name('ssologout');
 
 
-// Route::get('/callback', function () {
-//     $keycloakUser = Socialite::driver('keycloak')->user();
+Route::get('/loginstudent', function (ICANIDService $icanidService) {
+    return redirect($icanidService->login());
+})->name('loginstudent');
 
-//     // Tìm user trong database hoặc tạo mới
-//     $user = User::firstOrCreate([
-//         'email' => $keycloakUser->getEmail(),
-//     ], [
-//         'name' => $keycloakUser->getName(),
-//         'password' => bcrypt(Str::random(16)), // Mật khẩu ngẫu nhiên
-//     ]);
+Route::get('/callbackstudent', function (ICANIDService $icanidService) {
+    $data = $icanidService->handleCallback();
+    
+    // Lưu thông tin user vào session hoặc database nếu cần
+    session(['ican_user' => $data['user']]);
 
-//     // Đăng nhập user
-//     Auth::login($user);
+    return redirect('/home');
+})->name('callbackstudent');
 
-//     return redirect('/dashboard');
-// });
+Route::get('/logoutstudent', function (ICANIDService $icanidService) {
+    $icanidService->logout();
+    session()->forget('ican_user');
+
+    return redirect('/');
+})->name('logoutstudent');
+
+//sso icanid
+Route::get('/login-icanid', [ICANIDController::class, 'login'])->name('loginicanid');
+Route::get('/auth-callback', [ICANIDController::class, 'callback']);
 
 Route::get('/ssouser/teacher/index', [AuthSSOController::class, 'sso_teacher'])->middleware('auth')->name('ssouser.teacher.index');
 Route::get('/ssouser/teacher/search', [AuthSSOController::class, 'sso_teacher_search'])->middleware('auth')->name('ssouser.teacher.search');

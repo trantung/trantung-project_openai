@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Events\Part1JobCompleted;
 use App\Models\ApiUserQuestionPart;
-use App\Models\Common;
+use App\Models\CommonHocmaiTask2;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -39,12 +39,12 @@ class Part1Job implements ShouldQueue
     public function handle(): void
     {
         try {
-            $chat = Common::responseIntroduction($this->jsonData);
+            $chat = CommonHocmaiTask2::hocmaiVocabularyGramma($this->jsonData);
             $dataResponseChat = $chat->choices[0]->message->content;
             $totalToken = $chat->usage->totalTokens;
             $completionTokens = $chat->usage->completionTokens;
             $promptTokens = $chat->usage->promptTokens;
-
+            $dataResponseChat = json_decode($dataResponseChat, true);
             $checkData = ApiUserQuestionPart::where('user_question_id', $this->apiUserQuestionId)
                 ->where('part_number', $this->partNumber)
                 ->where('writing_task_number', $this->writing_task_number)
@@ -52,7 +52,7 @@ class Part1Job implements ShouldQueue
 
             if (!empty($checkData)) {
                 $updateData = [
-                    'openai_response' => $dataResponseChat,
+                    'openai_response' => json_encode($dataResponseChat,true),
                     'total_token' => $totalToken,
                     'prompt_token' => $promptTokens,
                     'complete_token' => $completionTokens,
@@ -61,8 +61,8 @@ class Part1Job implements ShouldQueue
 
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
-                Common::callCms($dataResponseChat, $this->apiUserQuestionId, Common::PART_NUMBER_INTRODUCTION_RESPONSE);
-                CheckJobsCompletion::dispatch($this->apiUserQuestionId, $this->writing_task_number);
+                CommonHocmaiTask2::callCms($dataResponseChat, $this->apiUserQuestionId, CommonHocmaiTask2::VOCABULARY_GRAMMA);
+                CheckJobsTask2Completion::dispatch($this->apiUserQuestionId, $this->writing_task_number);
                 
             }
 
@@ -70,7 +70,7 @@ class Part1Job implements ShouldQueue
             //event(new Part1JobCompleted($this->jsonData, $this->partNumber, $dataResponseChat, $this->apiUserQuestionId));
 
             // Log thành công
-            Log::info('Part' . $this->partNumber . 'Job executed for question_id: ' . $this->apiUserQuestionId);
+            Log::info('Part 2: ' . $this->partNumber . ' Job executed for question_id: ' . $this->apiUserQuestionId);
         } catch (\Exception $e) {
             // Xử lý lỗi và log
             $checkData = ApiUserQuestionPart::where('user_question_id', $this->apiUserQuestionId)
@@ -85,7 +85,7 @@ class Part1Job implements ShouldQueue
                 // Perform the update operation
                 ApiUserQuestionPart::find($checkData->id)->update($updateData);
             }
-            Log::error('Part' . $this->partNumber . 'Job failed for part: ' . $this->partNumber . ' with error: ' . $e->getMessage());
+            Log::error('Part 2: ' . $this->partNumber . ' Job failed for part: ' . $this->partNumber . ' with error: ' . $e->getMessage());
         }
     }
 }

@@ -147,21 +147,21 @@ $(document).ready(function() {
                                         <i class="fa fa-list-ol" aria-hidden="true"></i>
                                         <div>Quiz</div>
                                     </div>
-                                    <div class="dropdown-item add-child-video" data-type="video" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="${courseId}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
+                                    <!-- <div class="dropdown-item add-child-video" data-type="video" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="${courseId}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
                                         <i class="fa fa-plus" aria-hidden="true"></i>
                                         <i class="fa fa-video-camera" aria-hidden="true"></i>
                                         <div>Video</div>
-                                    </div>
+                                    </div> -->
                                     <div class="dropdown-item add-child-resource" data-cmid="" data-type="resource" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="${courseId}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
                                         <i class="fa fa-plus" aria-hidden="true"></i>
                                         <i class="fa fa-file" aria-hidden="true"></i>
                                         <div>File</div>
                                     </div>
-                                    <div class="dropdown-item add-interactive-book" data-type="interactive_book" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="${courseId}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
+                                    <!-- <div class="dropdown-item add-interactive-book" data-type="interactive_book" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="${courseId}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
                                         <i class="fa fa-plus" aria-hidden="true"></i>
                                         <i class="fa fa-list-ol" aria-hidden="true"></i>
                                         <div>Interactive Book</div>
-                                    </div>
+                                    </div> -->
                                     <div class="dropdown-item add-child-assign" data-cmid="" data-type="assign" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="${courseId}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
                                         <i class="fa fa-plus" aria-hidden="true"></i>
                                         <i class="fa fa-file" aria-hidden="true"></i>
@@ -172,11 +172,11 @@ $(document).ready(function() {
                                         <i class="fa fa-link" aria-hidden="true"></i>
                                         <div>URL</div>
                                     </div>
-                                    <div class="dropdown-item add-child-scorm" data-cmid="" data-type="scorm" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="${courseId}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
+                                    <!-- <div class="dropdown-item add-child-scorm" data-cmid="" data-type="scorm" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="${courseId}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
                                         <i class="fa fa-plus" aria-hidden="true"></i>
                                         <i class="fa fa-file-archive-o" aria-hidden="true"></i>
                                         <div>Scorm</div>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </div>
                             <i class="fa fa-trash icon-action-delete" title="Xóa" aria-hidden="true" data-type="course_sections" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="${courseMoodleId}" data-parent-id="${item.parent_id}" data-section-id="${item.moodle_id}" data-id="${item.id}" data-name="${item.moodle_name}"></i>
@@ -682,21 +682,21 @@ $(document).ready(function() {
                                     <i class="fa fa-list-ol" aria-hidden="true"></i>
                                     <div>Quiz</div>
                                 </div>
-                                <div class="dropdown-item add-child-video" data-type="${item.moodle_type}" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="{{$courseData->moodle_id}}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
+                                <!-- <div class="dropdown-item add-child-video" data-type="${item.moodle_type}" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="{{$courseData->moodle_id}}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
                                     <i class="fa fa-plus" aria-hidden="true"></i>
                                     <i class="fa fa-video-camera" aria-hidden="true"></i>
                                     <div>Video</div>
-                                </div>
+                                </div> -->
                                 <div class="dropdown-item add-child-resource" data-cmid="" data-type="${item.moodle_type}" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="{{$courseData->moodle_id}}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
                                     <i class="fa fa-plus" aria-hidden="true"></i>
                                     <i class="fa fa-file" aria-hidden="true"></i>
                                     <div>File</div>
                                 </div>
-                                <div class="dropdown-item add-interactive-book" data-type="${item.moodle_type}" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="{{$courseData->moodle_id}}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
+                                <!-- <div class="dropdown-item add-interactive-book" data-type="${item.moodle_type}" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="{{$courseData->moodle_id}}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
                                     <i class="fa fa-plus" aria-hidden="true"></i>
                                     <i class="fa fa-list-ol" aria-hidden="true"></i>
                                     <div>Interactive Book</div>
-                                </div>
+                                </div> -->
                                 <div class="dropdown-item add-child-assign" data-cmid="" data-type="${item.moodle_type}" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="{{$courseData->moodle_id}}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
                                     <i class="fa fa-plus" aria-hidden="true"></i>
                                     <i class="fa fa-file" aria-hidden="true"></i>
@@ -707,11 +707,11 @@ $(document).ready(function() {
                                     <i class="fa fa-link" aria-hidden="true"></i>
                                     <div>URL</div>
                                 </div>
-                                <div class="dropdown-item add-child-scorm" data-cmid="" data-type="${item.moodle_type}" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="{{$courseData->moodle_id}}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
+                                <!-- <div class="dropdown-item add-child-scorm" data-cmid="" data-type="${item.moodle_type}" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="{{$courseData->moodle_id}}" data-category-id="${item.moodle_id}" data-parent-id="${item.id}">
                                     <i class="fa fa-plus" aria-hidden="true"></i>
                                     <i class="fa fa-file-archive-o" aria-hidden="true"></i>
                                     <div>Scorm</div>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                         <i class="fa fa-trash icon-action-delete" title="Xóa" aria-hidden="true" data-type="course_sections" data-child-level="${level + 1}" data-current-level="${level}" data-course-id="${courseMoodleId}" data-parent-id="${item.parent_id}" data-section-id="${item.moodle_id}" data-id="${item.id}" data-name="${item.moodle_name}"></i>
@@ -969,9 +969,11 @@ $(document).ready(function() {
                     <div class="col-5">
                         <h5>Loại tài nguyên</h5>
                     </div>
-                    <div class="col-7"><select class="w-100" disabled="" name="quiz_type" id="quiz_type">
-                            <option selected="" value="quiz">Quiz</option>
-                        </select> </div>
+                    <div class="col-7">
+                        <select class="w-100" disabled="" name="quiz_type" id="quiz_type">
+                            <option selected="" value="quiz">QIZ EMS</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="row mb-2">
                     <div class="col-5">
@@ -979,11 +981,11 @@ $(document).ready(function() {
                     </div>
                     <div class="col-7">
                         <select class="w-100" name="quiz_settings_type" id="quiz_settings_type">
-                            <option selected="" value="1">Pre Class</option>
-                            <option value="2">In Class</option>
-                            <option value="3">Post Class</option>
-                            <option value="4">Mock Test</option>
-                            <option value="5">Loại học liệu mới</option>
+                            <option ${response.quiz_settings_type == 1 ? 'selected' : ''} value="1">Mock Test 1</option>
+                            <option ${response.quiz_settings_type == 2 ? 'selected' : ''} value="2">Mock Test 2</option>
+                            <option ${response.quiz_settings_type == 3 ? 'selected' : ''} value="3">Mock Test 3</option>
+                            <option ${response.quiz_settings_type == 4 ? 'selected' : ''} value="4">Mock Test 4</option>
+                            <option ${response.quiz_settings_type == 5 ? 'selected' : ''} value="5">Mock Test 5</option>
                         </select>
                     </div>
                 </div>
@@ -1047,17 +1049,17 @@ $(document).ready(function() {
                         <h5><b>Hành vi câu hỏi</b></h5>
                     </div>
                 </div>
-                <div class="row mb-2">
+                <!-- <div class="row mb-2">
                     <div class="col-5">
                         <h5>Thay đổi vị trí đáp án trong các câu hỏi</h5>
                     </div>
                     <div class="col-7">
                         <select class="w-100" name="shuffleanswers" id="shuffleanswers">
-                            <option value="0">Không</option>
-                            <option selected="" value="1">Có</option>
+                            <option ${response.shuffleanswers == 0 ? 'selected' : ''} value="0">Không</option>
+                            <option ${response.shuffleanswers == 1 ? 'selected' : ''} value="1">Có</option>
                         </select>
                     </div>
-                </div>
+                </div> -->
                 <div class="row mb-2">
                     <div class="col-5">
                         <h5>Hành vi của các câu hỏi như thế nào</h5>
@@ -1074,7 +1076,7 @@ $(document).ready(function() {
                         </select>
                     </div>
                 </div>
-                <div class="row mb-2">
+                <!-- <div class="row mb-2">
                     <div class="col-12">
                         <h5><b>Xem lại các tùy chọn</b></h5>
                     </div>
@@ -1105,7 +1107,7 @@ $(document).ready(function() {
                             <label class="form-check-label" for="id_generalfeedbackimmediatelyopen"> Phản hồi chung</label>
                         </div>
                     </div>
-                </div>
+                </div> -->
                 <div class="row mb-2">
                     <div class="col-12">
                         <h5><b>Không cho phép truy cập</b></h5>
@@ -1135,6 +1137,10 @@ $(document).ready(function() {
                             <input class="form-check-input" type="checkbox" style="width: auto" name="completionview" id="quiz_completionview" value="1" ${response.completionview == 1 ? 'checked' : ''}>
                             <label class="form-check-label" for="completionview">Học viên phải xem hoạt động này để hoàn thành nó</label>
                         </div>
+                        <div class="form-check form-check-completionminattempts" ${response.completion == 2 ? '' : 'style="display: none;"'}>
+                            <input class="form-check-input" type="checkbox" style="width: auto" name="completionminattempts" id="quiz_completionminattempts" value="1" ${response.completionminattempts == 1 ? 'checked' : ''}>
+                            <label class="form-check-label" for="quiz_completionminattempts">Học sinh cần nộp bài</label>
+                        </div>
                         <div class="form-check form-check-completionpass" ${response.completion == 2 ? '' : 'style="display: none;"'}>
                             <input class="form-check-input" type="checkbox" style="width: auto" name="completionpass" id="quiz_completionpass" value="1" ${response.completionpassgrade == 1 ? 'checked' : ''}>
                             <label class="form-check-label" for="quiz_completionpass">Yêu cầu điểm qua môn</label>
@@ -1146,6 +1152,53 @@ $(document).ready(function() {
                         <h5>Điểm để qua</h5>
                     </div>
                     <div class="col-7"><input class="w-100" min="0" type="number" id="quiz_grade_pass" name="gradePass" value="${response.gradepass || '0'}"></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <h5><b>Tiêu chí để có thể cho user nộp bài</b></h5>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-5">
+                        <h5>Cho phép nộp bài trước thời gian</h5>
+                    </div>
+                    <div class="col-7">
+                        <select class="w-100" name="submitearly" id="submitearly">
+                            <option ${response.quiz_submitearly == '1' ? 'selected' : ''} value="1">Có</option>
+                            <option ${response.quiz_submitearly == '0' ? 'selected' : ''} value="0">Không</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-5">
+                        <h5>Thời gian hiển thị nút submit (Phút)</h5>
+                    </div>
+                    <div class="col-7">
+                        <input class="w-100" min="0" type="number" id="submitbuttontime" name="submitbuttontime" value="${response.quiz_submitbuttontime || 0}">
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-5">
+                        <h5>Nộp bài sau khi hoàn thành</h5>
+                    </div>
+                    <div class="col-7">
+                        <div class="form-check form-check-allquestions">
+                            <input class="form-check-input" type="checkbox" style="width: auto" name="allquestions" id="quiz_allquestions" value="1" ${response.quiz_allquestions == 1 ? 'checked' : ''}>
+                            <label class="form-check-label" for="quiz_allquestions">Tất cả câu hỏi</label>
+                        </div>
+                        <div class="form-check form-check-requiredquestions">
+                            <input class="form-check-input" type="checkbox" style="width: auto" name="requiredquestions" id="quiz_requiredquestions" value="1" ${response.quiz_requiredquestions == 1 ? 'checked' : ''}>
+                            <label class="form-check-label" for="quiz_requiredquestions">Yêu cầu số lượng câu hỏi để hoàn thành</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-2 numberquestion-box" ${response.quiz_requiredquestions == 1 ? '' : 'style="display: none;"'}>
+                    <div class="col-5">
+                        <h5>Số lượng câu hỏi</h5>
+                    </div>
+                    <div class="col-7">
+                        <input class="w-100" min="0" type="number" id="requiredquestionsPass" name="requiredquestionsPass" value="${response.quiz_requiredquestionsPass || 0}">
+                    </div>
                 </div>
                 <div class="row mb-2">
                     <div class="col-12">
@@ -1206,6 +1259,25 @@ $(document).ready(function() {
             getDataAvailablity(response.main_id, response.parent_id);
         });
 
+        $('input[name="allquestions"], input[name="requiredquestions"]').on('change', function () {
+            if ($(this).is(':checked')) {
+                // Bỏ check checkbox còn lại
+                $('input[name="allquestions"], input[name="requiredquestions"]').not(this).prop('checked', false);
+    
+                // Xử lý hiển thị/ẩn .numberquestion-box khi 'requiredquestions' được check
+                if ($(this).attr('id') === 'quiz_requiredquestions') {
+                    $('.numberquestion-box').show();
+                } else {
+                    $('.numberquestion-box').hide();
+                }
+            } else {
+                // Ẩn .numberquestion-box nếu 'requiredquestions' bị bỏ chọn
+                if ($(this).attr('id') === 'quiz_requiredquestions') {
+                    $('.numberquestion-box').hide();
+                }
+            }
+        });
+
         $('#quiz_completionpass').on('change', function() {
             // Kiểm tra trạng thái của checkbox
             if ($(this).is(':checked')) {
@@ -1222,9 +1294,11 @@ $(document).ready(function() {
             if ($(this).val() == 0) {
                 $('.form-check-completionview').hide();
                 $('.form-check-completionpass').hide();
+                $('.form-check-completionminattempts').hide();
             } else {
                 $('.form-check-completionview').show();
                 $('.form-check-completionpass').show();
+                $('.form-check-completionminattempts').show();
             }
         });
     }
@@ -1800,20 +1874,27 @@ $(document).ready(function() {
             quiz_name: $("#quiz_name").val(),
             quiz_section: $("#quiz-parent").val(),
             quiz_visible: $("#quiz_status").val(),
+            quiz_settings_type: $("#quiz_settings_type").val(),
             gradeQuiz: $("input[name='gradeQuiz']").val(),
             attempts: $("#attempts").val(),
             grademethod: $("#grademethod").val(),
-            shuffleanswers: $("#shuffleanswers").val(),
+            // shuffleanswers: $("#shuffleanswers").val(),
             preferredbehaviour: $("#preferredbehaviour").val(),
-            attemptimmediatelyopen: $("#id_attemptimmediatelyopen").is(":checked") ? 1 : 0,
-            correctnessimmediatelyopen: $("#id_correctnessimmediatelyopen").is(":checked") ? 1 : 0,
-            marksimmediatelyopen: $("#id_marksimmediatelyopen").is(":checked") ? 1 : 0,
-            rightanswerimmediatelyopen: $("#id_rightanswerimmediatelyopen").is(":checked") ? 1 : 0,
-            generalfeedbackimmediatelyopen: $("#id_generalfeedbackimmediatelyopen").is(":checked") ? 1 : 0,
+            // attemptimmediatelyopen: $("#id_attemptimmediatelyopen").is(":checked") ? 1 : 0,
+            // correctnessimmediatelyopen: $("#id_correctnessimmediatelyopen").is(":checked") ? 1 : 0,
+            // marksimmediatelyopen: $("#id_marksimmediatelyopen").is(":checked") ? 1 : 0,
+            // rightanswerimmediatelyopen: $("#id_rightanswerimmediatelyopen").is(":checked") ? 1 : 0,
+            // generalfeedbackimmediatelyopen: $("#id_generalfeedbackimmediatelyopen").is(":checked") ? 1 : 0,
             completion: $("#quiz_completion").val(),
             completionview: $("#quiz_completionview").is(":checked") ? 1 : 0,
             completionpass: $("#quiz_completionpass").is(":checked") ? 1 : 0,
+            completionminattempts: $("#quiz_completionminattempts").is(":checked") ? 1 : 0,
             gradePass: $("#quiz_grade_pass").val(),
+            submitearly: $("#submitearly").val(),
+            submitbuttontime: $("#submitbuttontime").val(),
+            allquestions: $("#quiz_allquestions").is(":checked") ? 1 : 0,
+            requiredquestions: $("#quiz_requiredquestions").is(":checked") ? 1 : 0,
+            requiredquestionsPass: $("#requiredquestionsPass").val(),
             availability_item: $("#availability-item-"+activity_id).val(),
             section_id: selectedParentId,
             course_id: courseId,
