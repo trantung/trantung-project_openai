@@ -6,7 +6,7 @@ use App\Models\Students;
 
 class FeService
 {
-    public function getDataUserInfo($json)
+    public function getDataUserInfo($jsonData)
     {
         $url = env('ICANID_DOMAIN_GET_USER_INFO');
         $bearerToken = $jsonData['access_token'];

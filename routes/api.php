@@ -90,4 +90,4 @@ Route::post("openai/hocmai/task2/improve_essay", [App\Http\Controllers\ApiContro
 Route::post("openai/hocmai/task2/getlog", [App\Http\Controllers\ApiController::class,'getLog']);
 
 // Route::post("test/upload/pdf", [App\Http\Controllers\ApiController::class,'uploadPDFLms']);
-Route::post('fe/studen/get-info-user-by-token', [ICANIDController::class, 'getInfoUserByToken'])->name('getInfoUserByToken');
+Route::post('fe/student/get-info-user-by-token', [ICANIDController::class, 'getInfoUserByToken'])->name('getInfoUserByToken');

@@ -147,6 +147,6 @@ class ICANIDController extends Controller
         if($jsonData['api_lms_key'] != env('API_LMS_FE')) {
             return $this->responseError();
         }
-        return $this->responseSuccess(200, $this->apiService->getDataUserInfo($data));
+        return $this->responseSuccess(200, $this->apiService->getDataUserInfo($jsonData));
     }
 }
