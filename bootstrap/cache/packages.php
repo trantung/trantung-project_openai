@@ -22,13 +22,13 @@
   ),
   'laravel/socialite' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Laravel\\Socialite\\SocialiteServiceProvider',
-    ),
     'aliases' => 
     array (
       'Socialite' => 'Laravel\\Socialite\\Facades\\Socialite',
+    ),
+    'providers' => 
+    array (
+      0 => 'Laravel\\Socialite\\SocialiteServiceProvider',
     ),
   ),
   'laravel/tinker' => 
@@ -61,13 +61,20 @@
   ),
   'pbmedia/laravel-ffmpeg' => 
   array (
+    'aliases' => 
+    array (
+      'FFMpeg' => 'ProtoneMedia\\LaravelFFMpeg\\Support\\FFMpeg',
+    ),
     'providers' => 
     array (
       0 => 'ProtoneMedia\\LaravelFFMpeg\\Support\\ServiceProvider',
     ),
-    'aliases' => 
+  ),
+  'prettus/l5-repository' => 
+  array (
+    'providers' => 
     array (
-      'FFMpeg' => 'ProtoneMedia\\LaravelFFMpeg\\Support\\FFMpeg',
+      0 => 'Prettus\\Repository\\Providers\\RepositoryServiceProvider',
     ),
   ),
   'socialiteproviders/manager' => 
@@ -79,13 +86,13 @@
   ),
   'spatie/laravel-ignition' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
-    ),
     'aliases' => 
     array (
       'Flare' => 'Spatie\\LaravelIgnition\\Facades\\Flare',
+    ),
+    'providers' => 
+    array (
+      0 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
     ),
   ),
 );

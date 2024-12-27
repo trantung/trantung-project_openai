@@ -8,6 +8,7 @@ use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\AuthSSOController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\RubricTemplateController;
 use App\Jobs\DemoJob;
 use Illuminate\Support\Facades\Route;
 
@@ -15,9 +16,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/token', function () {
-    return csrf_token(); 
+    return csrf_token();
 });
 
+Route::resource('rubric-templates', RubricTemplateController::class)->names('rubric_templates');
 
 Route::get('/dashboard', [HomeController::class, 'index1'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -29,9 +31,9 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 Route::middleware(['auth', 'admin'])->group(function () {
- 
+
     Route::get('admin/dashboard', [HomeController::class, 'index']);
- 
+
     Route::get('/admin/users', [UserController::class, 'index'])->name('admin/users');
     Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin/users/create');
     Route::post('/admin/users/save', [UserController::class, 'store'])->name('admin/users/save');
@@ -39,7 +41,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::put('/admin/users/edit/{id}', [UserController::class, 'update'])->name('admin/users/update');
     Route::get('/admin/users/delete/{id}', [UserController::class, 'delete'])->name('admin/users/delete');
 });
- 
+
 Route::get('/test-queue', [HomeController::class, 'testQueue'])->middleware('auth')->name('testQueue');
 
 Route::get('/test-streaming', [HomeController::class, 'testStreaming'])->middleware('auth')->name('testStreaming');
@@ -71,6 +73,7 @@ Route::get('/ssologin', function () {
 Route::get('/callback', [AuthSSOController::class, 'keycloakCallback']);
 
 Route::post('/ssologout', function () {
+    return 'logout';
     Auth::logout(); // Đăng xuất khỏi Laravel
     session()->invalidate(); // Hủy phiên hiện tại
     session()->regenerateToken(); // Tạo token CSRF mới

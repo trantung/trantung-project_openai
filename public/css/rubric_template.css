@@ -1,0 +1,8 @@
+.score-row {
+    display: flex;
+    align-items: center;
+}
+
+.btn-score-delete {
+    cursor: pointer;
+}

@@ -36,6 +36,12 @@ $(document).ready(function() {
         $(this).find('ul').stop(true, true).slideUp(200);
     });
 
+
+    setTimeout(function() {
+        $('#error-alert, #success-alert').fadeOut();
+    }, 3000); // 3 giây
+
+
     // $('.above-block').on('click', '.tree-item', function(e) {
     //     console.log(123)
     //     // Ngăn chặn hành vi mặc định và sự kiện click bong bóng
@@ -156,7 +162,7 @@ $(document).ready(function() {
     //         var parentElement = $('.contain-category-' + parent_id); // Lấy phần tử cha
     //         parentElement.empty(); // Xóa các phần tử con cũ
     //         console.log(parentElement);
-    
+
     //         response.forEach(function(item, index) {
     //             // Kiểm tra loại item (course hoặc không)
     //             var icon = item.moodle_type === 'course' ? 'fa-book' : 'fa-archive'; // Chọn icon
@@ -164,7 +170,7 @@ $(document).ready(function() {
 
     //             let iconArrow = '';
     //             let containCategory = '';
-    
+
     //             if (item.moodle_type === 'course') {
     //                 // Nếu là course, thêm icon sitemap
     //                 rightItemHtml = `
@@ -175,12 +181,12 @@ $(document).ready(function() {
     //                 `;
     //             } else {
     //                 iconArrow = `<i class="fa btn-expand-collapse fa-chevron-right btn-collapse" title="Mở rộng" data-category-id='${item.id}' aria-hidden="true"></i>`;
-                    
+
     //                 containCategory = `<div data-current="${item.id}"
     //                     class="tree-item-contain contain-category-${item.id} tree-item-move ui-sortable 123"
     //                     style="width: calc(100% - 4%); display: none;">
     //                 </div>`
-                    
+
     //                 // Nếu không phải là course, thêm div btn-group
     //                 rightItemHtml = `
     //                     <div class="btn-group">
@@ -202,7 +208,7 @@ $(document).ready(function() {
     //                     <i class="fa fa-trash delete-archive-product" title="Xóa" aria-hidden="true"></i>
     //                 `;
     //             }
-    
+
     //             // Tạo HTML cho từng item
     //             var newItem = `
     //                 <div class="tree-item-cover cover-category-${item.id} ui-sortable-handle">
@@ -225,12 +231,12 @@ $(document).ready(function() {
     //         });
     //     }
     // }
-    
+
     // function renderSectionDetail(response, parent_id) {
     //     if (response.length > 0) {
     //         var parentElement = $('.contain-category-' + parent_id); // Lấy phần tử cha
     //         parentElement.empty(); // Xóa các phần tử con cũ
-    
+
     //         response.forEach(function(item, index) {
     //             // Kiểm tra loại item (course hoặc không)
     //             let icon = 'fa-folder-open fa-folder-color'; // Chọn icon
@@ -238,7 +244,7 @@ $(document).ready(function() {
     //             if(item.moodle_type === 'quiz'){
     //                 icon = 'fa-list-ol';
     //             }
-    
+
     //             if (item.moodle_type === 'section') {
     //                 // Nếu là course, thêm icon sitemap
     //                 rightItemHtml = `
@@ -300,7 +306,7 @@ $(document).ready(function() {
     //                     </div>
     //                 `;
     //             }
-    
+
     //             // Tạo HTML cho từng item
     //             let productClass = item.moodle_type === 'quiz' ? 'product-name-w100 w-100 expand-quiz' : 'product-name-w100 w-100';
     //             var newItem = `
@@ -332,7 +338,7 @@ $(document).ready(function() {
     //             let blur = '';
     //             let dimmed = '';
     //             let completionMark = '';
-    
+
     //             if (item.moodle_type === 'course') {
     //                 icon = 'fa-book';
     //                 blur = 'blur';
@@ -345,7 +351,7 @@ $(document).ready(function() {
     //                     completionMark = item.availabilityinfo;
     //                 }
     //             }
-                
+
     //             if (item.moodle_type === 'section') {
     //                 icon = 'fa-folder-open fa-folder-color';
     //             }
@@ -368,5 +374,5 @@ $(document).ready(function() {
     //         });
     //     }
     // }
-    
+
 })
