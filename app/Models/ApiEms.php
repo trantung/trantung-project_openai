@@ -3,17 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Prettus\Repository\Contracts\Transformable;
 use Prettus\Repository\Traits\TransformableTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Class RubricScore.
+ * Class ApiEms.
  *
  * @package namespace App\Models;
  */
-class RubricScore extends Model implements Transformable
+class ApiEms extends Model implements Transformable
 {
     use TransformableTrait;
     use SoftDeletes;
@@ -24,8 +25,17 @@ class RubricScore extends Model implements Transformable
      * @var array
      */
     protected $fillable = [
-        'rubric_template_id', 'lms_score', 'rule_score'
+        'ems_id', 'ems_name', 'ems_type_id'
     ];
+
+    /**
+     * 
+     * @return BelongsTo
+     */
+    public function ems_type(): BelongsTo
+    {
+        return $this->belongsTo(EmsType::class);
+    }
 
     /**
      * 

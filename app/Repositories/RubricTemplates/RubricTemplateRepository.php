@@ -45,7 +45,7 @@ class RubricTemplateRepository extends BaseRepository implements RubricTemplateR
      *
      * @return LengthAwarePaginator
      */
-    public function search($params): LengthAwarePaginator
+    public function search(array $params): LengthAwarePaginator
     {
         $query = $this->model->query();
 

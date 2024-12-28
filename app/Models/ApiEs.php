@@ -12,4 +12,6 @@ class ApiEs extends Model
     protected $table = 'api_es';
 
     protected $fillable = ['es_id', 'es_name', 'es_type'];
+
+    
 }

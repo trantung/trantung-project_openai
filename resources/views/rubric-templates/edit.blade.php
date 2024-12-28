@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<link href="{{ URL::asset('css/rubric_template.css') }}"rel="stylesheet">
+<link href="{{ URL::asset('css/rubric-templates/rubric_template.css') }}"rel="stylesheet">
 @if(session('error'))
     <div class="alert alert-danger" id="error-alert">
         {{ session('error') }}
@@ -17,7 +17,7 @@
                     <div role="main">
                         <span id="maincontent"></span>
                         <div id="box-content">
-                            <h3>Sửa mẫu bảng điểm</h3>
+                            <h3>Sửa bộ mẫu điểm</h3>
                             <div class="message-class">
                                 @if(session('success'))
                                     <div class="alert alert-success alert-dismissible" role="alert">
@@ -54,7 +54,7 @@
                                                     @method('PUT')
                                                     <div class="mb-2 row">
                                                         <div class="col-2">
-                                                            <label>Tên mẫu điểm <span class="asterisk">(*)</span></label>
+                                                            <label>Tên bộ mẫu điểm <span class="asterisk">(*)</span></label>
                                                         </div>
                                                         <div class="col-5">
                                                             <input type="text" name="name" value="{{ $rubricTemplate->name }}" class="js-required form-control" placeholder="Nhập tên" required>
@@ -70,7 +70,7 @@
                                                     </div>
 
                                                     <div class="rubric-score">
-                                                            <input type="hidden" name="rubric_score_ids_delete[]" value="" id='rubric_score_ids_delete'>
+                                                            <input type="hidden" name="rubric_score_ids_delete" value="" id='rubric_score_ids_delete'>
                                                             @foreach ($rubricTemplate->rubric_score as $key => $rubricScores)
                                                             <div class="mb-2 row">
                                                                 <input type="hidden" name="rubric_score[edit][{{$key}}][id]" value="{{ $rubricScores->id }}" class="rubric_score_id">
@@ -99,7 +99,7 @@
                                                     </div>
                                                     <div id="box-button" class="text-center">
                                                         <button type="submit" id="btn-save" class="btn btn-primary">Lưu</button>
-                                                        <a href="{{ route('role.index') }}" id="btn-cancel" class="btn btn-secondary">Huỷ</a>
+                                                        <a href="{{ route('rubric_templates.index') }}" id="btn-cancel" class="btn btn-secondary">Huỷ</a>
                                                     </div>
                                                 </form>
                                             </div>
@@ -115,6 +115,5 @@
     </div>
 </div>
 
-{{-- @include('rubric-templates.rubric-score.row'); --}}
 <script src="{{ URL::asset('js/rubric-template/main.js') }}"></script>
 @endsection

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<link href="{{ URL::asset('css/rubric_template.css') }}"rel="stylesheet">
+<link href="{{ URL::asset('css/rubric-templates/rubric_template.css') }}"rel="stylesheet">
 @if(session('error'))
     <div class="alert alert-danger" id="error-alert">
         {{ session('error') }}
@@ -17,7 +17,7 @@
                     <div role="main">
                         <span id="maincontent"></span>
                         <div id="box-content">
-                            <h3>Thêm Mẫu bảng điểm</h3>
+                            <h3>Thêm bộ mẫu điểm</h3>
                             <div class="message-class">
                                 @if(session('success'))
                                     <div class="alert alert-success alert-dismissible" role="alert">

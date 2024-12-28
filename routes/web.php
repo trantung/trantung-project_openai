@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\ApiEmsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\RubricScoreController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TeacherController;
@@ -20,6 +22,12 @@ Route::get('/token', function () {
 });
 
 Route::resource('rubric-templates', RubricTemplateController::class)->names('rubric_templates');
+Route::get('/rubric-templates/ajax/ems-types', [RubricTemplateController::class, 'getEmsTypeInPopup'])->name('rubric_templates.ajax.ems_types');
+Route::post('/rubric-templates/ajax/update-rubric-template-id-in-api-ems', [RubricTemplateController::class, 'updateRubricTemplateIdInApiEms'])->name('rubric_templates.ajax.update_multiple_api_ems');
+
+Route::resource('api-ems', ApiEmsController::class)->names('api_ems');
+
+Route::resource('rubric-scores', RubricScoreController::class)->names('rubric_scores');
 
 Route::get('/dashboard', [HomeController::class, 'index1'])->middleware(['auth', 'verified'])->name('dashboard');
 

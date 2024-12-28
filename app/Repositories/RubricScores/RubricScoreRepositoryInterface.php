@@ -13,4 +13,21 @@ use Illuminate\Pagination\LengthAwarePaginator;
 interface RubricScoreRepositoryInterface extends RepositoryInterface
 {
 
+    /**
+     * search
+     *
+     * @param array $params
+     *
+     * @return LengthAwarePaginator
+     */
+    public function search(array $params): LengthAwarePaginator;
+
+    /**
+     * update Multiple
+     *
+     * @param array $data
+     * 
+     * @return void
+     */
+    public function updateMultiple(array $data): void;
 }

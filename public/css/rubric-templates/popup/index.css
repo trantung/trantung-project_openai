@@ -1,0 +1,16 @@
+.table-popup {
+  border-collapse: collapse;
+  font-family: Arial, helvetica, sans-serif;
+  /* font-size: 12px; */
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.table-popup td {
+  padding: 9px;
+  vertical-align: middle;
+  font-weight: 300;
+  font-size: 12px;
+  border-bottom: solid 1px #e6e3e3;
+}

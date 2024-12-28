@@ -11,10 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('api_moodle', function (Blueprint $table) {
+        Schema::create('api_ems', function (Blueprint $table) {
+            $table->id();
+            $table->integer('ems_id')->nullable();
+            $table->string('ems_name')->nullable();
+            $table->unsignedBigInteger('ems_type_id')->nullable();
             $table->unsignedBigInteger('rubric_template_id')->nullable();
+            $table->softDeletes();
+            $table->timestamps();
 
             $table->foreign('rubric_template_id')->references('id')->on('rubric_templates')->onDelete('cascade');
+            $table->foreign('ems_type_id')->references('id')->on('ems_types')->onDelete('cascade');
         });
     }
 
@@ -23,12 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('api_moodle', function (Blueprint $table) {
-            $table->dropColumn('rubric_template_id');
-        });
-
-        Schema::table('api_es', function (Blueprint $table) {
-            $table->dropColumn('rubric_template_id');
-        });
+        Schema::dropIfExists('api_ems');
     }
 };
