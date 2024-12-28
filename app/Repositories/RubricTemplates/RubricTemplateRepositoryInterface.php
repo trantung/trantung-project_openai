@@ -20,5 +20,5 @@ interface RubricTemplateRepositoryInterface extends RepositoryInterface
      *
      * @return LengthAwarePaginator
      */
-    public function search($params): LengthAwarePaginator;
+    public function search(array $params): LengthAwarePaginator;
 }

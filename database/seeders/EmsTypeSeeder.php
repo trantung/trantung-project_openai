@@ -13,10 +13,11 @@ class EmsTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('ems_type')->insert([
-            ['type_id' => rand(1, 10)],
-            ['type_id' => rand(11, 20)],
-            ['type_id' => rand(21, 30)],
+        DB::table('ems_types')->insert([
+            ['type_id' => rand(1, 10), 'type_name' => 'Ems Type 1'],
+            ['type_id' => rand(11, 20), 'type_name' => 'Ems Type 2'],
+            ['type_id' => rand(21, 30), 'type_name' => 'Ems Type 3'],
+            ['type_id' => rand(30, 40), 'type_name' => 'Ems Type 4'],
         ]);
     }
 }

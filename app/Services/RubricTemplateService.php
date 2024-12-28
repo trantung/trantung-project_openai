@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\RubricScores\RubricScoreRepositoryInterface;
+use App\Repositories\EmsTypes\EmsTypeRepositoryInterface;
 
 class RubricTemplateService extends BaseService
 {
@@ -16,13 +17,17 @@ class RubricTemplateService extends BaseService
 
     protected $rubricScoreRepository;
 
+    protected $emsTypeRepository;
+
     public function __construct(
         RubricTemplateRepositoryInterface $rubricTemplateRepository,
-        RubricScoreRepositoryInterface $rubricScoreRepository
+        RubricScoreRepositoryInterface $rubricScoreRepository,
+        EmsTypeRepositoryInterface $emsTypeRepository
         )
     {
         $this->rubricTemplateRepository = $rubricTemplateRepository;
         $this->rubricScoreRepository = $rubricScoreRepository;
+        $this->emsTypeRepository = $emsTypeRepository;
     }
 
     /**
@@ -99,16 +104,42 @@ class RubricTemplateService extends BaseService
             $rubricTemplate = $this->rubricTemplateRepository->update($rubricTemplateData, $id);
 
             $rubricScoreInsert = $this->handleRubricScoreCreateData($data['rubric_score']['create'] ?? [], $rubricTemplate->id);
-            $rubricTemplate->rubric_score()->insert($rubricScoreInsert);
+            $this->rubricScoreRepository->insert($rubricScoreInsert);
 
             $rubricScoreUpdate = $this->handleRubricScoreUpdateData($data['rubric_score']['edit'] ?? [], $rubricTemplate->id);
             $this->rubricScoreRepository->updateMultiple($rubricScoreUpdate);
 
-            $ids = explode(',', $data['rubric_score_ids_delete'][0] ?? '');
+            $ids = explode(',', $data['rubric_score_ids_delete'] ?? '');
             $this->rubricScoreRepository->destroy($ids);
 
             return $rubricTemplate;
         });
+    }
+
+
+    /**
+     * update
+     *
+     * @param int $id
+     *
+     * @return int
+     *
+     */
+    public function destroy(int $id): int
+    {
+        return $this->rubricTemplateRepository->destroy($id);
+    }
+
+    /**
+     * get Emstype By Rubric Template Id
+     *
+     * @param int $rubricTemplateId
+     * 
+     * @return Collection
+     */
+    public function getEmstypeByRubricTemplateId(int $rubricTemplateId): Collection
+    {
+       return $this->emsTypeRepository->getEmstypeByRubricTemplateId($rubricTemplateId);
     }
 
 

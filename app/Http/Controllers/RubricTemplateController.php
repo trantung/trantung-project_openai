@@ -2,23 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ApiEmsService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\RubricTemplateService;
+use App\Services\EmsTypeService;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Response;
 
-class RubricTemplateController extends Controller
+class RubricTemplateController extends BaseController
 {
     //
-
     protected $rubricTemplateService;
+
+    protected $apiEmsService;
 
     protected $breadcrumbs;
 
-    public function __construct(RubricTemplateService $rubricTemplateService)
+    public function __construct(RubricTemplateService $rubricTemplateService, ApiEmsService $apiEmsService)
     {
         $this->rubricTemplateService = $rubricTemplateService;
+        $this->apiEmsService = $apiEmsService;
         $this->breadcrumbs = [
             [
                 'url' => route('dashboard'),
@@ -112,12 +118,64 @@ class RubricTemplateController extends Controller
     public function update(Request $request, int $id): RedirectResponse
     {
         try {
-            // dd($request->all());
             $rubricTemplates = $this->rubricTemplateService->update($request->all(), $id);
             return redirect()->route('rubric_templates.index')->with('success', 'Cập nhật thành công!');
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return redirect()->back()->with('error', 'Error!');
+        }
+    }
+
+    /**
+     * delete
+     *
+     * @param int $id
+     *
+     * @return RedirectResponse
+     *
+     */
+    public function destroy(int $id): RedirectResponse
+    {
+        $id = $this->rubricTemplateService->destroy($id);
+        return redirect()->route('rubric_templates.index')->with('success', 'Xóa thành công!');
+    }
+
+
+    /**
+     * ajax get Emstype By Rubric Template Id
+     *
+     * @param Request $request
+     * 
+     * @return JsonResponse
+     */
+    public function getEmsTypeInPopup(Request $request): JsonResponse
+    {
+        try {
+            $rubricTemplateId = $request['rubric_template_id'] ?? 0;
+            $emsTypes = $this->rubricTemplateService->getEmstypeByRubricTemplateId($rubricTemplateId);
+            $html = view('rubric-templates.popup.table', ['emsTypes' => $emsTypes, 'rubricTemplateId' => $rubricTemplateId])->render();
+            return $this->response($html);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return $this->response([],Response::HTTP_INTERNAL_SERVER_ERROR, false, $e->getMessage());
+        }
+    }
+
+    /**
+     * ajax update Multiple Ems Types
+     *
+     * @param Request $request
+     * 
+     * @return JsonResponse
+     */
+    public function updateRubricTemplateIdInApiEms(Request $request)
+    {
+        try {
+            $this->apiEmsService->updateRubricTemplateIdInApiEms($request->all());
+            return $this->response();
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return $this->response([],Response::HTTP_INTERNAL_SERVER_ERROR, false, $e->getMessage());
         }
     }
 }

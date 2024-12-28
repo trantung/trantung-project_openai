@@ -7,15 +7,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Prettus\Repository\Contracts\Transformable;
 use Prettus\Repository\Traits\TransformableTrait;
 use App\Models\RubricScore;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Class RubricTemplate.
  *
- * @package namespace App\Entities;
+ * @package namespace App\Models;
  */
 class RubricTemplate extends Model implements Transformable
 {
     use TransformableTrait;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.

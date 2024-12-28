@@ -1,8 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-{{-- <link href="{{ URL::asset('css/rubric_template.css') }}"rel="stylesheet"> --}}
-{{-- {{ dd(URL::asset('css/products.css'));}} --}}
+<link href="{{ URL::asset('css/rubric-templates/rubric_template.css') }}"rel="stylesheet">
+
+<link href="{{ URL::asset('css/rubric-templates/popup/index.css')}}"rel="stylesheet">
 @if(session('success'))
     <div class="alert alert-success" id="success-alert">
         {{ session('success') }}
@@ -17,7 +18,7 @@
                     <div role="main">
                         <span id="maincontent"></span>
                         <div class="">
-                            <h2>Danh sách mẫu điểm số</h2>
+                            <h2>Danh sách bộ mẫu điểm số</h2>
                             <form action="{{ route('rubric_templates.index') }}" class="form-inline mb-2 search-form" method="get">
                                 <div class="input-group mb-7">
                                     <input type="text" class="form-control" placeholder="Name" aria-label="name" name="name" aria-describedby="basic-addon1">
@@ -29,11 +30,11 @@
                         <div class="row">
                             <div class="col-6">
                                 <div class="box-total-item">
-                                    Tổng số mẫu điểm số: {{ $rubricTemplates->total() }}
+                                    Tổng số bộ mẫu điểm số: {{ $rubricTemplates->total() }}
                                 </div>
                             </div>
                             <div class="col-6 text-right">
-                                <a href="{{ route('rubric_templates.create') }}" class="btn btn-primary mb-2">+ Mẫu điểm số</a>
+                                <a href="{{ route('rubric_templates.create') }}" class="btn btn-primary mb-2">+ Bộ mẫu điểm số</a>
                             </div>
                         </div>
                         <div class="wrapper-table-scroll">
@@ -41,43 +42,54 @@
                                 <thead>
                                     <tr>
                                         <th>Id</th>
-                                        <th>Name</th>
-                                        <th>Action</th>
+                                        <th>Tên bộ mẫu điểm</th>
+                                        <th>Mẫu điểm</th>
+                                        <th>Bộ đề áp dụng</th>
+                                        <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($rubricTemplates as $key => $item)
-                                        <tr id="user-{{ $item->id }}">
-                                            <td>{{ $item->id }}</td>
-                                            <td>{{ $item->name }}</td>
-                                            <td>
+                                        <tr>
+                                            <td align="center">{{ $item->id }}</td>
+                                            <td align="center">{{ $item->name }}</td>
+                                            <td align="center">
+                                                <a href="{{route('rubric_scores.index', ['rubric_template_id' => $item->id])}}" target="_blank">
+                                                    <i class="fas fa fa-lg fa-list"></i>
+                                                </a>
+                                            </td>
+                                            <td align="center">
+                                                <a href="{{route('api_ems.index', ['rubric_template_id' => $item->id])}}" target="_blank">
+                                                    <i class="fas fa fa-lg fa-list"></i>
+                                                </a>
+                                            </td>
+                                            <td class="action-table">
                                                 <a href="{{ route('rubric_templates.edit', $item->id) }}"> <i class="fas fa fa-lg fa-edit text-success"></i> </a>
-                                                <a> <i class="fas fa fa-lg fa-trash text-danger"></i> </a>
-                                                <!-- <a class="login_as" data-fullname="Nguyễn  Bích Ngọc" data-course-id="1" data-user-id="10907" data-sesskey="t5uuyZVtfd" href="javascript:void(0);" data-toggle="modal" data-target="#modal_login_as" title="Đăng nhập với tư cách">
-                                                    <i class="fa fa-lg fa-user-secret text-success"></i>
-                                                </a> -->
-                                                {{-- <a href="javascript:void(0);"
-                                                    title="Xoá giáo viên"
-                                                    data-type=""
-                                                    data-teacher-id="{{ $teacher->user_id }}"
-                                                    data-teacher-name="{{ $teacher->name }}"
-                                                    data-class-id="{{ $teacher->classes->pluck('id')->implode(', ') }}"
-                                                    onclick="showModalDeleteUser(this)"
-                                                    class="item-delete">
-                                                    <i class="fas fa fa-lg fa-trash text-danger"></i>
-                                                </a> --}}
+                                                <div>
+                                                    <form action="{{ route('rubric_templates.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="delete-button">
+                                                             <i class="fas fa fa-lg fa-trash text-danger"></i> </a>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                                <a href="#" class="setting-ems-type" data-toggle="modal" data-target="#staticBackdrop" data-id="{{ $item->id }}">
+                                                    <i class="fa-solid fa-gear" style="color: #df3076;"></i>
+                                                <a>
                                             </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
-                        <x-pagination :pagpagination='$rubricTemplates'/>
+                        <x-pagination :pagination='$rubricTemplates'/>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-{{-- <script src="{{ URL::asset('js/products/products.js') }}"></script> --}}
+<script src="{{ URL::asset('js/rubric-template/main.js') }}"></script>
+@include('rubric-templates.popup.index');
 @endsection

@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ems_type', function (Blueprint $table) {
+        Schema::create('ems_types', function (Blueprint $table) {
             $table->id();
             $table->integer('type_id');
+            $table->string(column: 'type_name')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -23,6 +23,7 @@ $(document).ready(function() {
         $('.rubric-score').append(row);
     });
 
+    //delete rubric-score
     $(document).on('click','.btn-score-delete', function () {
         let id = $(this).parent().find('.rubric_score_id').val();
         if (id) {
@@ -30,5 +31,60 @@ $(document).ready(function() {
         }
         $('#rubric_score_ids_delete').val(rubricScoreIdsDelete);
         $(this).parent().remove();
+    });
+    
+
+    //setting ems-type
+    $('.setting-ems-type').click(function () {
+        let rubricTemplateId = $(this).data('id');
+        $.ajax({
+            url: '/rubric-templates/ajax/ems-types',
+            method: 'GET',
+            data: { rubric_template_id: rubricTemplateId },
+            dataType: 'json',
+            success: function (response) {
+                if (response.success) {
+                    $('.ems-type').html(response.data);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+
+    //save setting
+    $('.ems-type-save').click(function () {
+        let selectedValues = [];
+        let formData = new FormData();
+        $('.api_ems_id:checked').each(function() {
+            selectedValues.push($(this).val());
+        });
+        
+        $('#api_ems_ids').val(selectedValues)
+        formData.append('api_ems_ids', $('#api_ems_ids').val());
+        formData.append('rubric_template_id', $('#rubric_template_popup_id').val());
+
+        $.ajax({
+            url: '/rubric-templates/ajax/update-rubric-template-id-in-api-ems',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false, 
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('.alert-success').attr('style', 'display: block !important;');
+                    setTimeout(function() {
+                        location.reload();
+                    }, 1000);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
     });
 });
