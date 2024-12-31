@@ -249,12 +249,22 @@ $(document).ready(function() {
             },
             success: function(response) {
                 // Xử lý khi gửi thành công
-                console.log('Gửi thành công:', response);
-                if(response.status){
-                    location.reload();
-                }else{
-                    alert(response.message);
-                }
+                const results = response.results;
+            
+                // Lấy các phần tử có status = false
+                const failedResults = results.filter(item => item.status === false);
+            
+                // Tạo thông báo gộp chung
+                let alertMessage = "Kết quả:\n";
+                results.forEach(item => {
+                    const statusMessage = item.status ? 'Thành công' : 'Thất bại';
+                    alertMessage += `Giáo viên ID: ${item.teacher_id} - Email: ${item.teacher_mail} - Trạng thái: ${statusMessage} - Thông báo: ${item.message}\n`;
+                });
+            
+                // Hiển thị thông báo gộp chung
+                alert(alertMessage);
+                location.reload();
+                
             },
             error: function(err) {
                 // Xử lý khi có lỗi xảy ra

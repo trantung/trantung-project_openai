@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d846f6b1e54830dc1e5125a41a79a6b3",
+    "content-hash": "093f991ab7cb81ab26780493a19a8233",
     "packages": [
         {
             "name": "auth0/php-jwt",
@@ -501,16 +501,16 @@
         },
         {
             "name": "egulias/email-validator",
-            "version": "4.0.3",
+            "version": "4.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/egulias/EmailValidator.git",
-                "reference": "b115554301161fa21467629f1e1391c1936de517"
+                "reference": "ebaaf5be6c0286928352e054f2d5125608e5405e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/egulias/EmailValidator/zipball/b115554301161fa21467629f1e1391c1936de517",
-                "reference": "b115554301161fa21467629f1e1391c1936de517",
+                "url": "https://api.github.com/repos/egulias/EmailValidator/zipball/ebaaf5be6c0286928352e054f2d5125608e5405e",
+                "reference": "ebaaf5be6c0286928352e054f2d5125608e5405e",
                 "shasum": ""
             },
             "require": {
@@ -556,7 +556,7 @@
             ],
             "support": {
                 "issues": "https://github.com/egulias/EmailValidator/issues",
-                "source": "https://github.com/egulias/EmailValidator/tree/4.0.3"
+                "source": "https://github.com/egulias/EmailValidator/tree/4.0.2"
             },
             "funding": [
                 {
@@ -564,7 +564,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-12-27T00:36:43+00:00"
+            "time": "2023-10-06T06:47:41+00:00"
         },
         {
             "name": "evenement/evenement",
@@ -1269,16 +1269,16 @@
         },
         {
             "name": "icanid/icanid-sdk-php",
-            "version": "v0.0.17",
+            "version": "0.0.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/galaxyed/core-sdk-php.git",
-                "reference": "912ec2d4a1d5582b7170aae366b4f25200b72afe"
+                "reference": "cc3beb7efa5acc46a312d00b5da3428fc2926831"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/galaxyed/core-sdk-php/zipball/912ec2d4a1d5582b7170aae366b4f25200b72afe",
-                "reference": "912ec2d4a1d5582b7170aae366b4f25200b72afe",
+                "url": "https://api.github.com/repos/galaxyed/core-sdk-php/zipball/cc3beb7efa5acc46a312d00b5da3428fc2926831",
+                "reference": "cc3beb7efa5acc46a312d00b5da3428fc2926831",
                 "shasum": ""
             },
             "require": {
@@ -1315,9 +1315,9 @@
             "homepage": "https://github.com/galaxyed/core-sdk-php",
             "support": {
                 "issues": "https://github.com/galaxyed/core-sdk-php/issues",
-                "source": "https://github.com/galaxyed/core-sdk-php/tree/v0.0.17"
+                "source": "https://github.com/galaxyed/core-sdk-php/tree/0.0.16"
             },
-            "time": "2024-12-25T16:52:28+00:00"
+            "time": "2022-12-29T07:17:11+00:00"
         },
         {
             "name": "laravel/framework",
@@ -10019,12 +10019,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.2"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }

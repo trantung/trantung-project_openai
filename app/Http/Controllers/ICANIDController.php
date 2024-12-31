@@ -149,4 +149,16 @@ class ICANIDController extends Controller
         }
         return $this->responseSuccess(200, $this->apiService->getDataUserInfo($jsonData));
     }
+
+    public function createStudentWithCourse(Request $request)
+    {
+        $jsonData = $this->checkAccess($request, ['api_sale_key', 'email', 'course_ids']);
+        if(!$jsonData) {
+            return $this->responseError();
+        }
+        if($jsonData['api_sale_key'] != env('API_SALE')) {
+            return $this->responseError();
+        }
+        return $this->responseSuccess(200, $this->apiService->createWithCourse($jsonData));
+    }
 }

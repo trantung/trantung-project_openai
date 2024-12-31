@@ -12,5 +12,5 @@ class Students extends Model
     public $paginate = 10;
     protected $table = 'students';
 
-    protected $fillable = ['user_id', 'name', 'username', 'email', 'sso_id', 'sso_name'];
+    protected $fillable = ['user_id', 'name', 'username', 'email', 'sso_id', 'sso_name', 'moodle_id'];
 }

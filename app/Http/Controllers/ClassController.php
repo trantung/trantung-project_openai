@@ -17,16 +17,19 @@ use App\Models\Permission;
 use App\Models\UserRole;
 use App\Models\RolePermission;
 use App\Models\Students;
+use App\ApiService\FeService;
 use DB;
 
 class ClassController extends Controller
 {
     protected $common;
+    protected $apiService;
 
-    public function __construct(Common $common, Classes $class)
+    public function __construct(Common $common, Classes $class, FeService $apiService)
     {
         $this->classes = $class;
         $this->common = $common;
+        $this->apiService = $apiService;
     }
 
     public function getCurrentUser()
@@ -366,87 +369,101 @@ class ClassController extends Controller
 
             $nameParts = explode(' ', $teacherName);
             $firstName = $nameParts[0];
-            $lastName = isset($nameParts[1]) ? implode(' ', array_slice($nameParts, 1)) : '';
+            $lastName = isset($nameParts[1]) ? implode(' ', array_slice($nameParts, 1)) : 'lastname';
 
             $teacherUsername = $teacher->username;
             $teacherEmail = $teacher->email;
 
-            $dataJsonCreateUserMoodle = [
-                'users[0][username]' => $teacherUsername,
-                'users[0][auth]' => 'manual',
-                'users[0][password]' => 'Hocmai@1234',
-                'users[0][firstname]' => $firstName,
-                'users[0][lastname]' => $lastName,
-                'users[0][email]' => $teacherEmail,
+            $data = [
+                'username' => $teacherUsername,
+                'first_name' => $firstName ?? 'firstname',
+                'last_name' => $lastName ?? 'lastname',
+                'email' => $teacherEmail,
+                'moodle_role_id' => $this->apiService->getMoodleRoleTeacher() ?? 3,
+                'course_ids' => $courseId,
+                'class_id' => $classId,
             ];
 
-            $checkUserExistMoodle = Common::core_user_get_users_by_field($teacherEmail);
-            $userIdMoodle = $checkUserExistMoodle[0]['id'] ?? 0;
+            $createWithCourse = $this->apiService->createWithCourse($data);
 
-            if (!$userIdMoodle) {
-                $createUserMoodle = Common::core_user_create_users($dataJsonCreateUserMoodle);
+            $results[] = $createWithCourse;
 
-                if (isset($createUserMoodle['errorcode'])) {
-                    $results[] = [
-                        'teacher_id' => $teacherId,
-                        'status' => false,
-                        'message' => $createUserMoodle['message']
-                    ];
-                    continue;
-                }
+            // $dataJsonCreateUserMoodle = [
+            //     'users[0][username]' => $teacherUsername,
+            //     'users[0][auth]' => 'manual',
+            //     'users[0][password]' => 'Hocmai@1234',
+            //     'users[0][firstname]' => $firstName,
+            //     'users[0][lastname]' => $lastName,
+            //     'users[0][email]' => $teacherEmail,
+            // ];
 
-                $userIdMoodle = $createUserMoodle[0]['id'];
-            }
+            // $checkUserExistMoodle = Common::core_user_get_users_by_field($teacherEmail);
+            // $userIdMoodle = $checkUserExistMoodle[0]['id'] ?? 0;
 
-            if ($userIdMoodle) {
-                $updateData = [
-                    'moodle_user_id' => $userIdMoodle,
-                ];
+            // if (!$userIdMoodle) {
+            //     $createUserMoodle = Common::core_user_create_users($dataJsonCreateUserMoodle);
 
-                User::find($teacherUserId)->update($updateData);
+            //     if (isset($createUserMoodle['errorcode'])) {
+            //         $results[] = [
+            //             'teacher_id' => $teacherId,
+            //             'status' => false,
+            //             'message' => $createUserMoodle['message']
+            //         ];
+            //         continue;
+            //     }
 
-                $checkDataExistInCourseTeacher = CourseTeacher::byTeacherId($teacherId)
-                    ->byClassId($classId)
-                    ->byCourseId($courseId)
-                    ->first();
+            //     $userIdMoodle = $createUserMoodle[0]['id'];
+            // }
 
-                if (empty($checkDataExistInCourseTeacher)) {
-                    CourseTeacher::create([
-                        'teacher_id' => $teacherId,
-                        'class_id' => $classId,
-                        'course_id' => $courseId,
-                    ]);
-                }
+            // if ($userIdMoodle) {
+            //     $updateData = [
+            //         'moodle_user_id' => $userIdMoodle,
+            //     ];
 
-                $dataJsonEnrolUserMoodle = [
-                    'enrolments[0][roleid]' => 3,
-                    'enrolments[0][userid]' => $userIdMoodle,
-                    'enrolments[0][courseid]' => $courseData->moodle_id,
-                    'enrolments[0][suspend]' => 0,
-                ];
+            //     User::find($teacherUserId)->update($updateData);
 
-                $enrolUserMoodle = Common::enrol_manual_enrol_users($dataJsonEnrolUserMoodle);
+            //     $checkDataExistInCourseTeacher = CourseTeacher::byTeacherId($teacherId)
+            //         ->byClassId($classId)
+            //         ->byCourseId($courseId)
+            //         ->first();
 
-                if (empty($enrolUserMoodle)) {
-                    $results[] = [
-                        'teacher_id' => $teacherId,
-                        'status' => true,
-                        'message' => 'Enrolled successfully'
-                    ];
-                } else {
-                    $results[] = [
-                        'teacher_id' => $teacherId,
-                        'status' => false,
-                        'message' => 'Có lỗi xảy ra khi lấy thông tin user LMS'
-                    ];
-                }
-            } else {
-                $results[] = [
-                    'teacher_id' => $teacherId,
-                    'status' => false,
-                    'message' => 'Có lỗi xảy ra khi lấy thông tin user LMS'
-                ];
-            }
+            //     if (empty($checkDataExistInCourseTeacher)) {
+            //         CourseTeacher::create([
+            //             'teacher_id' => $teacherId,
+            //             'class_id' => $classId,
+            //             'course_id' => $courseId,
+            //         ]);
+            //     }
+
+            //     $dataJsonEnrolUserMoodle = [
+            //         'enrolments[0][roleid]' => 3,
+            //         'enrolments[0][userid]' => $userIdMoodle,
+            //         'enrolments[0][courseid]' => $courseData->moodle_id,
+            //         'enrolments[0][suspend]' => 0,
+            //     ];
+
+            //     $enrolUserMoodle = Common::enrol_manual_enrol_users($dataJsonEnrolUserMoodle);
+
+            //     if (empty($enrolUserMoodle)) {
+            //         $results[] = [
+            //             'teacher_id' => $teacherId,
+            //             'status' => true,
+            //             'message' => 'Enrolled successfully'
+            //         ];
+            //     } else {
+            //         $results[] = [
+            //             'teacher_id' => $teacherId,
+            //             'status' => false,
+            //             'message' => 'Có lỗi xảy ra khi lấy thông tin user LMS'
+            //         ];
+            //     }
+            // } else {
+            //     $results[] = [
+            //         'teacher_id' => $teacherId,
+            //         'status' => false,
+            //         'message' => 'Có lỗi xảy ra khi lấy thông tin user LMS'
+            //     ];
+            // }
         }
 
         // Trả về tất cả kết quả sau vòng lặp
@@ -643,16 +660,20 @@ class ClassController extends Controller
 
                     $courseData = ApiMoodle::byId($course_id)->moodleType('course')->first();
 
-                    $dataJsonEnrolUserMoodle = [
-                        'enrolments[0][roleid]' => 3, // role teacher lms
-                        'enrolments[0][userid]' => $request->userMoodleId,
-                        'enrolments[0][courseid]' => $courseData->moodle_id,
-                        'enrolments[0][suspend]' => 0,
-                    ];
+                    // $dataJsonEnrolUserMoodle = [
+                    //     'enrolments[0][roleid]' => 3, // role teacher lms
+                    //     'enrolments[0][userid]' => $request->userMoodleId,
+                    //     'enrolments[0][courseid]' => $courseData->moodle_id,
+                    //     'enrolments[0][suspend]' => 0,
+                    // ];
     
-                    $enrolUserMoodle = Common::enrol_manual_enrol_users($dataJsonEnrolUserMoodle);
+                    // $enrolUserMoodle = Common::enrol_manual_enrol_users($dataJsonEnrolUserMoodle);
 
-                    if($enrolUserMoodle == null){
+                    $roleid = $this->apiService->getMoodleRoleTeacher();
+
+                    $enrolUserMoodle = $this->apiService->enrollStudentToCourse($request->userMoodleId, $roleid, $course_id);
+
+                    if($enrolUserMoodle){
                         CourseTeacher::create([
                             'course_id' => $course_id,
                             'teacher_id' => $teacher->id,

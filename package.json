@@ -12,5 +12,14 @@
     },
     "dependencies": {
         "tinymce": "^7.5.1"
+    },
+    "apidoc": {
+        "name": "example",
+        "version": "0.1.0",
+        "description": "Api document",
+        "apidoc": {
+            "title": "Custom apiDoc browser title",
+            "url": "https://api.github.com/v1"
+        }
     }
 }

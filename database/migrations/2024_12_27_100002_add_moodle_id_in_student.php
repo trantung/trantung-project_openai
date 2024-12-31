@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up()
     {
-        if (Schema::hasTable('students')) {
-            Schema::table('students', function (Blueprint $table) {
-                $table->dropColumn('sso_id');
-            });
-        }
+        Schema::table('students', function (Blueprint $table) {
+            $table->bigInteger('moodle_id')->nullable();
+        });
     }
 
     /**
@@ -25,8 +23,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('table_name', function (Blueprint $table) {
-            $table->string('sso_id')->nullable();
+        Schema::table('students', function (Blueprint $table) {
+            $table->dropColumn('moodle_id');
         });
     }
 };
