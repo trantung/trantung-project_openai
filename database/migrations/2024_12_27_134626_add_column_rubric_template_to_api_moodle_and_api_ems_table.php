@@ -24,10 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('api_moodle', function (Blueprint $table) {
-            $table->dropColumn('rubric_template_id');
-        });
-
-        Schema::table('api_es', function (Blueprint $table) {
+            $table->dropForeign(['rubric_template_id']);
             $table->dropColumn('rubric_template_id');
         });
     }

@@ -11,9 +11,11 @@ return new class extends Migration
      */
      public function up()
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->dropColumn('sso_name');
-        });
+        // Schema::table('students', function (Blueprint $table) {
+        //     if (Schema::hasColumn('students', 'sso_name')) {
+        //         $table->dropColumn('sso_name');
+        //     }
+        // });
     }
 
     /**
@@ -23,8 +25,10 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('table_name', function (Blueprint $table) {
-            $table->string('sso_name')->nullable();
-        });
+        // Schema::table('students', function (Blueprint $table) {
+        //     if (!Schema::hasColumn('students', 'sso_name')) {
+        //         $table->string('sso_name')->nullable();
+        //     }
+        // });
     }
 };

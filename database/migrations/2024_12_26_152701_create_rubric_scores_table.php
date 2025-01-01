@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rubric_score');
+        Schema::dropIfExists('rubric_scores');
     }
 };

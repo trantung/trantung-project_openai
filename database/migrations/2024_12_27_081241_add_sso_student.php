@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->string('sso_name')->nullable();
-            $table->string('sso_id')->nullable(); 
-        });
+        // Schema::table('students', function (Blueprint $table) {
+        //     $table->string('sso_name')->nullable();
+        //     $table->string('sso_id')->nullable();
+        // });
     }
 
     /**
@@ -24,9 +24,9 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->dropColumn('sso_name');
-            $table->dropColumn('sso_id');
-        });
+        // Schema::table('students', function (Blueprint $table) {
+        //     $table->dropColumn('sso_name');
+        //     $table->dropColumn('sso_id');
+        // });
     }
 };
