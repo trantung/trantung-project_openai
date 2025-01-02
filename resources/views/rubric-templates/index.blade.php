@@ -2,7 +2,6 @@
 
 @section('content')
 <link href="{{ URL::asset('css/rubric-templates/rubric_template.css') }}"rel="stylesheet">
-
 <link href="{{ URL::asset('css/rubric-templates/popup/index.css')}}"rel="stylesheet">
 @if(session('success'))
     <div class="alert alert-success" id="success-alert">
@@ -24,7 +23,7 @@
                                     <input type="text" class="form-control" placeholder="Name" aria-label="name" name="name" aria-describedby="basic-addon1">
                                 </div>
                                 <button type="submit" class="btn btn-primary ml-2 btn-search">Tìm kiếm</button>
-                                {{-- <button type="button" class="btn btn-secondary ml-2 btn-clear">Xóa tìm kiếm</button> --}}
+                                <button type="button" class="btn btn-secondary ml-2 btn-clear"><a href="{{ route('rubric_templates.index') }}">Xóa tìm kiếm</a></button>
                             </form>
                         </div>
                         <div class="row">
@@ -45,6 +44,7 @@
                                         <th>Tên bộ mẫu điểm</th>
                                         <th>Mẫu điểm</th>
                                         <th>Bộ đề áp dụng</th>
+                                        <th>Khóa học áp dụng</th>
                                         <th>Thao tác</th>
                                     </tr>
                                 </thead>
@@ -63,6 +63,11 @@
                                                     <i class="fas fa fa-lg fa-list"></i>
                                                 </a>
                                             </td>
+                                            <td align="center">
+                                                <a href="{{route('courses.index', ['rubric_template_id' => $item->id])}}" target="_blank">
+                                                    <i class="fas fa fa-lg fa-list"></i>
+                                                </a>
+                                            </td>
                                             <td class="action-table">
                                                 <a href="{{ route('rubric_templates.edit', $item->id) }}"> <i class="fas fa fa-lg fa-edit text-success"></i> </a>
                                                 <div>
@@ -74,12 +79,17 @@
                                                         </button>
                                                     </form>
                                                 </div>
-                                                <a href="#" class="setting-ems-type" data-toggle="modal" data-target="#staticBackdrop" data-id="{{ $item->id }}">
+                                                <a href="#" class="setting-ems-type" data-toggle="modal" data-target="#staticBackdrop" data-id="{{ $item->id }}" data-name="{{ $item->name }}">
                                                     <i class="fa-solid fa-gear" style="color: #df3076;"></i>
                                                 <a>
                                             </td>
                                         </tr>
                                     @endforeach
+                                    @if ($rubricTemplates->isEmpty())
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; font-size: 25px;">Không có dữ liệu</td>
+                                        <tr>
+                                    @endif
                                 </tbody>
                             </table>
                         </div>

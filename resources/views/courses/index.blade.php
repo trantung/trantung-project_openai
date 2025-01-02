@@ -16,7 +16,7 @@
                     <div role="main">
                         <span id="maincontent"></span>
                         <div class="">
-                            <h2>Danh sách đề</h2>
+                            <h2>Danh sách Khóa học</h2>
                             <form action="{{ route('rubric_templates.index') }}" class="form-inline mb-2 search-form" method="get">
                                 <div class="input-group mb-7">
                                     <input type="text" class="form-control" placeholder="Name" aria-label="name" name="name" aria-describedby="basic-addon1">
@@ -28,7 +28,7 @@
                         <div class="row">
                             <div class="col-6">
                                 <div class="box-total-item">
-                                    Tổng số đề: {{ $apiEmses->total() }}
+                                    Tổng khóa học: {{ $courses->total() }}
                                 </div>
                             </div>
                             {{-- <div class="col-6 text-right">
@@ -40,26 +40,26 @@
                                 <thead>
                                     <tr>
                                         <th>Id</th>
-                                        <th>Bộ đề (ems_type)</th>
-                                        <th>Đề</th>
-                                        <th>Mẫu điểm</th>
+                                        <th>Khóa học</th>
+                                        <th>Api Moodle</th>
+                                        <th>Bộ mẫu điểm</th>
                                         <th>Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($apiEmses as $key => $item)
+                                    @foreach($courses as $key => $item)
                                         <tr>
                                             <td align="center">{{ $item->id }}</td>
-                                            <td align="center">{{ $item->ems_type->type_name ?? '' }}</td>
-                                            <td align="center">{{ $item->ems_name ?? '' }}</td>
-                                            <td align="center">{{ $item->rubric_template->name ?? '' }}</td>
+                                            <td align="center">{{ $item->name ?? '' }}</td>
+                                            <td align="center">{{ $item->api_moodle->moodle_name ?? '' }}</td>
+                                            <td align="center">{{ $item->api_moodle->rubric_template->name ?? '' }}</td>
                                             <td align="center">
                                                 <a href="#"> <i class="fas fa fa-lg fa-edit text-success"></i> </a>
                                                 <a> <i class="fas fa fa-lg fa-trash text-danger"></i> </a>
                                             </td>
                                         </tr>
                                     @endforeach
-                                    @if ($apiEmses->isEmpty())
+                                    @if ($courses->isEmpty())
                                         <tr>
                                             <td colspan="5" style="text-align: center; font-size: 25px;">Không có dữ liệu</td>
                                         <tr>
@@ -67,7 +67,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <x-pagination :pagination='$apiEmses'/>
+                        <x-pagination :pagination='$courses'/>
                     </div>
                 </div>
             </div>

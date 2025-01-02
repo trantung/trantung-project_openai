@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Repositories\EmsTypes\EmsTypeRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
 
 class EmsTypeService extends BaseService
 {
@@ -27,4 +28,17 @@ class EmsTypeService extends BaseService
     {
         return $this->emsTypeRepository->search($params);
     }
+
+    /**
+     * get Emstype By Rubric Template Id
+     *
+     * @param int $rubricTemplateId
+     *
+     * @return Collection
+     */
+    public function getEmstypeByRubricTemplateId(int $rubricTemplateId): Collection
+    {
+       return $this->emsTypeRepository->getEmstypeByRubricTemplateId($rubricTemplateId);
+    }
+
 }

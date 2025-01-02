@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\AuthSSOController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RubricTemplateController;
 use App\Jobs\DemoJob;
@@ -24,12 +25,14 @@ Route::get('/token', function () {
 });
 
 Route::resource('rubric-templates', RubricTemplateController::class)->names('rubric_templates');
-Route::get('/rubric-templates/ajax/ems-types', [RubricTemplateController::class, 'getEmsTypeInPopup'])->name('rubric_templates.ajax.ems_types');
-Route::post('/rubric-templates/ajax/update-rubric-template-id-in-api-ems', [RubricTemplateController::class, 'updateRubricTemplateIdInApiEms'])->name('rubric_templates.ajax.update_multiple_api_ems');
+Route::get('/rubric-templates/ajax/ems-types-and-api-moodles', [RubricTemplateController::class, 'getDataInPopupRubricTemplate']);
+Route::post('/rubric-templates/ajax/update-rubric-template-id-in-api-ems-and-api-moodles', [RubricTemplateController::class, 'updateDataInPopupRubricTemplate']);
 
 Route::resource('api-ems', ApiEmsController::class)->names('api_ems');
 
 Route::resource('rubric-scores', RubricScoreController::class)->names('rubric_scores');
+
+Route::resource('courses', CourseController::class)->names('courses');
 
 Route::get('/dashboard', [HomeController::class, 'index1'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -104,7 +107,7 @@ Route::get('/loginstudent', function (ICANIDService $icanidService) {
 
 Route::get('/callbackstudent', function (ICANIDService $icanidService) {
     $data = $icanidService->handleCallback();
-    
+
     // Lưu thông tin user vào session hoặc database nếu cần
     session(['ican_user' => $data['user']]);
 

@@ -72,11 +72,11 @@
                                                         <div class="mb-2 row">
                                                             <div class="col-2">Bảng điểm</div>
                                                             <div class="col-4">
-                                                                <input type="text" name="rubric_score[create][0][lms_score]" value="{{old('rubric_score[create][0][lms_score]')}}" class="js-required form-control" placeholder="lms_score" required>
+                                                                <input type="text" name="rubric_scores[create][0][lms_score]" value="{{old('rubric_scores[create][0][lms_score]')}}" class="js-required form-control" placeholder="lms_score" required>
                                                             </div>
                                                             <span> - </span>
                                                             <div class="col-4">
-                                                                <input type="text" name="rubric_score[create][0][rule_score]" value="{{old('rubric_score[create][0][rule_score]')}}" class="js-required form-control" placeholder="rule_score" required>
+                                                                <input type="text" name="rubric_scores[create][0][rule_score]" value="{{old('rubric_scores[create][0][rule_score]')}}" class="js-required form-control" placeholder="rule_score" required>
                                                             </div>
                                                             <br>
                                                         </div>
@@ -89,7 +89,7 @@
                                                     </div>
                                                     <div id="box-button" class="text-center">
                                                         <button type="submit" id="btn-save" class="btn btn-primary">Lưu</button>
-                                                        <a href="{{ route('role.index') }}" id="btn-cancel" class="btn btn-secondary">Huỷ</a>
+                                                        <a href="{{ route('rubric_templates.index') }}" id="btn-cancel" class="btn btn-secondary">Huỷ</a>
                                                     </div>
                                                 </form>
                                             </div>
