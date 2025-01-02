@@ -2,28 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\ApiEmsService;
+use App\Services\CourseService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class ApiEmsController extends BaseController
+class CourseController extends BaseController
 {
     //
-    protected $apiEmsService;
+    protected $courseService;
 
     protected $breadcrumbs;
 
-    public function __construct(ApiEmsService $apiEmsService)
+    public function __construct(CourseService $courseService)
     {
-        $this->apiEmsService = $apiEmsService;
+        $this->courseService = $courseService;
         $this->breadcrumbs = [
             [
                 'url' => route('dashboard'),
                 'text' => 'Tổng quan',
             ],
             [
-                'url' => route('api_ems.index'),
-                'text' => 'Danh sách bộ đề',
+                'url' => route('courses.index'),
+                'text' => 'Danh sách khóa học',
             ],
         ];
     }
@@ -39,10 +39,10 @@ class ApiEmsController extends BaseController
     public function index(Request $request): View
     {
         $params = $request->all();
-        $apiEmses = $this->apiEmsService->search($params);
-        return view('api-ems.index', [
+        $courses = $this->courseService->search($params);
+        return view('courses.index', [
             'breadcrumbs' => $this->breadcrumbs,
-            'apiEmses' => $apiEmses
+            'courses' => $courses
         ]);
     }
 }

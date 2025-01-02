@@ -22,8 +22,8 @@ class RubricScoreController extends BaseController
                 'text' => 'Tổng quan',
             ],
             [
-                'url' => route('rubric_templates.index'),
-                'text' => 'Danh sách sản phẩm',
+                'url' => route('rubric_scores.index'),
+                'text' => 'Danh sách mẫu điểm',
             ],
         ];
     }

@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             ApiEmsSeeder::class,
             ApiMoodleSeeder::class,
             RubricScoreSeeder::class,
+            CoursesSeeder::class
         ]);
     }
 }

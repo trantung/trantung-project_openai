@@ -9,6 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\RubricScores\RubricScoreRepositoryInterface;
 use App\Repositories\EmsTypes\EmsTypeRepositoryInterface;
+use App\Repositories\ApiMoodles\ApiMoodleRepositoryInterface;
 
 class RubricTemplateService extends BaseService
 {
@@ -19,15 +20,19 @@ class RubricTemplateService extends BaseService
 
     protected $emsTypeRepository;
 
+    protected $apiMoodleRepository;
+
     public function __construct(
         RubricTemplateRepositoryInterface $rubricTemplateRepository,
         RubricScoreRepositoryInterface $rubricScoreRepository,
-        EmsTypeRepositoryInterface $emsTypeRepository
+        EmsTypeRepositoryInterface $emsTypeRepository,
+        ApiMoodleRepositoryInterface $apiMoodleRepository
         )
     {
         $this->rubricTemplateRepository = $rubricTemplateRepository;
         $this->rubricScoreRepository = $rubricScoreRepository;
         $this->emsTypeRepository = $emsTypeRepository;
+        $this->apiMoodleRepository = $apiMoodleRepository;
     }
 
     /**
@@ -81,8 +86,8 @@ class RubricTemplateService extends BaseService
         return DB::transaction(function () use ($rubricTemplateData, $data) {
 
             $rubricTemplate = $this->rubricTemplateRepository->create($rubricTemplateData);
-            $rubricScoreData = $this->handleRubricScoreCreateData($data['rubric_score']['create'] ?? [], $rubricTemplate->id);
-            $rubricTemplate->rubric_score()->insert($rubricScoreData);
+            $rubricScoreData = $this->handleRubricScoreCreateData($data['rubric_scores']['create'] ?? [], $rubricTemplate->id);
+            $rubricTemplate->rubric_scores()->insert($rubricScoreData);
 
             return $rubricTemplate;
         });
@@ -103,10 +108,10 @@ class RubricTemplateService extends BaseService
 
             $rubricTemplate = $this->rubricTemplateRepository->update($rubricTemplateData, $id);
 
-            $rubricScoreInsert = $this->handleRubricScoreCreateData($data['rubric_score']['create'] ?? [], $rubricTemplate->id);
+            $rubricScoreInsert = $this->handleRubricScoreCreateData($data['rubric_scores']['create'] ?? [], $rubricTemplate->id);
             $this->rubricScoreRepository->insert($rubricScoreInsert);
 
-            $rubricScoreUpdate = $this->handleRubricScoreUpdateData($data['rubric_score']['edit'] ?? [], $rubricTemplate->id);
+            $rubricScoreUpdate = $this->handleRubricScoreUpdateData($data['rubric_scores']['edit'] ?? [], $rubricTemplate->id);
             $this->rubricScoreRepository->updateMultiple($rubricScoreUpdate);
 
             $ids = explode(',', $data['rubric_score_ids_delete'] ?? '');
@@ -129,19 +134,6 @@ class RubricTemplateService extends BaseService
     {
         return $this->rubricTemplateRepository->destroy($id);
     }
-
-    /**
-     * get Emstype By Rubric Template Id
-     *
-     * @param int $rubricTemplateId
-     * 
-     * @return Collection
-     */
-    public function getEmstypeByRubricTemplateId(int $rubricTemplateId): Collection
-    {
-       return $this->emsTypeRepository->getEmstypeByRubricTemplateId($rubricTemplateId);
-    }
-
 
     /**
      * handle Rubric Template Data before save

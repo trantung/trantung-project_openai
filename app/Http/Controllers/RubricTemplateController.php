@@ -11,6 +11,8 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Response;
+use App\Commons\Constants\CategoryValue;
+use App\Services\ApiMoodleService;
 
 class RubricTemplateController extends BaseController
 {
@@ -21,10 +23,20 @@ class RubricTemplateController extends BaseController
 
     protected $breadcrumbs;
 
-    public function __construct(RubricTemplateService $rubricTemplateService, ApiEmsService $apiEmsService)
+    protected $apiMoodleService;
+
+    protected $emsTypeService;
+
+    public function __construct(
+        RubricTemplateService $rubricTemplateService,
+        ApiEmsService $apiEmsService,
+        ApiMoodleService $apiMoodleService,
+        EmsTypeService $emsTypeService)
     {
         $this->rubricTemplateService = $rubricTemplateService;
         $this->apiEmsService = $apiEmsService;
+        $this->apiMoodleService = $apiMoodleService;
+        $this->emsTypeService = $emsTypeService;
         $this->breadcrumbs = [
             [
                 'url' => route('dashboard'),
@@ -32,7 +44,7 @@ class RubricTemplateController extends BaseController
             ],
             [
                 'url' => route('rubric_templates.index'),
-                'text' => 'Danh sách sản phẩm',
+                'text' => 'Danh sách bộ mẫu điểm',
             ],
         ];
     }
@@ -140,20 +152,24 @@ class RubricTemplateController extends BaseController
         return redirect()->route('rubric_templates.index')->with('success', 'Xóa thành công!');
     }
 
-
     /**
-     * ajax get Emstype By Rubric Template Id
+     * ajax get Emstypes And ApiMoodles By Rubric Template Id
      *
      * @param Request $request
-     * 
+     *
      * @return JsonResponse
      */
-    public function getEmsTypeInPopup(Request $request): JsonResponse
+    public function getDataInPopupRubricTemplate(Request $request): JsonResponse
     {
         try {
             $rubricTemplateId = $request['rubric_template_id'] ?? 0;
-            $emsTypes = $this->rubricTemplateService->getEmstypeByRubricTemplateId($rubricTemplateId);
-            $html = view('rubric-templates.popup.table', ['emsTypes' => $emsTypes, 'rubricTemplateId' => $rubricTemplateId])->render();
+            $emsTypes = $this->emsTypeService->getEmstypeByRubricTemplateId($rubricTemplateId);
+            $apiMooles = $this->apiMoodleService->getApiMoodlesByRubricTemplateId($rubricTemplateId, CategoryValue::MOODLE_TYPE_COURSE);
+            $html = view('rubric-templates.popup.table', [
+                'emsTypes' => $emsTypes,
+                'rubricTemplateId' => $rubricTemplateId,
+                'apiMooles' => $apiMooles
+            ])->render();
             return $this->response($html);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -162,16 +178,17 @@ class RubricTemplateController extends BaseController
     }
 
     /**
-     * ajax update Multiple Ems Types
+     * ajax update RubricTemplateId In ApiEms And Api Moodles
      *
      * @param Request $request
-     * 
+     *
      * @return JsonResponse
      */
-    public function updateRubricTemplateIdInApiEms(Request $request)
+    public function updateDataInPopupRubricTemplate(Request $request): JsonResponse
     {
         try {
             $this->apiEmsService->updateRubricTemplateIdInApiEms($request->all());
+            $this->apiMoodleService->updateRubricTemplateIdInApiMoodles($request->all());
             return $this->response();
         } catch (\Exception $e) {
             Log::error($e->getMessage());

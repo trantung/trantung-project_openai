@@ -71,16 +71,16 @@
 
                                                     <div class="rubric-score">
                                                             <input type="hidden" name="rubric_score_ids_delete" value="" id='rubric_score_ids_delete'>
-                                                            @foreach ($rubricTemplate->rubric_score as $key => $rubricScores)
+                                                            @foreach ($rubricTemplate->rubric_scores as $key => $rubricScores)
                                                             <div class="mb-2 row">
-                                                                <input type="hidden" name="rubric_score[edit][{{$key}}][id]" value="{{ $rubricScores->id }}" class="rubric_score_id">
+                                                                <input type="hidden" name="rubric_scores[edit][{{$key}}][id]" value="{{ $rubricScores->id }}" class="rubric_score_id">
                                                                 <div class="col-2">{{ $key === 0 ? 'Bảng điểm' : '' }} </div>
                                                                 <div class="col-4">
-                                                                    <input type="text" name="rubric_score[edit][{{$key}}][lms_score]" value="{{ $rubricScores->lms_score }}" class="js-required form-control" placeholder="lms_score" required>
+                                                                    <input type="text" name="rubric_scores[edit][{{$key}}][lms_score]" value="{{ $rubricScores->lms_score }}" class="js-required form-control" placeholder="lms_score" required>
                                                                 </div>
                                                                 <span> - </span>
                                                                 <div class="col-4">
-                                                                    <input type="text" name="rubric_score[edit][{{$key}}][rule_score]" value="{{ $rubricScores->rule_score }}" class="js-required form-control" placeholder="rule_score" required>
+                                                                    <input type="text" name="rubric_scores[edit][{{$key}}][rule_score]" value="{{ $rubricScores->rule_score }}" class="js-required form-control" placeholder="rule_score" required>
                                                                 </div>
                                                                 @if ($key !== 0)
                                                                     <div class="col-1 btn-score-delete">
@@ -94,7 +94,7 @@
                                                     <div class="mb-2 row">
                                                         <div class="col-2"></div>
                                                         <div class="col-5">
-                                                            <button type="button" class="btn btn-info add-rubric-score">Thêm bảng điểm</button>
+                                                            <button type="button" class="btn btn-info add-rubric-score">Thêm mẫu điểm</button>
                                                         </div>
                                                     </div>
                                                     <div id="box-button" class="text-center">

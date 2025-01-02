@@ -58,6 +58,11 @@
                                             </td>
                                         </tr>
                                     @endforeach
+                                    @if ($rubricScores->isEmpty())
+                                        <tr>
+                                            <td colspan="5" style="text-align: center; font-size: 25px;">Không có dữ liệu</td>
+                                        <tr>
+                                    @endif
                                 </tbody>
                             </table>
                         </div>

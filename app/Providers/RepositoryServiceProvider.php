@@ -11,6 +11,10 @@ use App\Repositories\EmsTypes\EmsTypeRepository;
 use App\Repositories\EmsTypes\EmsTypeRepositoryInterface;
 use App\Repositories\ApiEms\ApiEmsRepository;
 use App\Repositories\ApiEms\ApiEmsRepositoryInterface;
+use App\Repositories\ApiMoodles\ApiMoodleRepository;
+use App\Repositories\ApiMoodles\ApiMoodleRepositoryInterface;
+use App\Repositories\Courses\CourseRepository;
+use App\Repositories\Courses\CourseRepositoryInterface;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -31,6 +35,8 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(RubricScoreRepositoryInterface::class, RubricScoreRepository::class);
         $this->app->bind(EmsTypeRepositoryInterface::class, EmsTypeRepository::class);
         $this->app->bind(ApiEmsRepositoryInterface::class, ApiEmsRepository::class);
+        $this->app->bind(ApiMoodleRepositoryInterface::class, ApiMoodleRepository::class);
+        $this->app->bind(CourseRepositoryInterface::class, CourseRepository::class);
         //:end-bindings:
     }
 }
