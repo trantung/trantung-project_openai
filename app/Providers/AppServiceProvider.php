@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use App\Models\ApiMoodle;
+use App\Observers\ApiMoodleObserver;
 use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
@@ -15,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // if(config('app.env') === 'production') {
-            // \URL::forceScheme('https');
+            \URL::forceScheme('https');
         // }
     }
 
@@ -32,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Paginator::useBootstrap();
+        //observer
+        ApiMoodle::observe(ApiMoodleObserver::class);
     }
 
     /**
