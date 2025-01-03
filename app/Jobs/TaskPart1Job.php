@@ -41,7 +41,7 @@ class TaskPart1Job implements ShouldQueue
         try {
             $chat = CommonHocmai::hocmaiVocabularyGramma($this->jsonData);
             $dataResponseChat = $chat->choices[0]->message->content;
-            $dataResponseChat = json_decode($dataResponseChat, true);
+            // $dataResponseChat = json_decode($dataResponseChat, true);
             $totalToken = $chat->usage->totalTokens;
             $completionTokens = $chat->usage->completionTokens;
             $promptTokens = $chat->usage->promptTokens;
@@ -53,7 +53,8 @@ class TaskPart1Job implements ShouldQueue
 
             if (!empty($checkData)) {
                 $updateData = [
-                    'openai_response' => json_encode($dataResponseChat,true),
+                    // 'openai_response' => json_encode($dataResponseChat,true),
+                    'openai_response' => $dataResponseChat,true,
                     'total_token' => $totalToken,
                     'prompt_token' => $promptTokens,
                     'complete_token' => $completionTokens,

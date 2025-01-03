@@ -48,7 +48,7 @@ class ApiController extends Controller
     public function hocmaiTask1VocabularyGramma(Request $request)
     {
         $jsonData = $this->getDataFromRequest($request);
-        $chat = CommonHocmai::hocmaiTask1VocabularyGramma($jsonData);
+        $chat = CommonHocmai::hocmaiVocabularyGramma($jsonData);
         $dataResponseChat = $chat->choices[0]->message->content;
         // $dataResponseChat = json_decode($dataResponseChat,true);
         $res = [
@@ -245,26 +245,28 @@ class ApiController extends Controller
     public function hocmaiTask2VocabularyGramma(Request $request)
     {
         // dd(222);
-        $test = ApiUserQuestionPart::whereIn('user_question_id', [61])
-            ->whereIn('part_number', [1,2,3,4,5,6])
-            ->select('part_number', 'openai_response')
-        // ->where('user_question_id', 57)
-        ->orderBy('id', 'desc')
-        // ->where('writing_task_number', 2)
-        ->get();
-        dd($test->toArray());
+        // $test = ApiUserQuestionPart::whereIn('user_question_id', [61,63])
+        //     ->whereIn('part_number', [1])
+        //     ->select('part_number', 'openai_response', 'user_question_id')
+        // // ->where('user_question_id', 57)
+        // ->orderBy('id', 'desc')
+        // // ->where('writing_task_number', 2)
+        // ->get();
+        // dd($test->toArray());
+        // // dd(json_decode($test->toArray()[0]['openai_response']));
         $jsonData = $this->getDataFromRequest($request);
-        // $chat = CommonHocmai::hocmaiVocabularyGramma($jsonData);
+        // // $chat = CommonHocmai::hocmaiVocabularyGramma($jsonData);
         $chat = CommonHocmaiTask2::hocmaiVocabularyGramma($jsonData);
         
         $dataResponseChat = $chat->choices[0]->message->content;
-        dd($test->toArray(), $dataResponseChat, json_decode($dataResponseChat, true), json_encode($dataResponseChat,true));
+        // dd($test->toArray(), $dataResponseChat, json_decode($dataResponseChat, true), json_encode($dataResponseChat,true));
 
         // if (!is_string($dataResponseChat)) {
         //     dd($dataResponseChat);
         // }
         // dd(1111, $dataResponseChat, json_decode($dataResponseChat, true));
         // $dataResponseChat = json_decode($dataResponseChat,true);
+        // $dataResponseChat = $chat->choices[0]->message->content;
         $res = [
             'dataResponseChat' => $dataResponseChat,
             'totalToken' => $chat->usage->totalTokens,

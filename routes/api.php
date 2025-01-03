@@ -50,7 +50,6 @@ Route::get("class/teacher/get_infor_teacher_class", [App\Http\Controllers\ClassC
 Route::post("class/teacher/update_infor_teacher_class", [App\Http\Controllers\ClassController::class,'updateInforTeacherInClass']);
 Route::post("class/teacher/unenrol", [App\Http\Controllers\ClassController::class,'unenrolTeacher']);
 
-Route::get("hocmai/course/list", [App\Http\Controllers\ProductController::class,'listCourseHocmai']);
 
 Route::post("role/assigns/search", [App\Http\Controllers\RoleController::class,'searchUserAssign']);
 
@@ -90,6 +89,9 @@ Route::post("openai/hocmai/task2/improve_essay", [App\Http\Controllers\ApiContro
 Route::post("openai/hocmai/task2/getlog", [App\Http\Controllers\ApiController::class,'getLog']);
 
 // Route::post("test/upload/pdf", [App\Http\Controllers\ApiController::class,'uploadPDFLms']);
+//EMS
 Route::post('fe/student/get-info-user-by-token', [ICANIDController::class, 'getInfoUserByToken'])->name('getInfoUserByToken');
 
+//Sale
 Route::post('student/create-with-course', [ICANIDController::class, 'createStudentWithCourse'])->name('createStudentWithCourse');
+Route::get("course/list", [App\Http\Controllers\ProductController::class,'listCourseHocmai']);

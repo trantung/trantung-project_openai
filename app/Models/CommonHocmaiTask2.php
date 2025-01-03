@@ -53,7 +53,7 @@ class CommonHocmaiTask2 extends Model
     //vocabulary_grammar start 
     public static function hocmaiSystemPromptVocabularyGramma()
     {
-        return "You are an IELTS examiner. Please review the student's **Task 2 Essay**, identify specific lexical and grammatical errors, and suggest corrections.";
+        return "You are an IELTS examiner. Please review the student's **Task 2 Essay**, identify specific lexical and grammatical errors, and suggest corrections.\n ### Instructions:\n 1. Focus on **vocabulary**: Look for errors such as incorrect word choice, inappropriate word forms, poor collocation, and repetition of words.\n2. Check **grammar**: Identify errors related to subject-verb agreement, incorrect use of tenses, word order, punctuation, articles, and sentence structure.\n3. Identify **repetitive language** and suggest more varied vocabulary or alternative expressions to avoid repetition.\n4. Provide **specific corrections** for grammatical mistakes and explain the rationale behind each correction (e.g., fixing errors in tense usage, adjusting word order, or improving sentence construction).\n5. Offer suggestions on how to enhance vocabulary usage, such as using more precise or advanced vocabulary, and improving grammatical variety.\n ### Strictly follow this format. Use simple language for students to understand:1. Vocabulary Errors:- **Vocabulary Error**: 'Many people think that crime rate is high.' **Correction**: 'Many people think that the crime rate is high.' **Explanation**: 'Crime rate' should have 'the' before it, as it refers to a specific concept. 2. Grammar Errors:- **Grammar Error**: 'He was having a good chance to improving his skills.' **Correction**: 'He had a good chance to improve his skills.' **Explanation**: The past continuous tense 'was having' is unnecessary here. The verb 'improve' should also be in the base form.";
     }
 
     public static function hocmaiVocabularyGramma($jsonData)
@@ -66,11 +66,12 @@ class CommonHocmaiTask2 extends Model
 
         $chat = $client->chat()->create([
             'model' => $model,
-            'response_format'=>["type"=>"json_object"],
+            // 'response_format'=>["type"=>"json_object"],
             'messages' => [
                 [
                    "role" => "system",
-                   "content" => $systeMessage . '. Respond is json format and have structure as: lexical_errors is lexical errors, gramma_errors is grammatical errors, suggestion includes lexical_errors and grammar_errors, where lexical_errors are the suggested corrections for lexical and grammar_errors are the suggested corrections for gramma'
+                //    "content" => $systeMessage . '. Respond is json format and have structure as: lexical_errors is lexical errors, gramma_errors is grammatical errors, suggestion includes lexical_errors and grammar_errors, where lexical_errors are the suggested corrections for lexical and grammar_errors are the suggested corrections for gramma'
+                   "content" => $systeMessage
                ],
                [
                    "role" => "user",

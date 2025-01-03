@@ -102,3 +102,45 @@
 *       }
 *   }
 */
+
+/**
+ * @api {post} domain_lms/api/student/create-with-course Api create student with courses id
+ * @apiName ApiCreateStudentWithCourse
+ * @apiGroup ApiSale
+ *
+ * @apiParam {String} api_sale_key key of LMS provide
+ * @apiParam {String} email email of student
+ * @apiParam {String} course_ids course ids list seperate by comma. example: 1,2,3
+ * 
+ * @apiSuccessExample Success-Response:
+* {
+* "code": 200,
+* "data": {
+    * "success": [
+        * "4",
+        * "9",
+        * "13"
+    * ],
+    * "fail": []
+    * },
+    * "message": "Success"
+* }
+*/
+
+/**
+ * @api {get} domain_lms/api/student/create-with-course Api list course
+ * @apiName ApiCourseList
+ * @apiGroup ApiSale
+ * 
+ * @apiSuccessExample Success-Response:
+*{
+*   "code": 200,
+*   "data": {
+*       "4": "Khóa học 1",
+*       "9": "Khóa học 2",
+*       "13": "Khóa học 3",
+*       "35": "Khóa học 4"
+*   },
+*   "message": "Success"
+*}
+*/

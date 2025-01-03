@@ -51,7 +51,7 @@ class CommonHocmai extends Model
     //vocabulary_grammar start 
     public static function hocmaiSystemPromptVocabularyGramma()
     {
-        return "You are an IELTS examiner. Please review the student's **Task 1 Report**, identify specific lexical and grammatical errors, and suggest corrections.";
+        return "You are an IELTS examiner. Please review the student's **Task 1 Report**, identify specific lexical and grammatical errors, and suggest corrections.###Instructions: 1. Focus on the **vocabulary** used in the Task 1 report. Look for errors in word choice, inappropriate collocations, and repetition of words or phrases. 2. Check the **grammar** of the report, focusing on issues such as subject-verb agreement, tense consistency, sentence structure, word order, and article use. 3. Identify any **repetitive language** and suggest synonyms or alternative expressions to improve lexical variety. 4. Provide **specific corrections** for any grammatical mistakes, explaining why the correction is needed (e.g., correcting verb tense, improving sentence structure, etc.). 5. Offer suggestions on how to improve the report by varying vocabulary and using a wider range of grammatical structures. ### Strictly follow this format. Use simple language for students to understand: 1. Vocabulary Errors **Error**: 'The graph shows the increasing of the population.' **Correction**: 'The graph shows the increase in the population.' **Explanation**: 'Increasing' should be replaced with the noun 'increase' to maintain correct word form and structure. 2. Grammar Errors **Error**: 'There was a noticeable rise in the amount of traffic.'**Correction**: 'There was a noticeable increase in the amount of traffic.' **Explanation**: 'Rise' is a verb; 'increase' is the correct noun form here.";
     }
 
     public static function hocmaiVocabularyGramma($jsonData)
@@ -64,11 +64,12 @@ class CommonHocmai extends Model
 
         $chat = $client->chat()->create([
             'model' => $model,
-            'response_format'=>["type"=>"json_object"],
+            // 'response_format'=>["type"=>"json_object"],
             'messages' => [
                 [
                    "role" => "system",
-                   "content" => $systeMessage . '. Respond is json format and have structure as: lexical_errors is lexical errors, gramma_errors is grammatical errors, suggestion includes lexical_errors and grammar_errors, where lexical_errors are the suggested corrections for lexical and grammar_errors are the suggested corrections for gramma'
+                //    "content" => $systeMessage . '. Respond is json format and have structure as: lexical_errors is lexical errors, gramma_errors is grammatical errors, suggestion includes lexical_errors and grammar_errors, where lexical_errors are the suggested corrections for lexical and grammar_errors are the suggested corrections for gramma',
+                   "content" => $systeMessage
                ],
                [
                    "role" => "user",
@@ -78,7 +79,6 @@ class CommonHocmai extends Model
             'temperature' => 0,
             'max_tokens' => 2048
         ]);
-
         return $chat;
     }
     //vocabulary_grammar end
