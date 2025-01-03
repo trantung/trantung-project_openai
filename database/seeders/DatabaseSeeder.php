@@ -16,10 +16,19 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::create([
-            'name' => 'admin',
-            'email' => 'admin1@admin.com',
-            'password' =>  Hash::make(123456),
+        // User::create([
+        //     'name' => 'admin',
+        //     'email' => 'admin1@admin.com',
+        //     'password' =>  Hash::make(123456),
+        // ]);
+
+        $this->call([
+            RubricTemplatesSeeder::class,
+            EmsTypeSeeder::class,
+            ApiEmsSeeder::class,
+            ApiMoodleSeeder::class,
+            RubricScoreSeeder::class,
+            CoursesSeeder::class
         ]);
     }
 }

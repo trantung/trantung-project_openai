@@ -8,6 +8,10 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * ĐÃ CÀI LẠI BẢNG VÀ ĐẶT TÊN LÀ API_EMS
+     *
+     *
      */
     public function up(): void
     {
@@ -25,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('api_moodle_ems');
+        Schema::dropIfExists('api_es');
     }
 };

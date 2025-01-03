@@ -1,13 +1,17 @@
 <?php
 
+use App\Http\Controllers\ApiEmsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\RubricScoreController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\AuthSSOController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\RubricTemplateController;
 use App\Jobs\DemoJob;
 use Illuminate\Support\Facades\Route;
 use App\Services\ICANIDService;
@@ -17,9 +21,18 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/token', function () {
-    return csrf_token(); 
+    return csrf_token();
 });
 
+Route::resource('rubric-templates', RubricTemplateController::class)->names('rubric_templates');
+Route::get('/rubric-templates/ajax/ems-types-and-api-moodles', [RubricTemplateController::class, 'getDataInPopupRubricTemplate']);
+Route::post('/rubric-templates/ajax/update-rubric-template-id-in-api-ems-and-api-moodles', [RubricTemplateController::class, 'updateDataInPopupRubricTemplate']);
+
+Route::resource('api-ems', ApiEmsController::class)->names('api_ems');
+
+Route::resource('rubric-scores', RubricScoreController::class)->names('rubric_scores');
+
+Route::resource('courses', CourseController::class)->names('courses');
 
 Route::get('/dashboard', [HomeController::class, 'index1'])->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -31,9 +44,9 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 Route::middleware(['auth', 'admin'])->group(function () {
- 
+
     Route::get('admin/dashboard', [HomeController::class, 'index']);
- 
+
     Route::get('/admin/users', [UserController::class, 'index'])->name('admin/users');
     Route::get('/admin/users/create', [UserController::class, 'create'])->name('admin/users/create');
     Route::post('/admin/users/save', [UserController::class, 'store'])->name('admin/users/save');
@@ -41,7 +54,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::put('/admin/users/edit/{id}', [UserController::class, 'update'])->name('admin/users/update');
     Route::get('/admin/users/delete/{id}', [UserController::class, 'delete'])->name('admin/users/delete');
 });
- 
+
 Route::get('/test-queue', [HomeController::class, 'testQueue'])->middleware('auth')->name('testQueue');
 
 Route::get('/test-streaming', [HomeController::class, 'testStreaming'])->middleware('auth')->name('testStreaming');
@@ -73,6 +86,7 @@ Route::get('/ssologin', function () {
 Route::get('/callback', [AuthSSOController::class, 'keycloakCallback']);
 
 Route::post('/ssologout', function () {
+    return 'logout';
     Auth::logout(); // Đăng xuất khỏi Laravel
     session()->invalidate(); // Hủy phiên hiện tại
     session()->regenerateToken(); // Tạo token CSRF mới
@@ -93,7 +107,7 @@ Route::get('/loginstudent', function (ICANIDService $icanidService) {
 
 Route::get('/callbackstudent', function (ICANIDService $icanidService) {
     $data = $icanidService->handleCallback();
-    
+
     // Lưu thông tin user vào session hoặc database nếu cần
     session(['ican_user' => $data['user']]);
 

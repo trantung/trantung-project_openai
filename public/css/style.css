@@ -2843,3 +2843,36 @@ div.disabled.active .box-name {
     padding: 8px 16px;
     margin: 8px 8px 16px;
 }
+
+/* pagination */
+.pagination {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    align-items: baseline;
+}
+
+.count-pagination {
+    margin-right: 20px;
+}
+
+.page-item.active .page-link {
+    background-color: #da258f;
+    border-color: #da258f;
+}
+/* end pagination */
+
+.action-table {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.delete-button[type="submit"] {
+    background: none !important;
+    border: none !important;
+}
+
+.delete-button:focus {
+    outline: none;
+}
