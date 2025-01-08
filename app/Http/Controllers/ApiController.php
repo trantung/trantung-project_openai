@@ -16,15 +16,18 @@ use App\Models\ApiUserQuestionPart;
 use App\Models\Common;
 use App\Models\Task1Image;
 use Illuminate\Support\Facades\Log;
-
+use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\Shared\Converter;
+use PhpOffice\PhpWord\SimpleType\Jc;
+use PhpOffice\PhpWord\Element\Comment;
 
 class ApiController extends Controller
 {
     public function checkParamCms($jsonData, $fields)
     {
-        if(empty($jsonData['token']) || $jsonData['token'] != 'tunglaso1') {
-            return false;
-        }
+        // if(empty($jsonData['token']) || $jsonData['token'] != 'tunglaso1') {
+        //     return false;
+        // }
         foreach($fields as $value) {
             if(empty($jsonData[$value])) {
                 return false;
@@ -963,5 +966,155 @@ class ApiController extends Controller
         ];
         return $this->responseSuccess(200, ['data' => $dataResponseChat, 'image_id' => $image_id]);
     }
+
+
+    //export file word with comment
+    public function exportResultWordFile(Request $request)
+    {
+
+        $jsonData = $this->getDataFromRequest($request);
+        $phpWord = new PhpWord();
+        $section = $phpWord->addSection();
+        $checkToken = $this->checkParamCms($request, ['username', 'user_id','question_id']);
+        if(!$checkToken) {
+            return $this->responseSuccess(403, 'missing parameter');
+        }
+        $userName = $jsonData['username'];
+        $userId = $jsonData['user_id'];
+        $questionId = $jsonData['question_id'];
+
+        $data = ApiUserQuestion::orderBy('id', 'desc')->first()->toArray();
+        // $check = ApiUserQuestionPart::whereIn('user_question_id',[230])
+        $check = ApiUserQuestionPart::where('user_question_id',$questionId)
+            ->where('part_number',8)
+            ->first();
+        $report = $check->question;
+
+        $dataOpenAi = json_decode($check->openai_response, true);
+
+        foreach($dataOpenAi['errors'] as $value)
+        {
+            $commentWithStartAndEnd = new \PhpOffice\PhpWord\Element\Comment($userName, new \DateTime());
+            $quote = $value['error'];
+            $correction = $value['corrections'];
+            $explain = $value['explanations'];
+            $commentWithStartAndEnd->addText($quote . '->' . $correction);
+            $commentWithStartAndEnd->addText("explain:". $explain);
+            $phpWord->addComment($commentWithStartAndEnd);
+            $textParts = explode($quote, $report);
+            if (isset($textParts[0]) && !empty($textParts[0])) {
+                $textrunWithEnd = $section->addTextRun();
+
+                $textToStartOn = $textrunWithEnd->addText($textParts[0]);
+                $textToStartOn->setCommentRangeStart($commentWithStartAndEnd);
+
+                $textToEndOn = $textrunWithEnd->addText($quote, array('bold' => true, 'color' => 'red'));
+                $textToEndOn->setCommentRangeEnd($commentWithStartAndEnd);
+            } else {
+                $textrunWithEnd = $section->addTextRun();
+
+                $textToStartOn = $textrunWithEnd->addText('');
+                $textToStartOn->setCommentRangeStart($commentWithStartAndEnd);
+
+                $textToEndOn = $textrunWithEnd->addText($quote, array('bold' => true, 'color' => 'red'));
+                $textToEndOn->setCommentRangeEnd($commentWithStartAndEnd);
+            }
+        }
+
+        $fileName = $userId . '_' . $userName . '_' . $questionId . '.docx';
+        $filePath = storage_path('app/public/' . $fileName);
+        $phpWord->save($filePath, 'Word2007');
+
+        return response()->json([
+            'message' => 'File đã được lưu thành công!',
+            'filename' => 'fileName',
+            'path' => url('api/office/download/'.$fileName), // Đường dẫn để tải file
+        ]);
+
+    }
+
+    public function downloadFile($file)
+    {
+        return response()->download(storage_path('/app/public/'.$file));
+    }
     
+    public function aiVideoImport(Request $request)
+    {
+        
+    }
+
+    public function uploadPDFLms(Request $request)
+    {
+        $activity_id = $request->input('activity_id');
+        if (!$activity_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Activity ID required',
+                'data' => []
+            ], 200);
+        }
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+
+            // Kiểm tra xem file có hợp lệ hay không
+            if (!$file->isValid()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File upload error',
+                    'data' => []
+                ], 200);
+            }
+
+            $fileName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $file->getClientOriginalExtension();
+            $newFileName = $fileName . '.' . $extension;
+
+            $directory = 'public/checkmate/checkmate_pdf/activity_' . $activity_id;
+
+            try {
+                // Xóa các tệp cũ trong thư mục trước khi tải lên tệp mới
+                if (Storage::exists($directory)) {
+                    Storage::deleteDirectory($directory);
+                }
+
+                // Lưu tệp mới vào thư mục
+                $filePath = $file->storeAs($directory, $newFileName);
+
+                // Loại bỏ tiền tố "public/" trong filePath
+                $cleanFilePath = str_replace('public/', '', $filePath);
+                
+                $fileNameOrigin = $fileName . '.' . $extension;
+
+                $res = [
+                    'urlStorage' => url('/storage'),
+                    'filePath' => $cleanFilePath,
+                    'fileNameOrigin' => $fileNameOrigin,
+                    'fileName' => $fileName,
+                    'newFileName' => $newFileName,
+                    'urlStorageFile' => url('/storage') . '/' . $cleanFilePath,
+                ];
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Uploaded file successfully',
+                    'data' => $res
+                ], 200);
+            } catch (\Exception $e) {
+                // Trường hợp xảy ra lỗi khi lưu file
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to save the file: ' . $e->getMessage(),
+                    'data' => []
+                ], 200);
+            }
+        }
+
+        // Trường hợp không có file trong request
+        return response()->json([
+            'success' => false,
+            'message' => 'No file uploaded',
+            'data' => []
+        ], 200);
+    }
 }

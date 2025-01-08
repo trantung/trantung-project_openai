@@ -75,4 +75,50 @@ class HomeController extends Controller
     {
         return view('testStreaming');
     }
+
+    public function srt()
+    {
+        $srtFilePath = public_path('srt/test.srt');
+        if (!file_exists($srtFilePath)) {
+            return json_encode(["error" => "File not found"]);
+        }
+    
+        $srtContent = file_get_contents($srtFilePath);
+        $lines = explode("\n", $srtContent);
+        $result = [];
+        $subtitle = [];
+        
+        foreach ($lines as $line) {
+            $line = trim($line);
+            
+            // Nếu là số thứ tự
+            if (is_numeric($line)) {
+                if (!empty($subtitle)) {
+                    $result[] = $subtitle;
+                    $subtitle = [];
+                }
+                $subtitle['index'] = (int)$line;
+            }
+            // Nếu là thời gian
+            elseif (preg_match('/(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})/', $line, $matches)) {
+                $subtitle['start'] = $matches[1];
+                $subtitle['end'] = $matches[2];
+            }
+            // Nếu là nội dung
+            elseif (!empty($line)) {
+                $subtitle['text'] = isset($subtitle['text']) ? $subtitle['text'] . " " . $line : $line;
+            }
+        }
+        
+        // Thêm mục cuối cùng
+        if (!empty($subtitle)) {
+            $result[] = $subtitle;
+        }
+        $res = json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        dd($res);
+        return json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        return view('srt');
+    }
+
+    
 }

@@ -14,7 +14,12 @@ use App\Models\ApiUserQuestion;
 use App\Models\ApiUserQuestionPart;
 use App\Models\Common;
 use App\Models\CommonHocmai;
+use App\Models\CommonWord;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpWord\PhpWord;
+use PhpOffice\PhpWord\Shared\Converter;
+use PhpOffice\PhpWord\SimpleType\Jc;
+use PhpOffice\PhpWord\Element\Comment;
 
 class ApiTestController extends Controller
 {
@@ -303,7 +308,7 @@ class ApiTestController extends Controller
     {
         $jsonData = $this->getDataFromRequest($request);
         $data = ApiUserQuestion::orderBy('id', 'desc')->first()->toArray();
-        $check = ApiUserQuestionPart::whereIn('user_question_id',[230,231])
+        $check = ApiUserQuestionPart::whereIn('user_question_id',[248,249])
             ->where('part_number',8)
             // ->where('writing_task_number',2)
             // ->where('status', 0)
@@ -416,9 +421,23 @@ class ApiTestController extends Controller
         $analyze = $jsonData['image_content'];
         $messageTopic = $topic . "\n" . "This is the content of the chart:\n" . $analyze;
         $jsonData['topic'] = $messageTopic;
-        if(isset($jsonData['test'])) {
-            dd($jsonData['topic']);
-        }
+        // if(isset($jsonData['test'])) {
+        //     dd($jsonData['topic']);
+        // }
+        $dataResponseChat = Common::task1IdentifyErrors($jsonData);
+        $dataResponseChat = $dataResponseChat->choices[0]->message->content;
+        $response = json_decode($dataResponseChat, true);
+
+        return $this->responseSuccess(200, $response);
+
+        dd($chat);
+        $res = [
+            'dataResponseChat' => $dataResponseChat,
+            'totalToken' => $chat->usage->totalTokens,
+            'completionTokens' => $chat->usage->completionTokens,
+            'promptTokens' => $chat->usage->promptTokens,
+        ];
+
         $jsonData['question'] = strtr( $jsonData['question'], array(  "\n" => "\\n",  "\r" => "\\r"  ));
         $jsonData['topic'] = strtr( $jsonData['topic'], array(  "\n" => "\\n",  "\r" => "\\r"  ));
         DB::beginTransaction();
@@ -975,5 +994,491 @@ class ApiTestController extends Controller
 
         return $this->responseSuccess(200, $res);
     }
+
+    public function exportResult(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        // $userName = $jsonData['user_name'];
+        // $userId = $jsonData['user_id'];
+
+        // $phpWord = new PhpWord();
+        // $section = $phpWord->addSection();
+        // // $essay = "Some peoples think government should control how much violent is show in film and TV. They think violence can affect viewers badly, especially young peoples. Other peoples say violent films should not be made at all because it make society more dangerous. This essay will talk about both ideas and my opinion.\n\nFirst, some peoples think government need to control violent content in movies and TV. They believe violent is bad for kids because they might copy what they see. For example, when children watch fighting or killing, they might do same thing in real life. Also, too much violent make peoples feel not care about real-life violence anymore. If government stop too much violent, it can help protect the peoples and make society safe.\n\nSecond, some peoples think violent films should not exist. They believe even if violent is control, it still make peoples act bad. They think there is no need for violent films because movies can be interesting without it. This way, peoples will have better role models and not like aggressive behavior.\n\nIn my opinion, it is important to control violent in media, but stop violent films completely is not a good idea. Many peoples like action or thriller films, which usually have violent. Instead of ban these films, we can use age limits and warning signs. Parents also should check what their kids are watching.\n\nIn conclusion, government should control violent films but not stop them. With good rules and parents' help, peoples can watch movies without bad effects.";
+
+        // // // Danh sách lỗi với các cụm từ
+        // // $errors = [
+        // //     "Some peoples think government should control how much violent is show",
+        // //     "especially young peoples.",
+        // //     "Other peoples say violent films should not be made",
+        // //     "it make society more dangerous.",
+        // //     "First, some peoples think government need to control",
+        // //     "They believe violent is bad for kids",
+        // //     "they might do same thing in real life.",
+        // //     "too much violent make peoples feel not care",
+        // //     "If government stop too much violent",
+        // //     "it can help protect the peoples",
+        // //     "some peoples think violent films should not exist.",
+        // //     "even if violent is control, it still make peoples act bad.",
+        // //     "peoples will have better role models",
+        // //     "control violent in media, but stop violent films",
+        // //     "Many peoples like action or thriller films, which usually have violent.",
+        // //     "Instead of ban these films",
+        // //     "government should control violent films but not stop them.",
+        // //     "peoples can watch movies without bad effects"
+        // // ];
+
+        // // // Khởi tạo mảng để lưu kết quả
+        // // $result = [];
+        // // $lastPosition = 0;
+
+        // // foreach ($errors as $error) {
+        // //     // Tìm vị trí của lỗi trong đoạn văn
+        // //     $errorPosition = strpos($essay, $error);
+        // //     if (!empty($errorPosition)) {
+        // //         // Lấy phần đoạn văn trước lỗi
+        // //         $beforeError = substr($essay, $lastPosition, $errorPosition - $lastPosition);
+        // //         if (trim($beforeError) !== '') {
+        // //             $result[] = trim($beforeError); // Lưu phần trước lỗi
+        // //         }
+
+        // //         $result[] = $error; // Lưu lỗi
+        // //         $lastPosition = $errorPosition + strlen($error); // Cập nhật vị trí cuối cùng
+        // //     }
+        // // }
+
+        // // // Xử lý đoạn còn lại sau lỗi cuối cùng
+        // // $remainingText = substr($essay, $lastPosition);
+        // // if (trim($remainingText) !== '') {
+        // //     $result[] = trim($remainingText);
+        // // }
+
+        // // // In kết quả
+        // // foreach ($result as $index => $part) {
+        // //     echo "Part " . ($index + 1) . ": " . $part . "\n\n";
+        // // }
+
+        // // foreach ($errors as $index => $error) {
+        // //     $replacement = sprintf("...error%d...", $index + 1); // Định dạng: ...error1...
+        // //     $essay = str_replace($error, $replacement, $essay);
+        // // }
+        // //start todo
+
+        //     // use PhpOffice\PhpWord\PhpWord;
+        //     // use PhpOffice\PhpWord\Element\Comment;
+
+        //     // // Khởi tạo đối tượng PhpWord
+        //     // $phpWord = new PhpWord();
+        //     // $section = $phpWord->addSection();
+
+        //     // // Đoạn văn bản đã chỉnh sửa với các placeholder "errorX"
+        //     $essay = "...error1... in film and TV. They think violence can affect viewers badly, ...error2... ...error3... at all because ...error4... This essay will talk about both ideas and my opinion.\n\n...error5... violent content in movies and TV. ...error6... because they might copy what they see. For example, when children watch fighting or killing, ...error7... Also, ...error8... about real-life violence anymore. ...error9..., ...error10... and make society safe.\n\nSecond, ...error11... They believe ...error12... They think there is no need for violent films because movies can be interesting without it. This way, ...error13... and not like aggressive behavior.\n\nIn my opinion, it is important to ...error14... completely is not a good idea. ...error15... ...error16..., we can use age limits and warning signs. Parents also should check what their kids are watching.\n\nIn conclusion, ...error17... With good rules and parents' help, ...error18....";
+
+        //     // // Danh sách lỗi và các bình luận tương ứng
+        //     $errors = [
+        //         ["error" => "error1", "comment" => "Rewrite: Some people think the government should control how much violence is shown."],
+        //         ["error" => "error2", "comment" => "Replace: especially young people."],
+        //         ["error" => "error3", "comment" => "Correct: Other people say violent films should not be made."],
+        //         ["error" => "error4", "comment" => "Fix: it makes society more dangerous."],
+        //         ["error" => "error5", "comment" => "Suggestion: First, some people think the government needs to control violent content."],
+        //         ["error" => "error6", "comment" => "Rewrite: They believe violence is bad for kids."],
+        //         ["error" => "error7", "comment" => "Add missing article: they might do the same thing in real life."],
+        //         ["error" => "error8", "comment" => "Change: too much violence makes people feel indifferent to real-life violence."],
+        //         ["error" => "error9", "comment" => "Fix: If the government stops too much violence."],
+        //         ["error" => "error10", "comment" => "Correct: it can help protect the people."],
+        //         ["error" => "error11", "comment" => "Rewrite: Second, some people think violent films should not exist."],
+        //         ["error" => "error12", "comment" => "Correct: even if violence is controlled, it still makes people act badly."],
+        //         ["error" => "error13", "comment" => "Rewrite: people will have better role models."],
+        //         ["error" => "error14", "comment" => "Suggestion: control violence in media, but stopping violent films completely is not a good idea."],
+        //         ["error" => "error15", "comment" => "Fix: Many people like action or thriller films, which usually have violence."],
+        //         ["error" => "error16", "comment" => "Rewrite: Instead of banning these films."],
+        //         ["error" => "error17", "comment" => "Fix: the government should control violent films but not stop them."],
+        //         ["error" => "error18", "comment" => "Correct: people can watch movies without bad effects."]
+        //     ];
+
+        //     // Tách đoạn văn theo "...errorX..."
+        //     $splitEssay = preg_split('/(\.\.\.error\d+\.\.\.)/', $essay, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+        //     // Thêm từng phần của đoạn văn và các comment tương ứng
+        //     foreach ($splitEssay as $part) {
+        //         if (preg_match('/error(\d+)/', $part, $matches)) {
+        //             $errorIndex = (int)$matches[1] - 1; // Lấy chỉ mục lỗi tương ứng trong mảng $errors
+        //             if (isset($errors[$errorIndex])) {
+        //                 $errorText = $errors[$errorIndex]['error'];
+        //                 $commentText = $errors[$errorIndex]['comment'];
+
+        //                 // Tạo TextRun để thêm lỗi và comment
+        //                 $textRun = $section->addTextRun();
+
+        //                 // Tạo comment cho lỗi
+        //                 $comment = new Comment('Editor', new \DateTime());
+        //                 $comment->addText($commentText);
+        //                 $phpWord->addComment($comment);
+
+        //                 // Thêm lỗi vào đoạn văn và gắn comment
+        //                 $textError = $textRun->addText($errorText, ['bold' => true]);
+        //                 $textError->setCommentRangeStart($comment);
+        //                 $textError->setCommentRangeEnd($comment);
+        //             }
+        //         } else {
+        //             // Thêm các phần văn bản không phải lỗi
+        //             $section->addText($part);
+        //         }
+        //     }
+        //     $fileName = 'document_with_comments_test2.docx';
+        //     $filePath = storage_path('app/public/' . $fileName);
+        //     $phpWord->save($filePath, 'Word2007');
+            $filePath = CommonWord::commentWord();
+
+            return response()->json([
+                'message' => 'File đã được lưu thành công!',
+                'path' => Storage::url($filePath), // Đường dẫn để tải file
+            ]);
+            // // Lưu file Word
+            // $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+            // $writer->save('EssayWithComments.docx');
+
+            // echo "File 'EssayWithComments.docx' đã được tạo thành công!";
+
+        //end todo
+
+
+
+        // $phpWord = new PhpWord();
+        // $section = $phpWord->addSection();
+
+        // // Thêm đoạn văn bản có comment
+        // $textWithComment = $section->addText("Đây là đoạn văn bản có comment.");
+
+        // // Thêm comment vào tài liệu
+        // $commentManager = new \PhpOffice\PhpWord\Element\Comment('Foo Bar', new \DateTime());
+        // $comment = $commentManager->addText('A comment with a start and an end');
+        // $phpWord->addComment($commentManager);
+        // $commentManager = $phpWord->getCommentManager();
+        // $comment = $commentManager->addComment("Người dùng", date('Y-m-d H:i:s'));
+        // $comment->addText("Đây là comment cho đoạn văn bản này.");
+
+        // // Gắn comment vào đoạn văn bản
+        // $commentManager->attachComment($textWithComment, $comment);
+
+        // // Lưu tài liệu
+        $data = ApiUserQuestion::orderBy('id', 'desc')->first()->toArray();
+        $check = ApiUserQuestionPart::whereIn('user_question_id',[230])
+            ->where('part_number',8)
+            // ->where('writing_task_number',2)
+            // ->where('status', 0)
+            // ->where('user_question_id',177)
+            ->orderBy('user_question_id', 'desc')
+            // ->pluck('openai_response', 'part_number');
+            ->first();
+            // $openai_response = $check->openai_response;
+        $report = $check->question;
+
+        // dd($report, )
+
+
+        // $reportFormat = nl2br($report);
+        // $textRun = $section->addTextRun();
+        // $textWithComment = $textRun->addText($report);
+
+        // $commentWithStartAndEnd = new \PhpOffice\PhpWord\Element\Comment($userName, new \DateTime());
+
+        $dataOpenAi = json_decode($check->openai_response, true);
+        // dd($check, json_decode($check->openai_response, true));
+        // $phpWord = new PhpWord();
+        // $section = $phpWord->addSection();
+        dd($report, $dataOpenAi);
+        // $textrunWithEnd = $section->addTextRun();
+
+        //explode student essay follow error(quote)
+        foreach($dataOpenAi['errors'] as $value)
+        {
+            $commentWithStartAndEnd = new \PhpOffice\PhpWord\Element\Comment($userName, new \DateTime());
+            $quote = $value['error'];
+            $correction = $value['corrections'];
+            $explain = $value['explanations'];
+            $commentWithStartAndEnd->addText($quote . '->' . $correction);
+            $phpWord->addComment($commentWithStartAndEnd);
+            // $textWithComment->setCommentRangeStart($commentWithStartAndEnd);
+            // $textWithComment->setCommentRangeEnd($commentWithStartAndEnd);
+
+            // $textrun = $section->addTextRun();
+            $textParts = explode($quote, $report);
+            if (isset($textParts[0]) && !empty($textParts[0])) {
+                $textrunWithEnd = $section->addTextRun();
+
+                $textToStartOn = $textrunWithEnd->addText($textParts[0]);
+                $textToStartOn->setCommentRangeStart($commentWithStartAndEnd);
+
+                $textToEndOn = $textrunWithEnd->addText($quote, array('bold' => true, 'color' => 'red'));
+                $textToEndOn->setCommentRangeEnd($commentWithStartAndEnd);
+            } else {
+                $textrunWithEnd = $section->addTextRun();
+
+                $textToStartOn = $textrunWithEnd->addText('');
+                $textToStartOn->setCommentRangeStart($commentWithStartAndEnd);
+
+                $textToEndOn = $textrunWithEnd->addText($quote, array('bold' => true, 'color' => 'red'));
+                $textToEndOn->setCommentRangeEnd($commentWithStartAndEnd);
+                
+            }
+            
+            
+        }
+
+
+
+
+        // $commentWithStartAndEnd = new \PhpOffice\PhpWord\Element\Comment('Foo Bar', new \DateTime());
+        // $commentWithStartAndEnd->addText('A comment with a start and an end');
+        // $phpWord->addComment($commentWithStartAndEnd);
+
+        // $textrunWithEnd = $section->addTextRun();
+        // $textrunWithEnd->addText('This ');
+        // $textToStartOn = $textrunWithEnd->addText('is', array('bold' => true));
+        // $textToStartOn->setCommentRangeStart($commentWithStartAndEnd);
+        // $textrunWithEnd->addText(' another', array('italic' => true));
+        // $textToEndOn = $textrunWithEnd->addText(' test');
+        // $textToEndOn->setCommentRangeEnd($commentWithStartAndEnd);
+
+        $fileName = 'document_with_comments_test2.docx';
+        $filePath = storage_path('app/public/' . $fileName);
+        $phpWord->save($filePath, 'Word2007');
+
+        // $phpWord = new PhpWord();
+        // $section = $phpWord->addSection();
+
+        // // Thêm đoạn văn bản có nội dung
+        // $textRun = $section->addTextRun();
+        // $textRun->addText("Đây là một đoạn văn bản chính. ");
+
+        // // Thêm Footnote
+        // $footnote = $textRun->addFootnote();
+        // $footnote->addText("Đây là comment (Footnote) cho đoạn văn bản chính.");
+
+        // // Lưu file Word
+        // $fileName = 'document_with_footnote.docx';
+        // $filePath = storage_path('app/public/' . $fileName);
+        // $phpWord->save($filePath, 'Word2007');
+        // Trả về thông báo thành công
+        return response()->json([
+            'message' => 'File đã được lưu thành công!',
+            'path' => Storage::url($filePath), // Đường dẫn để tải file
+        ]);
+    }
     
+
+    // public function exportResultKienTest(Request $request)
+    // {
+    //     $phpWord = new PhpWord();
+    //     $section = $phpWord->addSection();
+
+    //     // Nội dung đoạn văn bản
+    //     $essay = "Some peoples think government should control how much violent is show in film and TV. They think violence can affect viewers badly, especially young peoples.";
+        
+    //     $data = ApiUserQuestion::orderBy('id', 'desc')->first()->toArray();
+    //     $check = ApiUserQuestionPart::whereIn('user_question_id',[230])
+    //         ->where('part_number',8)
+    //         ->orderBy('user_question_id', 'desc')
+    //         ->first();
+
+    //     $report = $check->question;
+
+    //     dd($report);
+
+    //     // Danh sách lỗi cần comment
+    //     $errors = [
+    //         [
+    //             'error' => "Some peoples think government should control how much violent is show",
+    //             'correction' => "Some people think the government should control how much violence is shown",
+    //             'explanation' => "Grammar correction and better phrasing.",
+    //         ],
+    //         [
+    //             'error' => "especially young peoples.",
+    //             'correction' => "especially young people.",
+    //             'explanation' => "Remove grammatical errors.",
+    //         ]
+    //     ];
+
+    //     // Tách đoạn văn bản thành các phần
+    //     $lastPosition = 0;
+    //     foreach ($errors as $errorItem) {
+    //         $error = $errorItem['error'];
+    //         $correction = $errorItem['correction'];
+    //         $explanation = $errorItem['explanation'];
+
+    //         $errorPosition = strpos($essay, $error);
+    //         if ($errorPosition !== false) {
+    //             // Thêm đoạn văn bản trước lỗi
+    //             $beforeError = substr($essay, $lastPosition, $errorPosition - $lastPosition);
+    //             if (!empty(trim($beforeError))) {
+    //                 $section->addText($beforeError);
+    //             }
+
+    //             // Thêm lỗi với comment
+    //             $textrun = $section->addTextRun();
+    //             $comment = new Comment('Editor', new \DateTime());
+    //             $comment->addText("Correction: $correction\nExplanation: $explanation");
+
+    //             $textWithComment = $textrun->addText($error, ['bold' => true, 'color' => 'red']);
+    //             $textWithComment->setCommentRangeStart($comment);
+    //             $textWithComment->setCommentRangeEnd($comment);
+
+    //             $phpWord->addComment($comment);
+
+    //             // Cập nhật vị trí sau lỗi
+    //             $lastPosition = $errorPosition + strlen($error);
+    //         }
+    //     }
+
+    //     // Xử lý phần còn lại
+    //     $remainingText = substr($essay, $lastPosition);
+    //     if (!empty(trim($remainingText))) {
+    //         $section->addText($remainingText);
+    //     }
+
+    //     // Lưu file Word
+    //     $fileName = 'document_with_comments_kien.docx';
+    //     $filePath = storage_path('app/public/' . $fileName);
+    //     $phpWord->save($filePath, 'Word2007');
+
+    //     // Trả về thông báo thành công
+    //     return response()->json([
+    //         'message' => 'File đã được lưu thành công!',
+    //         'path' => Storage::url($filePath),
+    //     ]);
+    // }
+
+    public function exportResultWordFile(Request $request)
+    {
+        $jsonData = $this->getDataFromRequest($request);
+        $userName = $jsonData['user_name'];
+        $userId = $jsonData['user_id'];
+        //todo
+        $phpWord = new PhpWord();
+        $section = $phpWord->addSection();
+
+
+        $data = ApiUserQuestion::orderBy('id', 'desc')->first()->toArray();
+        $check = ApiUserQuestionPart::whereIn('user_question_id',[230])
+            ->where('part_number',8)
+            ->orderBy('user_question_id', 'desc')
+            ->first();
+        $report = $check->question;
+
+        $dataOpenAi = json_decode($check->openai_response, true);
+
+        foreach($dataOpenAi['errors'] as $value)
+        {
+            $commentWithStartAndEnd = new \PhpOffice\PhpWord\Element\Comment($userName, new \DateTime());
+            $quote = $value['error'];
+            $correction = $value['corrections'];
+            $explain = $value['explanations'];
+            $commentWithStartAndEnd->addText($quote . '->' . $correction);
+            $commentWithStartAndEnd->addText("explain:". $explain);
+            $phpWord->addComment($commentWithStartAndEnd);
+            $textParts = explode($quote, $report);
+            if (isset($textParts[0]) && !empty($textParts[0])) {
+                $textrunWithEnd = $section->addTextRun();
+
+                $textToStartOn = $textrunWithEnd->addText($textParts[0]);
+                $textToStartOn->setCommentRangeStart($commentWithStartAndEnd);
+
+                $textToEndOn = $textrunWithEnd->addText($quote, array('bold' => true, 'color' => 'red'));
+                $textToEndOn->setCommentRangeEnd($commentWithStartAndEnd);
+            } else {
+                $textrunWithEnd = $section->addTextRun();
+
+                $textToStartOn = $textrunWithEnd->addText('');
+                $textToStartOn->setCommentRangeStart($commentWithStartAndEnd);
+
+                $textToEndOn = $textrunWithEnd->addText($quote, array('bold' => true, 'color' => 'red'));
+                $textToEndOn->setCommentRangeEnd($commentWithStartAndEnd);
+            }
+        }
+
+        $fileName = 'document_with_comments_kientest2.docx';
+        $filePath = storage_path('app/public/' . $fileName);
+        $phpWord->save($filePath, 'Word2007');
+
+        return response()->json([
+            'message' => 'File đã được lưu thành công!',
+            'path' => Storage::url($filePath), // Đường dẫn để tải file
+        ]);
+
+        dd($report, $dataOpenAi);
+
+        $essay = "Some peoples think government should control how much violent is show in film and TV. They think violence can affect viewers badly, especially young peoples. Other peoples say violent films should not be made at all because it make society more dangerous. This essay will talk about both ideas and my opinion.\n\nFirst, some peoples think government need to control violent content in movies and TV. They believe violent is bad for kids because they might copy what they see. For example, when children watch fighting or killing, they might do same thing in real life. Also, too much violent make peoples feel not care about real-life violence anymore. If government stop too much violent, it can help protect the peoples and make society safe.\n\nSecond, some peoples think violent films should not exist. They believe even if violent is control, it still make peoples act bad. They think there is no need for violent films because movies can be interesting without it. This way, peoples will have better role models and not like aggressive behavior.\n\nIn my opinion, it is important to control violent in media, but stop violent films completely is not a good idea. Many peoples like action or thriller films, which usually have violent. Instead of ban these films, we can use age limits and warning signs. Parents also should check what their kids are watching.\n\nIn conclusion, government should control violent films but not stop them. With good rules and parents' help, peoples can watch movies without bad effects.";
+
+        $errors = [
+            "Some peoples think government should control how much violent is show",
+            "especially young peoples.",
+            "Other peoples say violent films should not be made",
+            "it make society more dangerous.",
+            "First, some peoples think government need to control",
+            "They believe violent is bad for kids",
+            "they might do same thing in real life.",
+            "too much violent make peoples feel not care",
+            "If government stop too much violent",
+            "it can help protect the peoples",
+            "some peoples think violent films should not exist.",
+            "even if violent is control, it still make peoples act bad.",
+            "peoples will have better role models",
+            "control violent in media, but stop violent films",
+            "Many peoples like action or thriller films, which usually have violent.",
+            "Instead of ban these films",
+            "government should control violent films but not stop them.",
+            "peoples can watch movies without bad effects"
+        ];
+
+        $result = [];
+        $lastPosition = 0;
+
+        foreach ($errors as $error) {
+            $errorPosition = strpos($essay, $error);
+            if ($errorPosition !== false) {
+                $beforeError = substr($essay, $lastPosition, $errorPosition - $lastPosition);
+                if (trim($beforeError) !== '') {
+                    $result[] = ['text' => trim($beforeError), 'isError' => false];
+                }
+
+                $result[] = ['text' => $error, 'isError' => true];
+                $lastPosition = $errorPosition + strlen($error);
+            }
+        }
+
+        $remainingText = substr($essay, $lastPosition);
+        if (trim($remainingText) !== '') {
+            $result[] = ['text' => trim($remainingText), 'isError' => false];
+        }
+
+        // Tạo nội dung trong file Word
+        foreach ($result as $part) {
+            if ($part['isError']) {
+                $textrun = $section->addTextRun();
+
+                $comment = new Comment('Editor', new \DateTime());
+                $comment->addText("This sentence contains an error. Please review and correct.");
+
+                $textWithComment = $textrun->addText($part['text'], ['bold' => true, 'color' => 'red']);
+                $textWithComment->setCommentRangeStart($comment);
+                $textWithComment->setCommentRangeEnd($comment);
+
+                $phpWord->addComment($comment);
+            } else {
+                $section->addText($part['text']);
+            }
+        }
+
+        $fileName = 'document_with_errors.docx';
+        $filePath = storage_path('app/public/' . $fileName);
+        // $phpWord->save($filePath, 'Word2016');
+        $writer = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2016');
+        $writer->save('EssayWithComments.docx');
+
+        return response()->json([
+            'message' => 'File created successfully!',
+            'path' => Storage::url($fileName)
+        ]);
+    }
+
 }

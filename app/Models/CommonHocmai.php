@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use \OpenAI;
-use App\Models\Question;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class CommonHocmai extends Model
 {
@@ -178,6 +178,7 @@ class CommonHocmai extends Model
 
     public static function hocmaiTask1BandGrammaRange($jsonData)
     {
+        
         $yourApiKey = getenv('OPENAI_HOCMAI_KEY');
         $client = OpenAI::client($yourApiKey);
         $model = getenv('OPENAI_API_MODEL');
@@ -188,6 +189,7 @@ class CommonHocmai extends Model
         
         $chat = $client->chat()->create([
             'model' => $model,
+            'response_format'=>["type"=>"json_object"],
            'messages' => [
                 [
                    "role" => "system",
@@ -195,7 +197,7 @@ class CommonHocmai extends Model
                ],
                [
                    "role" => "user",
-                   "content" => "Please grade the Grammatical Range & Accuracy of IELTS Writing Task 1 essay without mentioning the Band 8 sample. This is my IELTS Writing Task 1 essay:\n" . $report
+                   "content" => "Please grade the Grammatical Range & Accuracy of IELTS Writing Task 1 essay without mentioning the Band 8 sample. After that, give me a response in JSON format with the following structure: score as the given score, and comment as the feedback about my essay This is my IELTS Writing Task 1 essay:\n" . $report
                ],
             ],
            'temperature' => 0,

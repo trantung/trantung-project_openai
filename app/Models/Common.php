@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use \OpenAI;
 use App\Models\Question;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class Common extends Model
 {
@@ -273,7 +274,7 @@ class Common extends Model
                [
                    "role" => "user",
                 //    "content" => "This is my IELTS Writing Task 2: \n" . $question
-                   "content" => "I want to improve the vocabulary and grammar in my IELTS Writing Task 2 essay. Please help me identify any incorrect or improvable vocabulary and grammar with quotes, limited to 20 words per quote. Then, then explanation for each error after that fix each error. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar error, explanations is the explanation of vocabulary or grammar error, correction is the fixed content. Please sure that fixed content is different error" . "This is my IELTS Writing Task 2 essay: \n" . $question
+                   "content" => "I want to improve the vocabulary and grammar in my IELTS Writing Task 2 essay. Please help me identify any incorrect or improvable vocabulary and grammar with quotes, limited to 20 words per quote and each quotes should not span across different paragraphs. Then, then explanation for each error after that fix each error. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar error, explanations is the explanation of vocabulary or grammar error, correction is the fixed content. Please sure that fixed content is different error" . "This is my IELTS Writing Task 2 essay: \n" . $question
                ],
 
             ],
@@ -387,7 +388,7 @@ class Common extends Model
            'messages' => [
                [
                    "role" => "system",
-                   "content" => "I want to improve the vocabulary and grammar in my IELTS Writing Task 1 essay. Please help me identify any incorrect or improvable vocabulary and grammar with quotes, limited to 20 words per quote. Then, then explanation for each error after that fix each error. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar error, explanations is the explanation of vocabulary or grammar error, correction is the fixed content. Please sure that fixed content is different error" . "This is my IELTS Writing Task 1 essay: \n" . $question
+                   "content" => "I want to improve the vocabulary and grammar in my IELTS Writing Task 1 essay. Please help me identify any incorrect or improvable vocabulary and grammar with quotes, limited to 20 words per quote and each quotes should not span across different paragraphs with the last word of the previous quote not appearing in the next quote's content.. Then, then explanation for each error after that fix each error. Reponse is json format with the following structure: errors is a list of errors, where each error object has the following structure: error is the vocabulary or grammar error, explanations is the explanation of vocabulary or grammar error, correction is the fixed content. Please sure that fixed content is different error" . "This is my IELTS Writing Task 1 essay: \n" . $question
                 //    "content" => "You are a friendly IELTS preparation teacher and today you are very happy.This is the prompt for the IELTS Writing Task 1 essay: \n" . $topic . "\nIdentify vocabulary and grammar errors, then provide explanations and corrections to align them with the requirements of IELTS Writing Task 1. Reponse is json format structured as: error, explanations, corrections. for each error"
                ],
                [
@@ -397,7 +398,7 @@ class Common extends Model
 
             ],
            'temperature' => 0,
-           'max_tokens' => 1000
+           'max_tokens' => 2048
         ]);
         $dataResponseChat = $chat->choices[0]->message->content;
         return $chat;
@@ -827,6 +828,106 @@ class Common extends Model
         ]);
         
         return $chat;
+    }
+
+    public static function aiVideoImport($request)
+    {
+        $yourApiKey = getenv('OPENAI_HOCMAI_KEY');
+        // $path = public_path('ai_video/test.mp4');
+        $client = OpenAI::client($yourApiKey);
+        $file = $request->file('file');
+        // $path = $file->storeAs('ai_video', 'test_ai','local');
+        $extension = $file->getClientOriginalExtension();
+        $originalFileName = $file->getClientOriginalName();
+        $path = $file->storeAs('ai_video', $originalFileName, 'local');
+        $fileTest = Storage::path($path);
+        // dd($extension, $fileTest);
+        if (Storage::exists($fileTest)) {
+            dd(111);
+        }
+        if(empty($request['file_name'])) {
+            // $fileInfo = pathinfo($fileTest);
+            $response = $client->audio()->transcribe([
+                'model' => 'whisper-1',
+                'file' => fopen($fileTest, 'r'),
+                'response_format' => 'verbose_json',
+                'timestamp_granularities' => ['segment', 'word']
+            ]);
+
+            $response->task; // 'transcribe'
+            $response->language; // 'english'
+            $response->duration; // 2.95
+            $response->text; // 'Hello, how are you?'
+
+            // ErrorException: fopen(/var/www/html/your_domain/openai_app_new/storage/app/ai_video/test.mp4mp4): Failed to open stream: No such file or directory in file /var/www/html/your_domain/openai_app_new/app/Models/Common.php on line 851
+            $res = [];
+            foreach ($response->segments as $segment) {
+                // $segment->index; // 0
+                $res[] = [
+                    'time_start' => $segment->start,
+                    'time_end' => $segment->end,
+                    'text' => $segment->text,
+                ];
+                $segment->seek; // 0
+                $segment->start; // 0.0
+                $segment->end; // 4.0
+                $segment->text; // 'Hello, how are you?'
+                // $segment->tokens; // [50364, 2425, 11, 577, 366, 291, 30, 50564]
+                // $segment->temperature; // 0.0
+                // $segment->avgLogprob; // -0.45045216878255206
+                // $segment->compressionRatio; // 0.7037037037037037
+                // $segment->noSpeechProb; // 0.1076972484588623
+                // $segment->transient; // false
+            }
+            
+            // foreach ($response->words as $word) {
+            //     $word->word; // 'Hello'
+            //     $word->start; // 0.31
+            //     $word->end; // 0.92
+            // }
+            // $fileJson = json_encode($res,true);
+
+            $jsonContent = json_encode($res, JSON_PRETTY_PRINT);
+
+            // Define the file path and name
+            $filePath = 'json_files/' . $originalFileName . '.json'; // Save in storage/app/json_files
+            // Write JSON to the file
+            Storage::put($filePath, $jsonContent);
+        } else {
+            // $originalFileName = $request['file_name'];
+            $filePath = 'json_files/' . $originalFileName . '.json';
+            $jsonContent = Storage::get($filePath);
+
+        }
+        
+
+        $systemMessage = "You are english teacher. If my question is not relate in content json file, please answer 'dkm, ngu vl' otherwise answer question depend on content in file with timestamp start and timestamp end. Respond is json format have structure as: time_start is timestamp start, time_end is timestamp end, answer is answer . This is json conten file:\n" . $jsonContent;
+
+        if(isset($request['question']) && !empty($request['question'])) {
+            $model = getenv('OPENAI_API_MODEL');
+            $question = $request['question'];
+            $chat = $client->chat()->create([
+                'model' => $model,
+                'response_format'=>["type"=>"json_object"],
+               'messages' => [
+                    [
+                       "role" => "system",
+                       "content" => $systemMessage
+                   ],
+                   [
+                       "role" => "user",
+                       "content" => $question
+                   ],
+                ],
+               'temperature' => 0,
+               'max_tokens' => 1000
+            ]);
+            return ['type' => 1, 'data' => $chat];
+        }
+        
+        return ['type' => 2, 'data' => $jsonContent];
+
+        // dd()
     }
 
 }
