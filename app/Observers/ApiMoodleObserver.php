@@ -4,6 +4,8 @@ namespace App\Observers;
 
 use App\Models\ApiMoodle;
 use App\Models\Course;
+use App\Models\ApiEms;
+use App\Models\ApiMoodleEms;
 
 class ApiMoodleObserver
 {
@@ -36,6 +38,11 @@ class ApiMoodleObserver
             $check = Course::where('api_moodle_id', $apiMoodle->id)->update(['name' => $apiMoodle->moodle_name]);
             \Log::info('Observer: ApiMoodle updated with ID: ' . $apiMoodle->id);
         }
+        // if($apiMoodle->moodle_type =='quiz') {
+        //     ApiMoodleEms::where('api_moodle_id', $apiMoodle->id)->first();
+        //     $check = ApiEms::where('api_moodle_id', $apiMoodle->id)->update(['name' => $apiMoodle->moodle_name]);
+        //     \Log::info('Observer: ApiMoodle updated with ID: ' . $apiMoodle->id);
+        // }
         \Log::info('api moodle ' . $apiMoodle->id . ' has type: ' . $apiMoodle->moodle_type . ' updated');
     }
 

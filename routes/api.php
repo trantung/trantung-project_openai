@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ICANIDController;
+use App\Http\Controllers\ApiEmsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -91,7 +92,8 @@ Route::post("openai/hocmai/task2/getlog", [App\Http\Controllers\ApiController::c
 // Route::post("test/upload/pdf", [App\Http\Controllers\ApiController::class,'uploadPDFLms']);
 //EMS
 Route::post('fe/student/get-info-user-by-token', [ICANIDController::class, 'getInfoUserByToken'])->name('getInfoUserByToken');
-
+Route::get("ems/exam/list", [ApiEmsController::class,'examList']);
 //Sale
 Route::post('student/create-with-course', [ICANIDController::class, 'createStudentWithCourse'])->name('createStudentWithCourse');
 Route::get("course/list", [App\Http\Controllers\ProductController::class,'listCourseHocmai']);
+

@@ -3,6 +3,7 @@
 namespace App\Repositories\ApiEms;
 
 use App\Models\ApiEms;
+use App\Models\ApiEms;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Repositories\ApiEms\ApiEmsRepositoryInterface;
@@ -33,7 +34,7 @@ class ApiEmsRepository extends BaseRepository implements ApiEmsRepositoryInterfa
     /**
      * Boot up the repository, pushing criteria
      */
-    public function boot(): void
+    public function boot()
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
@@ -45,7 +46,7 @@ class ApiEmsRepository extends BaseRepository implements ApiEmsRepositoryInterfa
      *
      * @return LengthAwarePaginator
      */
-    public function search(array $params): LengthAwarePaginator
+    public function search($params)
     {
         $query = $this->model->query();
 
@@ -72,7 +73,7 @@ class ApiEmsRepository extends BaseRepository implements ApiEmsRepositoryInterfa
      * 
      * @return void
      */
-    public function updateMultiple(array $ids, array $data): void
+    public function updateMultiple($ids, $data)
     {
         $this->model->whereIn('id', $ids)->update($data);
     }
@@ -85,12 +86,56 @@ class ApiEmsRepository extends BaseRepository implements ApiEmsRepositoryInterfa
      * 
      * @return void
      */
-    public function updateRubricTemplateToNullInApiEms(array $ids, int $rubricTemplateId): void
+    public function updateRubricTemplateToNullInApiEms($ids, $rubricTemplateId)
     {
         $query = $this->model->where('rubric_template_id', $rubricTemplateId);
         if(!empty($ids)) {
             $query = $query->whereNotIn('id', $ids);
         }
         $query->update(['rubric_template_id' => null]);
+    }
+
+    public function createOrUpdateExam($data)
+    {
+        //create apiems
+        // 'ems_id', 'ems_name', 'ems_type_id', 'rubric_template_id', 'skill'
+        $ems_id = $data['idMockContest'];
+        $dataEms = $this->model->find($ems_id);
+        if(!$dataEms) {
+            return $this->createExam($data);
+        }
+        return $this->updateExam($data, $dataEms);
+    }
+
+    public function createExam($data)
+    {
+        $apiEmsId = $this->createEms($data);
+        $this->createEmsType($data);
+        $this->createEmsTag($data);
+    }
+
+    public function createEmsType($data)
+    {
+
+    }
+    
+    public function createEmsTag($data)
+    {
+
+    }
+    
+    public function createEms($data)
+    {
+        $ems_id = $data['idMockContest'];
+        $ems_name = $data['name'];
+        return $this->model->create([
+            'ems_id' => $ems_id,
+            'ems_name' => $ems_name,
+        ])->id;
+    }
+
+    public function updateExam($data, $dataEms)
+    {
+        
     }
 }

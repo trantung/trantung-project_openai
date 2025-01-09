@@ -34,12 +34,12 @@
                         @endforeach
 
                         <!-- Search -->
-                        <li class="search-item">
+                        <!-- <li class="search-item">
                             <a href="#" title="Tìm kiếm"><i class="fa fa-search"></i></a>
-                        </li>
+                        </li> -->
 
                         <!-- Bookmarks -->
-                        <li class="bookmarks-item dropdown">
+                        <!-- <li class="bookmarks-item dropdown">
                             <a href="#" title="Bookmarks" class="sf-with-ul">
                                 <span class="text">Bookmarks</span>
                                 <i class="fa fa-bookmark"></i>
@@ -52,13 +52,13 @@
                                     </a>
                                 </li>
                             </ul>
-                        </li>
+                        </li> -->
                     </ul>
 
                 </div>
             </div>
         </div>
-        <div class="theme-searchform">
+        <!-- <div class="theme-searchform">
             <a href="#" class="search-close">
                 <i class="icon2 fa-solid fa-xmark"></i>
             </a>
@@ -72,6 +72,6 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 </div>

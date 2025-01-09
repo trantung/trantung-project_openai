@@ -71,6 +71,7 @@ class AppServiceProvider extends ServiceProvider
                 'title' => 'Hệ thống',
                 'items' => [
                     ['name' => 'Danh sách vai trò', 'route' => 'role.index'],
+                    ['name' => 'Rubric template', 'route' => 'rubric_templates.index'],
                 ],
             ],
             [

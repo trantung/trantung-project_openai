@@ -20,7 +20,7 @@ interface ApiEmsRepositoryInterface extends RepositoryInterface
      *
      * @return LengthAwarePaginator
      */
-    public function search(array $params): LengthAwarePaginator;
+    public function search($params);
 
     /**
      * update Multiple
@@ -30,7 +30,7 @@ interface ApiEmsRepositoryInterface extends RepositoryInterface
      * 
      * @return void
      */
-    public function updateMultiple(array $ids, array $data): void;
+    public function updateMultiple($ids, $data);
 
     /**
      * update Rubric Template To Null
@@ -40,5 +40,5 @@ interface ApiEmsRepositoryInterface extends RepositoryInterface
      * 
      * @return void
      */
-    public function updateRubricTemplateToNullInApiEms(array $ids, int $rubricTemplateId): void;
+    public function updateRubricTemplateToNullInApiEms($ids, $rubricTemplateId);
 }

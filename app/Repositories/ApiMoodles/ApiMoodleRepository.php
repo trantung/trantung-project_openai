@@ -30,7 +30,7 @@ class ApiMoodleRepository extends BaseRepository implements ApiMoodleRepositoryI
     /**
      * Boot up the repository, pushing criteria
      */
-    public function boot(): void
+    public function boot()
     {
         $this->pushCriteria(app(RequestCriteria::class));
     }
@@ -43,14 +43,17 @@ class ApiMoodleRepository extends BaseRepository implements ApiMoodleRepositoryI
      *
      * @return Collection
      */
-    public function getApiMoodlesByRubricTemplateId(int $rubricTemplateId, int|null $moodleType = null): Collection
+    public function getApiMoodlesByRubricTemplateId($rubricTemplateId, $moodleType = null)
     {
-        return $this->model->where(function ($query) use ($rubricTemplateId) {
+        // dd($rubricTemplateId, $moodleType);
+        $res = $this->model->where(function ($query) use ($rubricTemplateId) {
                         $query->where('rubric_template_id', $rubricTemplateId)
                             ->orWhereNull('rubric_template_id');
                     })->when($moodleType, function ($query) use ($moodleType) {
                         $query->where('moodle_type', $moodleType);
                     })->get();
+                    
+        return $res;
     }
 
     /**
@@ -61,7 +64,7 @@ class ApiMoodleRepository extends BaseRepository implements ApiMoodleRepositoryI
      *
      * @return void
      */
-    public function updateMultiple(array $ids, array $data): void
+    public function updateMultiple($ids, $data)
     {
         $this->model->whereIn('id', $ids)->update($data);
     }
@@ -74,7 +77,7 @@ class ApiMoodleRepository extends BaseRepository implements ApiMoodleRepositoryI
      *
      * @return void
      */
-    public function updateRubricTemplateToNullInApiMoodles(array $ids, int $rubricTemplateId): void
+    public function updateRubricTemplateToNullInApiMoodles($ids, $rubricTemplateId)
     {
         $query = $this->model->where('rubric_template_id', $rubricTemplateId);
         if(!empty($ids)) {

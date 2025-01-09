@@ -41,7 +41,7 @@
 
     @include('template.popup.delete-confirm')
 
-    <div class="theme-links closed">
+    <!-- <div class="theme-links closed">
         <a href="#" class="toggle-open" title="Cài đặt" data-width="350"><i class="icon1 fa fa-sliders"></i></a>
         <ul>
             <li><a href="https://english.ican.vn/classroom/admin/category.php?category=theme_mb2cg" title="All settings"><i class="fa fa-cogs"></i> All settings</a></li>
@@ -57,11 +57,11 @@
             <li class="custom-link"><a href="https://mb2themes.com/docs/cognitio" target="_blank" class="link-doc" title="Documentation"><i class="fa fa-info-circle"></i> Documentation</a></li>
             <li class="custom-link"><a href="https://themeforest.net/user/marbol2/portfolio" target="_blank" class="link-more" title="More Themes"><i class="fa fa-shopping-basket"></i> More Themes</a></li>
         </ul>
-    </div>
+    </div> -->
 
-    <a class="theme-scrolltt active" href="#">
+    <!-- <a class="theme-scrolltt active" href="#">
         <i class="fa fa-chevron-up" data-scrollspeed="400"></i>
-    </a>
+    </a> -->
 
     <script src="{{ URL::asset('js/app.js') }}"></script>
     <!-- <script src="{{ URL::asset('js/products.js') }}"></script>

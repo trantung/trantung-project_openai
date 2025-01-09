@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Common;
-use App\Models\ApiEs;
+use App\Models\ApiEms;
 use App\Models\ApiMoodle;
 use App\Models\ApiMoodleEms;
 use App\Models\MoodleActivityFile;
@@ -78,9 +78,9 @@ class ProductController extends Controller
         // dd($user = Auth::user()->email);
         // ApiMoodle::truncate();
         // ApiMoodleEms::truncate();
-        // ApiEs::truncate();
+        // ApiEms::truncate();
 
-        // dd(ApiMoodle::all(),ApiMoodleEms::all(),ApiEs::all());
+        // dd(ApiMoodle::all(),ApiMoodleEms::all(),ApiEms::all());
         // dd(User::all());
         // $updateCategory = User::where('id', 1)->update([
         //     'type' => 1,
@@ -1201,6 +1201,7 @@ class ProductController extends Controller
     
     public function createActivityQuiz($request)
     {
+        // dd($request->all());
         $parent_id = $request->input('parent_id') ?? 0;
         $section_id = $request->input('section_id');
         $course_id = ApiMoodle::where('id', $request->input('course_id'))->value('moodle_id');
@@ -1254,10 +1255,11 @@ class ProductController extends Controller
             }
         
             // Tạo mới Quiz trong ElasticSearch
-            $newQuizEs = ApiEs::create([
-                'es_id' => $questionId,
-                'es_name' => $questionName,
-                'es_type' => $questionType
+            // 'ems_id', 'ems_name', 'ems_type_id', 'rubric_template_id'
+            $newQuizEs = ApiEms::create([
+                'ems_id' => $questionId,
+                'ems_name' => $questionName,
+                'ems_type_id' => $questionType
             ]);
         
             if (!$newQuizEs) {
@@ -1268,7 +1270,7 @@ class ProductController extends Controller
             $newMoodleEms = ApiMoodleEms::create([
                 'api_moodle_id' => $newQuiz->id,
                 'api_system_id' => $newQuizEs->id,
-                'api_system_name' => 'Es'
+                'api_system_name' => 'EMS'
             ]);
         
             if (!$newMoodleEms) {

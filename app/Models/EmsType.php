@@ -25,7 +25,7 @@ class EmsType extends Model implements Transformable
      * @var array
      */
     protected $fillable = [
-        'type_id'
+        'type_id', 'type_name'
     ];
 
     public function api_ems(): HasMany

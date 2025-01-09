@@ -21,7 +21,7 @@ interface ApiMoodleRepositoryInterface extends RepositoryInterface
      *
      * @return Collection
      */
-    public function getApiMoodlesByRubricTemplateId(int $rubricTemplateId, int|null $moodleType = null): Collection;
+    public function getApiMoodlesByRubricTemplateId($rubricTemplateId, $moodleType = null);
 
     /**
      * update Multiple
@@ -31,7 +31,7 @@ interface ApiMoodleRepositoryInterface extends RepositoryInterface
      *
      * @return void
      */
-    public function updateMultiple(array $ids, array $data): void;
+    public function updateMultiple($ids, $data);
 
     /**
      * update Rubric Template To Null
@@ -41,5 +41,5 @@ interface ApiMoodleRepositoryInterface extends RepositoryInterface
      *
      * @return void
      */
-    public function updateRubricTemplateToNullInApiMoodles(array $ids, int $rubricTemplateId): void;
+    public function updateRubricTemplateToNullInApiMoodles( $ids, $rubricTemplateId);
 }

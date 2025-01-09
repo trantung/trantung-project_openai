@@ -24,7 +24,7 @@ class ApiMoodleService extends BaseService
      *
      * @return void
      */
-    public function updateRubricTemplateIdInApiMoodles(array $data): void
+    public function updateRubricTemplateIdInApiMoodles($data)
     {
         if(empty($data['api_moodle_ids']))
         {
@@ -50,7 +50,7 @@ class ApiMoodleService extends BaseService
      *
      * @return Collection
      */
-    public function getApiMoodlesByRubricTemplateId(int $rubricTemplateId, int|null $moodleType = null): Collection
+    public function getApiMoodlesByRubricTemplateId($rubricTemplateId, $moodleType = null)
     {
        return $this->apiMoodleRepository->getApiMoodlesByRubricTemplateId($rubricTemplateId, $moodleType);
     }

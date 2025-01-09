@@ -24,7 +24,7 @@ Route::get('/token', function () {
     return csrf_token();
 });
 
-Route::resource('rubric-templates', RubricTemplateController::class)->names('rubric_templates');
+Route::resource('rubric-templates', RubricTemplateController::class)->middleware(['auth', 'verified'])->names('rubric_templates');
 Route::get('/rubric-templates/ajax/ems-types-and-api-moodles', [RubricTemplateController::class, 'getDataInPopupRubricTemplate']);
 Route::post('/rubric-templates/ajax/update-rubric-template-id-in-api-ems-and-api-moodles', [RubricTemplateController::class, 'updateDataInPopupRubricTemplate']);
 
@@ -86,7 +86,7 @@ Route::get('/ssologin', function () {
 Route::get('/callback', [AuthSSOController::class, 'keycloakCallback']);
 
 Route::post('/ssologout', function () {
-    return 'logout';
+    // return 'logout';
     Auth::logout(); // Đăng xuất khỏi Laravel
     session()->invalidate(); // Hủy phiên hiện tại
     session()->regenerateToken(); // Tạo token CSRF mới

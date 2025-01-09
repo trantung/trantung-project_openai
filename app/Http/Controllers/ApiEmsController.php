@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\ApiEmsService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Models\CommonEms;
 
 class ApiEmsController extends BaseController
 {
@@ -28,6 +29,22 @@ class ApiEmsController extends BaseController
         ];
     }
 
+    public function responseSuccess($statusCode, $data)
+    {
+        return response()->json(array(
+            'code' => $statusCode,
+            'data' => $data,
+            'message' => 'Success'
+        ), 200);
+    }
+    
+    public function error($statusCode, $message)
+    {
+        return response()->json(array(
+            'code' => $statusCode,
+            'message' => $message,
+        ), 400);
+    }
     /**
      * index
      *
@@ -36,7 +53,7 @@ class ApiEmsController extends BaseController
      * @return View
      *
      */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
         $params = $request->all();
         $apiEmses = $this->apiEmsService->search($params);
@@ -44,5 +61,27 @@ class ApiEmsController extends BaseController
             'breadcrumbs' => $this->breadcrumbs,
             'apiEmses' => $apiEmses
         ]);
+    }
+    
+    public function examList(Request $request)
+    {
+        $request = request()->all();
+        $check = $this->connectEms($request);
+    }
+
+    public function connectEms($request)
+    {
+        $data = CommonEms::getListExam();
+        if(!$data) {
+            return $this->error(400, 'fail');
+        }
+
+        $data = json_decode($data, true);
+        $data = $data['data'];
+        foreach($data as $value)
+        {
+            $this->apiEmsService->createOrUpdateEmsExam($value);
+        }
+
     }
 }

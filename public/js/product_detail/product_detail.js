@@ -336,7 +336,9 @@ $(document).ready(function() {
                     // *** Bước 1: Hiển thị thông tin bài kiểm tra và các type dưới dạng tag ***
                     const examData = response.data;
                     // Lấy danh sách các type từ rounds
-                    const types = examData.rounds.map(round => round.name);
+                    // const types = examData.rounds.map(round => round.contest_type);
+
+                    const names = examData.rounds.map(round => round.name);
                     // Tạo HTML cho thông tin bài kiểm tra và các type
                     const examInfoHtml = `
                         <div class="popup_content_box shadow">
@@ -344,44 +346,44 @@ $(document).ready(function() {
                                 ${i}. ${examData.name}
                             </div>
                             <ul class="tags">
-                                ${types.map(type => `<li><a href="#" class="tag">${type}</a></li>`).join('')}
+                                ${names.map(name => `<li><a href="#" class="tag">${name}</a></li>`).join('')}
                             </ul>
                             <div class="button_question_type">
-                                <button class="btn btn-secondary" data-activity-type="${type}" data-course-id="${courseId}" data-category-id="${sectionId}" data-parent-id="${parentId}" data-question-name="${examData.name}" data-question-type="exam" data-question-id=${examData.idMockContest}>Select</button>
+                                <button class="btn btn-secondary" data-activity-type="${type}" data-course-id="${courseId}" data-category-id="${sectionId}" data-parent-id="${parentId}" data-question-name="${examData.name}" data-question-type="${examData.contest_type}" data-question-id=${examData.idMockContest}>Select</button>
                             </div>
                         </div>
                     `;
                     parentElement.append(examInfoHtml);
                     // *** Bước 2: Lặp qua các rounds và hiển thị thông tin từng bài kiểm tra ***
-                    examData.rounds.forEach(function(round, index) {
-                        const roundName = round.name;
-                        const roundType = round.type;
+                    // examData.rounds.forEach(function(round, index) {
+                    //     const roundName = round.name;
+                    //     const roundType = round.type;
                         
-                        // Lặp qua listBaikiemtra để hiển thị từng bài kiểm tra của round
-                        round.listBaikiemtra.forEach(function(testItem) {
-                            const testName = testItem.name;
-                            const idBaikiemtra = testItem.idBaikiemtra;
-                            const lowerCaseRoundName = roundName.toLowerCase();
-                            // Tạo phần HTML cho từng bài kiểm tra trong round
-                            const testHtml = `
-                                <div class="popup_content_box shadow">
-                                    <div class="text_question_type mb-2">
-                                        ${i + 1}. ${testName}
-                                    </div>
-                                    <ul class="tags">
-                                        <li><a href="#" class="tag">${roundName}</a></li>
-                                    </ul>
-                                    <div class="button_question_type">
-                                        <button class="btn btn-secondary" data-level="${level}" data-activity-type="${type}" data-course-id="${courseId}" data-category-id="${sectionId}" data-parent-id="${parentId}" data-question-name="${testName}" data-question-type=${lowerCaseRoundName} data-question-id=${idBaikiemtra}>Select</button>
-                                    </div>
-                                </div>
-                            `;
+                    //     // Lặp qua listBaikiemtra để hiển thị từng bài kiểm tra của round
+                    //     round.listBaikiemtra.forEach(function(testItem) {
+                    //         const testName = testItem.name;
+                    //         const idBaikiemtra = testItem.idBaikiemtra;
+                    //         const lowerCaseRoundName = roundName.toLowerCase();
+                    //         // Tạo phần HTML cho từng bài kiểm tra trong round
+                    //         const testHtml = `
+                    //             <div class="popup_content_box shadow">
+                    //                 <div class="text_question_type mb-2">
+                    //                     ${i + 1}. ${testName}
+                    //                 </div>
+                    //                 <ul class="tags">
+                    //                     <li><a href="#" class="tag">${roundName}</a></li>
+                    //                 </ul>
+                    //                 <div class="button_question_type">
+                    //                     <button class="btn btn-secondary" data-level="${level}" data-activity-type="${type}" data-course-id="${courseId}" data-category-id="${sectionId}" data-parent-id="${parentId}" data-question-name="${testName}" data-question-type=${lowerCaseRoundName} data-question-id=${idBaikiemtra}>Select</button>
+                    //                 </div>
+                    //             </div>
+                    //         `;
                 
-                            // Append HTML của từng bài kiểm tra vào popup content
-                            parentElement.append(testHtml);
-                            i++; // Tăng chỉ số i để hiển thị đúng thứ tự
-                        });
-                    });
+                    //         // Append HTML của từng bài kiểm tra vào popup content
+                    //         parentElement.append(testHtml);
+                    //         i++; // Tăng chỉ số i để hiển thị đúng thứ tự
+                    //     });
+                    // });
                 }
                 // Hiển thị popup
                 $('#popup_question_type').modal('show');

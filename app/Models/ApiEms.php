@@ -25,7 +25,7 @@ class ApiEms extends Model implements Transformable
      * @var array
      */
     protected $fillable = [
-        'ems_id', 'ems_name', 'ems_type_id'
+        'ems_id', 'ems_name', 'ems_type_id', 'rubric_template_id', 'skill'
     ];
 
     /**

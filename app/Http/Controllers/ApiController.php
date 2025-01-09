@@ -7,9 +7,17 @@ use \OpenAI;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\ApiUserQuestion;
+use App\Models\ApiMoodle;
+use App\Models\ApiMoodleEms;
+use App\Models\EmsType;
+use App\Models\ApiEms;
+use App\Models\ApiEs;
+
 use App\Models\ApiUserQuestionPart;
+use App\Models\Course;
 use App\Models\CommonHocmai;
 use App\Models\CommonHocmaiTask2;
+use App\Models\CommonEms;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\DemoJob;
 use App\Jobs\Task1Job;
@@ -245,14 +253,57 @@ class ApiController extends Controller
     public function hocmaiTask2VocabularyGramma(Request $request)
     {
         // dd(222);
-        // $test = ApiUserQuestionPart::whereIn('user_question_id', [61,63])
-        //     ->whereIn('part_number', [1])
-        //     ->select('part_number', 'openai_response', 'user_question_id')
-        // // ->where('user_question_id', 57)
-        // ->orderBy('id', 'desc')
+        $test = ApiUserQuestionPart::whereIn('user_question_id', [65])
+            ->whereIn('part_number', [1])
+            ->select('part_number', 'openai_response', 'user_question_id')
+        // ->where('user_question_id', 57)
+        ->orderBy('id', 'desc')
         // // ->where('writing_task_number', 2)
-        // ->get();
-        // dd($test->toArray());
+        ->first();
+        //todo
+        // ApiEms::truncate();
+        // EmsType::truncate();
+        // ['type_id' => rand(1, 10), 'type_name' => 'Ems Type 1'],
+        // foreach([1,2,3,4] as $value)
+        // {
+        //     EmsType::create([
+        //         'type_id' => $value, 'type_name' => 'Ems Type ' . $value
+        //     ]);
+        // }
+        // dd($apiEms->toArray());
+        // foreach(ApiEs::all() as $value)
+        // {
+        //     ApiEms::create([
+        //         'ems_id' => $value->es_id,
+        //         'ems_name' => $value->es_name,
+        //         'ems_type_id' =>  rand(1,4),
+        //     ]);
+        // }
+        // $testCourse = EmsType::all();
+
+        dd(Course::all()->toArray());
+
+        $testApiMoodle= ApiMoodle::where('moodle_type', 'course')->get();
+        // dd($testApiMoodle->toArray());
+        // foreach([40,41,42,43,44,45,46,47,48] as $value)
+        // {
+        //     ApiMoodle::destroy($value);
+        // }
+        // dd(ApiMoodle::where('moodle_type', 'course')->get()->toArray());
+        // $testApiMoodle= ApiMoodle::all();
+        // foreach($testApiMoodle as $value)
+        // {
+        //     $value->update(['moodle_type' => 1]);
+        // }
+        dd($testCourse->toArray(), $testApiMoodle->toArray());
+        $data = [
+            'question_id' => 65,
+            'part_number' => 1,
+            'part_info' => 1,
+            'data' => $test->openai_response
+        ];
+        $data_string = json_encode($data, true);
+        dd($test->toArray(), $data_string);
         // // dd(json_decode($test->toArray()[0]['openai_response']));
         $jsonData = $this->getDataFromRequest($request);
         // // $chat = CommonHocmai::hocmaiVocabularyGramma($jsonData);
@@ -442,5 +493,6 @@ class ApiController extends Controller
             'data' => []
         ], 200);
     }
+
 
 }

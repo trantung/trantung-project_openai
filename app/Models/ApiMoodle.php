@@ -27,7 +27,8 @@ class ApiMoodle extends Model
         'quiz_allquestions', // Nộp bài sau khi hoàn thành (Tất cả câu hỏi)
         'quiz_requiredquestions', // Nộp bài sau khi hoàn thành (Yêu cầu số lượng câu hỏi để hoàn thành)
         'quiz_requiredquestionsPass',// Số lượng câu hỏi cần hoàn thành
-        'quiz_settings_type' // Loại học liệu
+        'quiz_settings_type', // Loại học liệu
+        'rubric_template_id'
     ];
 
     public function classes()

@@ -24,7 +24,7 @@ class ApiEmsService extends BaseService
      * @return LengthAwarePaginator
      *
      */
-    public function search(array $params): LengthAwarePaginator
+    public function search($params)
     {
         return $this->apiEmsRepository->search($params);
     }
@@ -36,7 +36,7 @@ class ApiEmsService extends BaseService
      * 
      * @return void
      */
-    public function updateRubricTemplateIdInApiEms(array $data): void
+    public function updateRubricTemplateIdInApiEms($data)
     {
         if(empty($data['api_ems_ids']))
         {
@@ -52,5 +52,10 @@ class ApiEmsService extends BaseService
             $this->apiEmsRepository->updateMultiple($apiEmsIds, $dataUpdate);
             $this->apiEmsRepository->updateRubricTemplateToNullInApiEms($apiEmsIds, $data['rubric_template_id']);
         });
+    }
+
+    public function createOrUpdateEmsExam($data)
+    {
+        $this->apiEmsRepository->createOrUpdateExam($data);
     }
 }

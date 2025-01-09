@@ -57,8 +57,13 @@ class RubricTemplateController extends BaseController
      * @return View
      *
      */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
+        $routeName = 'rubric_templates.index';
+        $checkPermissionUser = checkPermissionUser($routeName);
+        if(!$checkPermissionUser){
+            return redirect()->route('dashboard');
+        }
         $params = $request->all();
         $rubricTemplates = $this->rubricTemplateService->search($params);
         return view('rubric-templates.index', [
@@ -74,8 +79,13 @@ class RubricTemplateController extends BaseController
      * @return View
      *
      */
-    public function create(): View
+    public function create()
     {
+        $routeName = 'rubric_templates.create';
+        $checkPermissionUser = checkPermissionUser($routeName);
+        if(!$checkPermissionUser){
+            return redirect()->route('dashboard');
+        }
         return view('rubric-templates.create', [
             'breadcrumbs' => $this->breadcrumbs
         ]);
@@ -88,7 +98,7 @@ class RubricTemplateController extends BaseController
      * @return RedirectResponse
      *
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         try {
             $rubricTemplates = $this->rubricTemplateService->save($request->all());
@@ -108,7 +118,7 @@ class RubricTemplateController extends BaseController
      * @return View
      *
      */
-    public function edit(int $id): View
+    public function edit(int $id)
     {
         $rubricTemplate = $this->rubricTemplateService->findById($id);
         return view('rubric-templates.edit', [
@@ -127,7 +137,7 @@ class RubricTemplateController extends BaseController
      * @return RedirectResponse
      *
      */
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id)
     {
         try {
             $rubricTemplates = $this->rubricTemplateService->update($request->all(), $id);
@@ -146,7 +156,7 @@ class RubricTemplateController extends BaseController
      * @return RedirectResponse
      *
      */
-    public function destroy(int $id): RedirectResponse
+    public function destroy(int $id)
     {
         $id = $this->rubricTemplateService->destroy($id);
         return redirect()->route('rubric_templates.index')->with('success', 'Xóa thành công!');
@@ -159,12 +169,15 @@ class RubricTemplateController extends BaseController
      *
      * @return JsonResponse
      */
-    public function getDataInPopupRubricTemplate(Request $request): JsonResponse
+    public function getDataInPopupRubricTemplate(Request $request)
     {
         try {
             $rubricTemplateId = $request['rubric_template_id'] ?? 0;
             $emsTypes = $this->emsTypeService->getEmstypeByRubricTemplateId($rubricTemplateId);
             $apiMooles = $this->apiMoodleService->getApiMoodlesByRubricTemplateId($rubricTemplateId, CategoryValue::MOODLE_TYPE_COURSE);
+            
+            // dd($apiMooles);
+
             $html = view('rubric-templates.popup.table', [
                 'emsTypes' => $emsTypes,
                 'rubricTemplateId' => $rubricTemplateId,
@@ -184,7 +197,7 @@ class RubricTemplateController extends BaseController
      *
      * @return JsonResponse
      */
-    public function updateDataInPopupRubricTemplate(Request $request): JsonResponse
+    public function updateDataInPopupRubricTemplate(Request $request)
     {
         try {
             $this->apiEmsService->updateRubricTemplateIdInApiEms($request->all());

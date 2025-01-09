@@ -30,7 +30,7 @@ function checkPermissionUser($routeName)
 
     // Lấy danh sách permission_id liên kết với role_id
     $permissionIds = RolePermission::whereIn('role_id', $roleIds)->pluck('permission_id');
-
+    // dd($permissionIds, $routeName);
     if ($permissionIds->isEmpty()) {
         return false; // Không có quyền nào liên kết với vai trò
     }

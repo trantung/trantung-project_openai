@@ -20,8 +20,8 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
 
-            $table->foreign('rubric_template_id')->references('id')->on('rubric_templates')->onDelete('cascade');
-            $table->foreign('ems_type_id')->references('id')->on('ems_types')->onDelete('cascade');
+            // $table->foreign('rubric_template_id')->references('id')->on('rubric_templates')->onDelete('cascade');
+            // $table->foreign('ems_type_id')->references('id')->on('ems_types')->onDelete('cascade');
         });
     }
 

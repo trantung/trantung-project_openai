@@ -332,7 +332,8 @@ button.btn-primary {
 }
 
 .theme-loginform .theme-loginform-form>a {
-    display: block !important;
+    display: flex !important;
+    align-items: center;
     font-size: .85rem;
     color: #a3aaae !important;
     margin-bottom: 10px;
