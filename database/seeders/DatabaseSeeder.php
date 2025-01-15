@@ -20,23 +20,23 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        // User::create([
-            // 'name' => 'admin',
-            // 'email' => 'admin1@admin.com',
-            // 'password' =>  Hash::make(123456),
-        // ]);
-        RubricTemplate::truncate();
-        // EmsType::truncate();
-        ApiEms::truncate();
-        RubricScore::truncate();
-
-        $this->call([
-            RubricTemplatesSeeder::class,
-            EmsTypeSeeder::class,
-            ApiEmsSeeder::class,
-            // ApiMoodleSeeder::class,
-            RubricScoreSeeder::class,
-            CoursesSeeder::class
+        User::create([
+            'name' => 'admin',
+            'email' => 'admin1@admin.com',
+            'password' =>  Hash::make(123456),
         ]);
+        // RubricTemplate::truncate();
+        // EmsType::truncate();
+        // ApiEms::truncate();
+        // RubricScore::truncate();
+
+        // $this->call([
+        //     RubricTemplatesSeeder::class,
+        //     EmsTypeSeeder::class,
+        //     ApiEmsSeeder::class,
+        //     // ApiMoodleSeeder::class,
+        //     RubricScoreSeeder::class,
+        //     CoursesSeeder::class
+        // ]);
     }
 }
