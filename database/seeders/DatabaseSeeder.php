@@ -25,10 +25,10 @@ class DatabaseSeeder extends Seeder
             // 'email' => 'admin1@admin.com',
             // 'password' =>  Hash::make(123456),
         // ]);
-        RubricTemplate::truncate();
+        // RubricTemplate::truncate();
         // EmsType::truncate();
-        ApiEms::truncate();
-        RubricScore::truncate();
+        // ApiEms::truncate();
+        // RubricScore::truncate();
 
         $this->call([
             RubricTemplatesSeeder::class,
