@@ -48,13 +48,13 @@ class DatabaseSeeder extends Seeder
         // ApiEms::truncate();
         // RubricScore::truncate();
 
-        $this->call([
-            RubricTemplatesSeeder::class,
-            EmsTypeSeeder::class,
-            ApiEmsSeeder::class,
-            // ApiMoodleSeeder::class,
-            RubricScoreSeeder::class,
-            CoursesSeeder::class
-        ]);
+        // $this->call([
+        //     RubricTemplatesSeeder::class,
+        //     EmsTypeSeeder::class,
+        //     ApiEmsSeeder::class,
+        //     // ApiMoodleSeeder::class,
+        //     RubricScoreSeeder::class,
+        //     CoursesSeeder::class
+        // ]);
     }
 }
