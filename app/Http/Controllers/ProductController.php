@@ -9,6 +9,8 @@ use App\Models\ApiMoodle;
 use App\Models\ApiMoodleEms;
 use App\Models\MoodleActivityFile;
 use App\Models\User;
+use App\Models\Course;
+use App\Models\ClassCourse;
 use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
@@ -296,9 +298,10 @@ class ProductController extends Controller
         }
         
         $categoryCount = ApiMoodle::where('moodle_type', 'category')->count();
+        $categoryCode = 'category_'.time();
         // var_dump($categoryCount);die;
         $categoryName = 'Sản phẩm ' . ($categoryCount + 1);
-        $createCategoryLMS = Common::core_course_create_categories($categoryName, $parentCategoryLMS);
+        $createCategoryLMS = Common::core_course_create_categories($categoryName, $parentCategoryLMS, $categoryCode);
         
         if (isset($createCategoryLMS[0]['id']) && isset($createCategoryLMS[0]['name'])) {
             $categoryId = $createCategoryLMS[0]['id'];
@@ -306,6 +309,7 @@ class ProductController extends Controller
 
             $newCategory = ApiMoodle::create([
                 'moodle_id' => $categoryId,
+                'code' => $categoryCode,
                 'moodle_name' => $categoryName,
                 'moodle_type' => 'category',
                 'parent_id' => $parent_id,
@@ -387,15 +391,18 @@ class ProductController extends Controller
         }
         
         $courseCount = ApiMoodle::where('moodle_type', 'course')->count();
+
+        $courseCode = 'course_'.time();
         // var_dump($courseCount);die;
         $courseName = 'Khóa học ' . ($courseCount + 1);
-        $createCourseLMS = Common::core_course_create_courses($courseName, $categoryLMS, 1);
+        $createCourseLMS = Common::core_course_create_courses($courseName, $courseCode, $categoryLMS, 1);
         
         if (isset($createCourseLMS[0]['id'])) {
             $courseId = $createCourseLMS[0]['id'];
 
             $newCourse = ApiMoodle::create([
                 'moodle_id' => $courseId,
+                'code' => $courseCode,
                 'moodle_name' => $courseName,
                 'moodle_type' => 'course',
                 'parent_id' => $parent_id,
@@ -713,17 +720,14 @@ class ProductController extends Controller
         }
 
         if ($request->input('type') == 'url') {
-            // Trả về kết quả từ hàm `createActivityQuiz`
             return $this->createActivityUrl($request);
         }
 
         if ($request->input('type') == 'resource') {
-            // Trả về kết quả từ hàm `createActivityQuiz`
             return $this->createActivityResource($request);
         }
 
         if ($request->input('type') == 'assign') {
-            // Trả về kết quả từ hàm `createActivityQuiz`
             return $this->createActivityAssign($request);
         }
 
@@ -996,6 +1000,8 @@ class ProductController extends Controller
 
         $str_availability_cmid = '';
 
+        $examContestsData = [];
+
         $currentDataActivityMoodle = Common::core_course_get_course_module($dataMain->moodle_id);
 
         if(!empty($currentDataActivityMoodle['cm']['availability'])){
@@ -1109,6 +1115,12 @@ class ProductController extends Controller
                 $moduleContent['cm']['reviewspecificfeedback'] = $detailData['reviewspecificfeedback'];
                 $moduleContent['cm']['reviewgeneralfeedback'] = $detailData['reviewgeneralfeedback'];
                 $moduleContent['cm']['reviewoverallfeedback'] = $detailData['reviewoverallfeedback'];
+
+                $contestsData = self::listContestIelts();
+
+                $decodedData = $contestsData->getData(); // Truy cập nội dung đã giải mã
+
+                $examContestsData[] = $decodedData;
             }
 
             if($request->input('activity_type') == 'resource'){
@@ -1169,6 +1181,7 @@ class ProductController extends Controller
             'main' => $dataMain,
             'data' => $moduleContent,
             'sectionData' => $sectionData,
+            'examContestsData' => $examContestsData,
             'selectedParentId' => $selectedParentId,
             'str_availability_cmid' => $str_availability_cmid
         ];
@@ -1243,11 +1256,12 @@ class ProductController extends Controller
             // Tạo mới Quiz trong Moodle
             $newQuiz = ApiMoodle::create([
                 'moodle_id' => $quizId,
-                'moodle_name' => $questionName,
+                'moodle_name' => $quizName,
                 'moodle_type' => 'quiz',
                 'parent_id' => $parent_id,
                 'creator' => $request->input('currentUser'),
-                'level' => $level
+                'level' => $level,
+                'quiz_settings_type' => $questionType
             ]);
         
             if (!$newQuiz) {
@@ -1255,21 +1269,24 @@ class ProductController extends Controller
             }
         
             // Tạo mới Quiz trong ElasticSearch
+            $checkEmsExamExits = ApiEms::where('ems_id', $questionId)->first();
             // 'ems_id', 'ems_name', 'ems_type_id', 'rubric_template_id'
-            $newQuizEs = ApiEms::create([
-                'ems_id' => $questionId,
-                'ems_name' => $questionName,
-                'ems_type_id' => $questionType
-            ]);
+            if(!$checkEmsExamExits){
+                $checkEmsExamExits = ApiEms::create([
+                    'ems_id' => $questionId,
+                    'ems_name' => $questionName,
+                    'ems_type_id' => $questionType
+                ]);
+            }
         
-            if (!$newQuizEs) {
+            if (!$checkEmsExamExits) {
                 return response()->json(['error' => 'Failed to create quiz in Es']);
             }
         
             // Tạo mối quan hệ giữa Moodle Quiz và ElasticSearch Quiz
             $newMoodleEms = ApiMoodleEms::create([
                 'api_moodle_id' => $newQuiz->id,
-                'api_system_id' => $newQuizEs->id,
+                'api_system_id' => $checkEmsExamExits->id,
                 'api_system_name' => 'EMS'
             ]);
         
@@ -1280,7 +1297,7 @@ class ProductController extends Controller
             // Nếu tất cả các bước trên thành công, trả về dữ liệu Quiz vừa tạo
             return response()->json([
                 'quiz' => $newQuiz,
-                'quiz_es' => $newQuizEs,
+                'quiz_es' => $checkEmsExamExits,
                 'moodle_ems' => $newMoodleEms
             ]);
         } else {
@@ -1702,7 +1719,99 @@ class ProductController extends Controller
             ]
         ];
 
-        return response()->json($products);
+        // Danh sách các dạng đề thi(contest_type)
+        $contests = [
+            [
+                "name" => "Introduction Mock Tests 1&2 exam", //tên đề
+                "contest_type" => 19,	// dạng đề(có note danh sách các dạng đề ở dưới)
+                "idMockContest" => 548,// id đề
+                "rounds" => [ // các phần thi
+                    [
+                        "type" => 6,
+                        "name" => "Listening",// tên phần thi
+                        "listBaikiemtra" => [
+                            [
+                                "name" => "IELTS LISTENING 01",
+                                "timeAllow" => 300,//thời gian làm của phần thi, =0 là không giới hạn
+                                "testFormat" => 13,// dạng phần thi(có note danh sách các dạng phần thi ở dưới)
+                                "idBaikiemtra" => 10666// id phần thi
+                            ]
+                        ],
+                        "subMockContestHsa" => null,
+                        "subjectHsa" => null
+                    ],
+                    [
+                        "type" => 7,
+                        "name" => "Reading",
+                        "listBaikiemtra" => [
+                            [
+                                "name" => "IELTS READING 01",
+                                "timeAllow" => 3600,
+                                "testFormat" => 14,
+                                "idBaikiemtra" => 10667
+                            ]
+                        ],
+                        "subMockContestHsa" => null,
+                        "subjectHsa" => null
+                    ],
+                    [
+                        "type" => 8,
+                        "name" => "Writing",
+                        "listBaikiemtra" => [
+                            [
+                                "name" => "IELTS WRITING 01 ",
+                                "timeAllow" => 3600,
+                                "testFormat" => 15,
+                                "idBaikiemtra" => 10668
+                            ]
+                        ],
+                        "subMockContestHsa" => null,
+                        "subjectHsa" => null
+                    ],
+                    [
+                        "type" => 9,
+                        "name" => "Speaking",
+                        "listBaikiemtra" => [
+                            [
+                                "name" => "IELTS SPEAKING 01 ",
+                                "timeAllow" => 1800,
+                                "testFormat" => 16,
+                                "idBaikiemtra" => 10669
+                            ]
+                        ],
+                        "subMockContestHsa" => null,
+                        "subjectHsa" => null
+                    ]
+                ]
+            ],
+            [
+                "name" => "Introduction Mock Test 3, Final Test; Foundation Mock Tests 1&2 exam",
+                "contest_type" => 21,
+                "idMockContest" => 556,
+                "rounds" => []
+            ],
+            [
+                "name" => "Foundation Mock Test 3, Final Test exam",
+                "contest_type" => 23,
+                "idMockContest" => 556,
+                "rounds" => []
+            ],
+            [
+                "name" => "Preparation Mock Tests 1 và 2 exam",
+                "contest_type" => 25,
+                "idMockContest" => 556,
+                "rounds" => []
+            ],
+            [
+                "name" => "IELTS test exam",
+                "contest_type" => 27,
+                "idMockContest" => 556,
+                "rounds" => []
+            ]
+        ];
+
+        return response()->json($contests);
+        // return response()->json($products);
     }
 
     public function detailAvailabilityMoodles(Request $request)
@@ -1866,8 +1975,37 @@ class ProductController extends Controller
         return response()->json(['error' => 'Failed to delete module on Moodle'], 500);
     }
 
-    public function listCourseHocmai(){
+    public function listCourseHocmai(Request $request){
         $listCourse = ApiMoodle::where('moodle_type', 'course')->pluck('moodle_name', 'id')->toArray();
+
+        $courseClasses = [];
+        if (isset($request->action)) {
+            foreach ($listCourse as $id => $moodle_name) {
+                $course = ApiMoodle::with('classes')->find($id);
+    
+                // Lấy danh sách lớp liên quan
+                $classes = $course->classes()->get();
+    
+                // Chuyển đổi trạng thái từ số sang text
+                $classList = $classes->map(function ($class) {
+                    return [
+                        'id' => $class->id,
+                        'name' => $class->name,
+                        'code' => $class->code,
+                        'status' => $class->status == 0 ? 'Đang vận hành' : 'Đã kết thúc khóa học', // Ánh xạ trạng thái
+                    ];
+                });
+    
+                // Thêm dữ liệu vào mảng $courseClasses
+                $courseClasses[] = [
+                    'course_id' => $id,
+                    'course_name' => $moodle_name,
+                    'course_code' => $course->code,
+                    'classes' => $classList,
+                ];
+            }
+            return $this->responseSuccess(200, $courseClasses);
+        }
 
         return $this->responseSuccess(200, $listCourse);
     }

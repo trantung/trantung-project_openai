@@ -742,4 +742,135 @@ class ClassController extends Controller
 
         return response()->json(['status' => true, 'message' => 'Rút giáo viên khỏi lớp thành công']);
     }
+
+    public function import(Request $request)
+    {
+        // Kiểm tra xem file đã được tải lên chưa
+        if (!$request->hasFile('file')) {
+            return back()->with('error', 'File is required.');
+        }
+
+        // Lấy file từ request
+        $file = $request->file('file');
+
+        // Kiểm tra định dạng file
+        if ($file->getClientOriginalExtension() !== 'csv') {
+            return back()->with('error', 'Invalid file format. Only CSV files are allowed.');
+        }
+
+        // Đọc nội dung file CSV
+        $filePath = $file->getRealPath();
+        $data = array_map('str_getcsv', file($filePath));
+
+        // Kiểm tra nếu file không có dữ liệu
+        if (empty($data) || count($data) === 1) {
+            return back()->with('error', 'The file is empty or invalid.');
+        }
+
+        // Lấy tiêu đề (header)
+        $header = $data[0];
+        unset($data[0]);
+
+        // Mảng để lưu các khóa học không tồn tại
+        $nonExistentCourses = [];
+        $processedClasses = [];
+        $nonExistentTeachers = [];
+
+        foreach ($data as $row) {
+            $course_code = $row[0];
+            $course_name = $row[1];
+            $class_code = $row[2];
+            $class_name = $row[3];
+            $class_year = $row[4];
+            $teacher_email = $row[5];
+
+            // Kiểm tra khóa học theo course_code
+            $course_codes = explode(',', $course_code);
+            $courseIds = [];
+
+            if(!empty($course_codes)){
+                $courseIds = ApiMoodle::whereIn('code', $course_codes)->where('moodle_type', 'course')->pluck('id')->toArray();;
+                if (empty($courseIds)) {
+                    $nonExistentCourses[] = $course_code;
+                    continue; // Bỏ qua dòng này và tiếp tục với các dòng khác
+                }
+            }
+            // Kiểm tra lớp đã tồn tại chưa dựa vào class code
+            $isExitsClass = Classes::where('code', $class_code)->first();
+
+            if (!$isExitsClass) {
+                $data = [
+                    'class_code' => $class_code,
+                    'class_name' => $class_name,
+                    'year' => $class_year,
+                    'status' => 0,
+                ];
+
+                // Tạo lớp học mới và xử lý trả về
+                $newClass = $this->common->createClass($data, $courseIds);
+            }else{
+                $data = [
+                    'class_name' => $class_name,
+                    'year' => $class_year,
+                    'status' => 0,
+                ];
+
+                // Gọi phương thức cập nhật trong CommonService
+                $result = $this->common->updateClass($isExitsClass->id, $data, $courseIds);
+            }
+
+            $teacher_emails = explode('; ', $teacher_email);
+
+            if(!empty($teacher_emails)){
+                foreach($teacher_emails as $email){
+                    $teacher = Teachers::where('email', trim($email))->first();
+                    if (!$teacher) {
+                        $nonExistentTeachers[] = $email;
+                        continue; // Bỏ qua dòng này và tiếp tục với các dòng khác
+                    }
+
+                    $teacherUserId = $teacher->user_id;
+                    $teacherName = $teacher->name;
+
+                    $nameParts = explode(' ', $teacherName);
+                    $firstName = $nameParts[0];
+                    $lastName = isset($nameParts[1]) ? implode(' ', array_slice($nameParts, 1)) : 'lastname';
+
+                    $teacherUsername = $teacher->username;
+                    $teacherEmail = $teacher->email;
+
+                    $courseIdsString = implode(',', $courseIds);
+
+                    $data = [
+                        'username' => $teacherUsername,
+                        'first_name' => $firstName ?? 'firstname',
+                        'last_name' => $lastName ?? 'lastname',
+                        'email' => $teacherEmail,
+                        'moodle_role_id' => $this->apiService->getMoodleRoleTeacher() ?? 3,
+                        'course_ids' => $courseIdsString,
+                        'class_id' => $isExitsClass->id,
+                    ];
+
+                    $createWithCourse = $this->apiService->createWithCourse($data);
+                }
+
+            }
+
+           
+        }
+
+        $errorMsg = '';
+        if (!empty($nonExistentCourses)) {
+            $errorMsg .= 'Các khóa học với mã sau không tồn tại: ' . implode(', ', $nonExistentCourses) . '. ';
+        }
+        if (!empty($nonExistentTeachers)) {
+            $errorMsg .= 'Các giáo viên với email sau không tồn tại: ' . implode(', ', $nonExistentTeachers) . '.';
+        }
+
+        if (!empty($errorMsg)) {
+            return redirect()->back()->with('error', $errorMsg);
+        }
+        return redirect()->back()->with('success', 'File imported successfully!');
+    }
+
 }

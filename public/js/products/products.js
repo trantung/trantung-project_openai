@@ -115,7 +115,7 @@ $(document).ready(function() {
                     <input type="hidden" class="slot-parent-category" name="parent_category[slot]" value="${item.id}">
                     <div class="level-${level} tree-item ${mainClass}" data-level=${level} data-type="${item.moodle_type}" data-category-id="${item.id}" style="width: calc(100% - 4%);">
                         <div class="left-item">
-                            <i class="fas fa-arrows-alt drag-handle"></i>
+                            <!-- <i class="fas fa-arrows-alt drag-handle"></i> -->
                             ${item.moodle_type !== 'course' ? `
                                 <i class="fa btn-expand-collapse fa-chevron-right btn-collapse" title="Mở rộng" data-category-id="${item.id}" aria-hidden="true"></i>
                             ` : ''}
@@ -636,7 +636,7 @@ $(document).ready(function() {
                         <input type="hidden" class="slot-parent-category" name="parent_category[slot]" value="${item.id}">
                         <div class="level-${level} tree-item view-${viewClass}-children view-course-children-${item.id}" data-level=${level} data-type="${item.moodle_type}" data-category-id="${item.id}" style="width: calc(100% - 4%);">
                             <div class="left-item">
-                                <i class="fas fa-arrows-alt drag-handle"></i>
+                                <!-- <i class="fas fa-arrows-alt drag-handle"></i> -->
                                 ${iconArrow}
                                 <i class="fa ${icon}" aria-hidden="true"></i>
                                 <div class="product-name-w100 product-name-${item.id}" data-category-id="${item.id}">${item.moodle_name}</div>

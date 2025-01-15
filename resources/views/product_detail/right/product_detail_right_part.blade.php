@@ -1,8 +1,8 @@
 <div class="right-part">
     <div style="text-align: right">
-        <a class="wrapper_settings" id="setting_quiz_list_question" href="javascript:void(0);" style="display: none;">
+        <!-- <a class="wrapper_settings" id="setting_quiz_list_question" href="javascript:void(0);" style="display: none;">
             <i class="fa fa-list-ul" title="Xem danh mục" aria-hidden="true"></i>
-        </a>
+        </a> -->
         <a class="wrapper_settings" id="setting_course_sections" href="javascript:void(0);">
             <i class="fa fa-cog" title="Cài đặt" aria-hidden="true" id="yui_3_17_2_1_1729820980771_44"></i>
         </a>
@@ -12,26 +12,7 @@
     </div>
     <div class="row-flex-center-side section-quiz-part">
         <div class="left-side-content mt-2">
-            <!-- <div class="normal-item " style="align-items: flex-start;">
-                <i class="mt-1 fa fa-list-ol" aria-hidden="true"></i>
-                <div>Pre class - Ex1</div>
-            </div>
-            <div class="normal-item " style="align-items: flex-start;">
-                <i class="mt-1 fa fa-list-ol" aria-hidden="true"></i>
-                <div>Pre class - Ex2</div>
-            </div>
-            <div class="normal-item  dimmed " style="align-items: flex-start;">
-                <i class="mt-1 fa fa-file" aria-hidden="true"></i>
-                <div>
-                    Lesson 1 - Key<br>
-                    Không hiện hữu trừ khi:<br>
-                    The activity <strong>Pre class - Ex1</strong> is marked complete<br>
-                    The activity <strong>Pre class - Ex2</strong> is marked complete<br>
-                    The activity <strong>Post class - Ex1</strong> is marked complete<br>
-                    The activity <strong>Post class - Ex2</strong> is marked complete<br>
-                    The activity <strong>Post class - Ex3</strong> is marked complete<br>
-                </div>
-            </div> -->
+
         </div>
         <div class="right-side-content mt-2 hide">
             @include('product_detail.right.form_folder')
@@ -65,7 +46,7 @@
         <input type="hidden" id="popup_hidden_ishvp" name="popup_hidden_ishvp" value="">
         <input type="hidden" id="popup_hidden_cmid" name="popup_hidden_cmid" value="">
         <input type="hidden" id="popup_hidden_quiz_id" name="popup_hidden_quiz_id" value="">
-        <input type="hidden" id="popup_hidden_pathQuiz_quiz_id" name="popup_hidden_pathQuiz_quiz_id" value="https://english.ican.vn/classroom/local/omo_management/quiz/">
+        <!-- <input type="hidden" id="popup_hidden_pathQuiz_quiz_id" name="popup_hidden_pathQuiz_quiz_id" value="https://english.ican.vn/classroom/local/omo_management/quiz/"> -->
         <input type="hidden" id="page_type" value="product">
         <input type="hidden" id="h_quiz_section_add" value="">
 

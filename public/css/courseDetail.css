@@ -136,7 +136,7 @@ span.hide, div.hide, .hidden {
     cursor: pointer;
 }
 
-.tree-item.active {
+.tree-item.active, .exam-contests-item.active .normal-item {
     background-color: #cccccc;
     cursor: pointer;
 }
@@ -792,4 +792,73 @@ select option {
 }
 .tree-item.active.disabled {
     color: #000;
+}
+
+.exam-item {
+    cursor: pointer;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    background-color: #fff;
+    transition: background-color 0.3s;
+}
+
+.exam-item.active {
+    background-color: #f8f9fa;
+}
+
+.exam-details {
+    display: none;
+    padding: 15px;
+    border-left: 3px solid #0d6efd;
+    margin: 10px 0 10px 20px;
+}
+
+.chevron::before {
+    content: '›';
+    display: inline-block;
+    margin-right: 10px;
+    transition: transform 0.3s;
+}
+
+.active .chevron::before {
+    transform: rotate(90deg);
+}
+
+.exam-header {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 30px;
+}
+
+.info-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: white;
+}
+
+.instruction-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.instruction-list li {
+    margin-bottom: 10px;
+    padding-left: 25px;
+    position: relative;
+}
+
+.instruction-list li:before {
+    content: "•";
+    position: absolute;
+    left: 10px;
+    color: #0d6efd;
+}
+
+.timer-section {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #dc3545;
 }

@@ -54,8 +54,8 @@ class ApiEmsService extends BaseService
         });
     }
 
-    public function createOrUpdateEmsExam($data)
+    public function createOrUpdateEmsExamPaper($data)
     {
-        $this->apiEmsRepository->createOrUpdateExam($data);
+        $this->apiEmsRepository->createOrUpdateExamPaper($data);
     }
 }

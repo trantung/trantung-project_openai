@@ -73,8 +73,9 @@
                                     Tổng số lớp: {{ count($classesAll) }}
                                 </div>
                             </div>
-                            <div class="col-6 text-right">
-                                <a href="{{ route('class.add') }}" class="btn btn-primary mb-2">+ Lớp</a>
+                            <div class="col-6 text-right mb-2">
+                                <a href="javascript:void(0);" data-toggle="modal" data-target="#importDataClassModal" class="btn btn-primary ml-2">+ Import</a>
+                                <a href="{{ route('class.add') }}" class="btn btn-primary">+ Lớp</a>
                             </div>
                         </div>
                         <div class="wrapper-table-scroll">
@@ -188,6 +189,64 @@
     </div>
 </div>
 
+
+<div class="modal" id="importDataClassModal" tabindex="-1" aria-labelledby="importDataClassModalLabel" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importDataClassModalLabel">Import File</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="fileUpload">Chọn file CSV để import</label>
+                    <form action="{{ route('class.import') }}" id="formUploadFileData" method="post" enctype="multipart/form-data">
+                        @csrf
+                        <input type="file" class="form-control-file" name="file" id="fileUpload" accept=".csv">
+                    </form>
+                    <small class="form-text text-muted">Chỉ chấp nhận file .csv</small>
+                </div>
+                <div class="mt-3">
+                    <h6>Hướng dẫn:</h6>
+                    <ul class="small text-muted">
+                        <li>File CSV phải có các cột: Tên, Email, Số điện thoại</li>
+                        <li>Dữ liệu phải được phân tách bằng dấu phẩy (,)</li>
+                        <li>Kích thước file tối đa: 5MB</li>
+                    </ul>
+                </div>
+                <div id="preview" class="mt-3" style="display:none;">
+                    <h6>Preview dữ liệu:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>Class Code</th>
+                                    <th>Class Name</th>
+                                    <th>Class Year</th>
+                                    <th>Teacher Email</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewData">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert alert-info mt-2">
+                        <span id="totalRows">0</span> dòng dữ liệu được tìm thấy
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: center">
+                <button type="button" class="btn btn-primary btn-upload-file-class mr-2" data-teacher-id="">Xác nhận</button>
+                <button type="button" class="btn btn-secondary ml-2" data-dismiss="modal">Hủy bỏ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="{{ URL::asset('js/classes/classes.js') }}"></script>
 <script>
     function showModalDeleteClass(button) {
@@ -200,5 +259,96 @@
 
         $('.deleteClassModal').modal('show');
     }
+
+    $(document).ready(function() {
+        let csvData = [];
+
+        // Xử lý khi chọn file
+        $('#fileUpload').change(function(e) {
+            const file = e.target.files[0];
+            
+            // Kiểm tra định dạng file
+            if (file.type !== 'text/csv') {
+                alert('Vui lòng chọn file CSV');
+                this.value = '';
+                return;
+            }
+
+            // Kiểm tra kích thước file
+            if (file.size > 5 * 1024 * 1024) { // 5MB
+                alert('File không được vượt quá 5MB');
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                // Đọc dữ liệu từ file
+                const csv = event.target.result;
+                const lines = csv.split('\n');
+                
+                // Reset dữ liệu cũ
+                csvData = [];
+                $('#previewData').empty();
+                
+                // Bỏ qua dòng header và xử lý từng dòng
+                for(let i = 1; i < lines.length; i++) {
+                    if(lines[i].trim() === '') continue;
+                    
+                    const columns = lines[i].split(',');
+                    if(columns.length >= 3) {
+                        const row = {
+                            course_code: columns[0].trim(),
+                            course_name: columns[1].trim(),
+                            class_code: columns[2].trim(),
+                            class_name: columns[3].trim(),
+                            class_year: columns[4].trim(),
+                            teachers: columns[5]
+                        };
+                        
+                        csvData.push(row);
+                        
+                        // Thêm dòng vào bảng preview
+                        if(i <= 5) { // Chỉ hiện 5 dòng đầu
+                            $('#previewData').append(`
+                                <tr>
+                                    <td>${row.course_code}</td>
+                                    <td>${row.course_name}</td>
+                                    <td>${row.class_code}</td>
+                                    <td>${row.class_name}</td>
+                                    <td>${row.class_year}</td>
+                                    <td>${row.teachers}</td>
+                                </tr>
+                            `);
+                        }
+                    }
+                }
+                
+                // Cập nhật tổng số dòng và hiển thị preview
+                $('#totalRows').text(csvData.length);
+                $('#preview').show();
+            };
+            
+            reader.readAsText(file);
+        });
+
+        // Xử lý khi click nút Xác nhận
+        $('.btn-upload-file-class').click(function() {
+            if(csvData.length === 0) {
+                alert('Vui lòng chọn file CSV trước khi xác nhận');
+                return;
+            }
+
+            $('#formUploadFileData').submit();
+        });
+
+        // Reset form khi đóng modal
+        $('#importDataClassModal').on('hidden.bs.modal', function() {
+            $('#fileUpload').val('');
+            $('#preview').hide();
+            $('#previewData').empty();
+            csvData = [];
+        });
+    });
 </script>
 @endsection

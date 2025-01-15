@@ -12,7 +12,7 @@ class Classes extends Model
     public $paginate = 10;
     protected $table = 'classes';
 
-    protected $fillable = ['name', 'year', 'status'];
+    protected $fillable = ['name', 'code', 'year', 'status'];
 
     public function courses()
     {

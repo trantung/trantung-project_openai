@@ -92,7 +92,9 @@ Route::post("openai/hocmai/task2/getlog", [App\Http\Controllers\ApiController::c
 // Route::post("test/upload/pdf", [App\Http\Controllers\ApiController::class,'uploadPDFLms']);
 //EMS
 Route::post('fe/student/get-info-user-by-token', [ICANIDController::class, 'getInfoUserByToken'])->name('getInfoUserByToken');
+//danh sach de thi
 Route::get("ems/exam/list", [ApiEmsController::class,'examList']);
+Route::get("ems/exam/list/detail", [ApiEmsController::class,'examListDetail']);
 //Sale
 Route::post('student/create-with-course', [ICANIDController::class, 'createStudentWithCourse'])->name('createStudentWithCourse');
 Route::get("course/list", [App\Http\Controllers\ProductController::class,'listCourseHocmai']);

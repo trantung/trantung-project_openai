@@ -7,6 +7,13 @@ use Illuminate\Support\ServiceProvider;
 use App\Models\ApiMoodle;
 use App\Observers\ApiMoodleObserver;
 use Illuminate\Pagination\Paginator;
+use App\Models\UserRole;
+use App\Models\Roles;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Students;
+use App\Models\Teachers;
+use App\Models\CourseTeacher;
+use App\Models\CourseStudent;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,8 +33,28 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('layouts.navigation', function ($view) {
-            $courses = ApiMoodle::where('moodle_type', 'course')->get();
-            $menus = $this->getMenus($courses);
+            $user = Auth::user();
+            $roleIds = UserRole::where('user_id', $user->id)->pluck('role_id');
+
+            $roleNames = Roles::whereIn('id', $roleIds)->pluck('name')->toArray();
+
+            if (in_array('admin', $roleNames)) {
+                $courses = ApiMoodle::where('moodle_type', 'course')->get();
+                $menus = $this->getMenus($courses);
+            }else{
+                $isTeacher = Teachers::where('user_id', $user->id)->first();
+
+                if($isTeacher){
+                    $courseIds = CourseTeacher::byTeacherId($isTeacher->id)->pluck('course_id');
+                    $courses = ApiMoodle::whereIn('id', $courseIds)->where('moodle_type', 'course')->get();
+                    $menus = $this->getMenus($courses);
+                }
+            }
+            // CourseTeacher::byTeacherId($teacherId)
+            //         ->byClassId($classId)
+            //         ->byCourseId($courseId)
+            //         ->first();
+            
             // $view->with('courses', $courses);
             $view->with(compact('menus', 'courses'));
         });
@@ -49,7 +76,8 @@ class AppServiceProvider extends ServiceProvider
                 'items' => $courses->map(function ($course) {
                     return [
                         'name' => $course->moodle_name,
-                        'url' => env('URL_LMS') . '/course/view.php?id=' . $course->moodle_id,
+                        // 'url' => env('URL_LMS') . '/course/view.php?id=' . $course->moodle_id,
+                        'url' => '/product/detail/' . $course->id,
                     ];
                 })->toArray(),
             ],
@@ -71,7 +99,7 @@ class AppServiceProvider extends ServiceProvider
                 'title' => 'Hệ thống',
                 'items' => [
                     ['name' => 'Danh sách vai trò', 'route' => 'role.index'],
-                    ['name' => 'Rubric template', 'route' => 'rubric_templates.index'],
+                    // ['name' => 'Rubric template', 'route' => 'rubric_templates.index'],
                 ],
             ],
             [

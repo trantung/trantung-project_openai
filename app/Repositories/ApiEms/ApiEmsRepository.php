@@ -3,7 +3,6 @@
 namespace App\Repositories\ApiEms;
 
 use App\Models\ApiEms;
-use App\Models\ApiEms;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Repositories\ApiEms\ApiEmsRepositoryInterface;
@@ -95,22 +94,28 @@ class ApiEmsRepository extends BaseRepository implements ApiEmsRepositoryInterfa
         $query->update(['rubric_template_id' => null]);
     }
 
-    public function createOrUpdateExam($data)
+    public function createOrUpdateExamPaper($data)
     {
+        dd($data);
         //create apiems
         // 'ems_id', 'ems_name', 'ems_type_id', 'rubric_template_id', 'skill'
         $ems_id = $data['idMockContest'];
         $dataEms = $this->model->find($ems_id);
         if(!$dataEms) {
-            return $this->createExam($data);
+            //tao moi de thi
+            return $this->createExamPaper($data);
         }
-        return $this->updateExam($data, $dataEms);
+        //update de thi
+        return $this->updateExamPaper($data, $dataEms);
     }
 
-    public function createExam($data)
+    public function createExamPaper($data)
     {
+        //tao moi api_ems
         $apiEmsId = $this->createEms($data);
+        //tao moi api_ems_type
         $this->createEmsType($data);
+        //tao moi api_ems_tags
         $this->createEmsTag($data);
     }
 
@@ -134,7 +139,7 @@ class ApiEmsRepository extends BaseRepository implements ApiEmsRepositoryInterfa
         ])->id;
     }
 
-    public function updateExam($data, $dataEms)
+    public function updateExamPaper($data, $dataEms)
     {
         
     }

@@ -8,35 +8,6 @@ use Illuminate\Support\Arr;
 
 class KeycloakService extends AbstractProvider implements ProviderInterface
 {
-    // protected function getAuthUrl($state)
-    // {
-    //     return $this->buildAuthUrlFromBase(
-    //         config('services.keycloak.base_url') . '/realms/' . config('services.keycloak.realm') . '/protocol/openid-connect/auth',
-    //         $state
-    //     );
-    // }
-
-    // protected function getTokenUrl()
-    // {
-    //     return config('services.keycloak.base_url') . '/realms/' . config('services.keycloak.realm') . '/protocol/openid-connect/token';
-        
-    // }
-
-    // protected function getUserByToken($token)
-    // {
-    //     $response = $this->getHttpClient()->get(
-    //         config('services.keycloak.base_url') . '/realms/' . config('services.keycloak.realm') . '/protocol/openid-connect/userinfo',
-    //         [
-    //             'headers' => [
-    //                 'Accept' => 'application/json',
-    //                 'Authorization' => 'Bearer ' . $token,
-    //             ],
-    //         ]
-    //     );
-
-    //     return json_decode($response->getBody(), true);
-    // }
-
     protected function getAuthUrl($state)
     {
         return $this->buildAuthUrlFromBase(

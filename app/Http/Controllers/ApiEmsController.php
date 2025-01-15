@@ -63,10 +63,111 @@ class ApiEmsController extends BaseController
         ]);
     }
     
+    //danh sach de thi 
     public function examList(Request $request)
     {
         $request = request()->all();
         $check = $this->connectEms($request);
+    }
+
+    public function examListDetail(Request $request)
+    {
+        $contestDetail = [
+            "status" => true,
+            "data" => [
+                "name" => "IELTS test exam",
+                "contest_type" => 27,
+                "maxNumAttempt" => 0,
+                "timeStart" => "2024-01-01T00:00:00.000Z",//thời gian bắt đầu thi
+                "timeEnd" => "2035-01-01T23:59:59.999Z",//thời gian kết thúc thi
+                "idMockContest" => 556,
+                "rounds" => [
+                    [
+                        "type" => 6,
+                        "name" => "Listening",
+                        "listBaikiemtra" => [
+                            [
+                                "name" => "IELTS LISTENING 01",
+                                "timeAllow" => 300,
+                                "maxMark" => 10,
+                                "testFormat" => 13,
+                                "maxNumAttempt" => 0,
+                                "timeStart" => "2023-07-01T04:08:00.000Z",//thời gian bắt đầu phần thi
+                                "timeEnd" => "2025-01-01T04:08:00.000Z",//thời gian kết thúc phần thi
+                                "timeSubmit" => null,
+                                "resultReturnType" => 3,
+                                "idBaikiemtra" => 10666
+                            ]
+                        ],
+                        "subMockContestHsa" => null,
+                        "subjectHsa" => null
+                    ],
+                    [
+                        "type" => 7,
+                        "name" => "Reading",
+                        "listBaikiemtra" => [
+                            [
+                                "name" => "IELTS READING 01",
+                                "timeAllow" => 3600,
+                                "maxMark" => 10,
+                                "testFormat" => 14,
+                                "maxNumAttempt" => 0,
+                                "timeStart" => "2023-07-01T04:10:00.000Z",
+                                "timeEnd" => "2025-01-01T04:10:00.000Z",
+                                "timeSubmit" => null,
+                                "resultReturnType" => 3,
+                                "idBaikiemtra" => 10667
+                            ]
+                        ],
+                        "subMockContestHsa" => null,
+                        "subjectHsa" => null
+                    ],
+                    [
+                        "type" => 8,
+                        "name" => "Writing",
+                        "listBaikiemtra" => [
+                            [
+                                "name" => "IELTS WRITING 01 ",
+                                "timeAllow" => 3600,
+                                "maxMark" => 10,
+                                "testFormat" => 15,
+                                "maxNumAttempt" => 0,
+                                "timeStart" => "2023-07-01T04:13:00.000Z",
+                                "timeEnd" => "2025-01-01T04:13:00.000Z",
+                                "timeSubmit" => null,
+                                "resultReturnType" => 3,
+                                "idBaikiemtra" => 10668
+                            ]
+                        ],
+                        "subMockContestHsa" => null,
+                        "subjectHsa" => null
+                    ],
+                    [
+                        "type" => 9,
+                        "name" => "Speaking",
+                        "listBaikiemtra" => [
+                            [
+                                "name" => "IELTS SPEAKING 01 ",
+                                "timeAllow" => 1800,
+                                "maxMark" => 16,
+                                "testFormat" => 16,
+                                "maxNumAttempt" => 0,
+                                "timeStart" => "2023-07-01T04:17:00.000Z",
+                                "timeEnd" => "2025-01-01T04:18:00.000Z",
+                                "timeSubmit" => null,
+                                "resultReturnType" => 3,
+                                "idBaikiemtra" => 10669
+                            ]
+                        ],
+                        "subMockContestHsa" => null,
+                        "subjectHsa" => null
+                    ]
+                ]
+            ]
+        ];
+        // dd($request->exam_contest_type, $request->exam_idMockContest);
+
+        return response()->json($contestDetail);
     }
 
     public function connectEms($request)
@@ -80,7 +181,7 @@ class ApiEmsController extends BaseController
         $data = $data['data'];
         foreach($data as $value)
         {
-            $this->apiEmsService->createOrUpdateEmsExam($value);
+            $this->apiEmsService->createOrUpdateEmsExamPaper($value);
         }
 
     }

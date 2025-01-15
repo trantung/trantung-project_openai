@@ -16,6 +16,7 @@ class ApiMoodle extends Model
 
     protected $fillable = [
         'moodle_id',
+        'code',
         'moodle_name',
         'moodle_type',
         'parent_id',

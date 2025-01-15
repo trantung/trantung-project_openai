@@ -48,7 +48,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    THÊM CÂU HỎI MỚI
+                    DANH SÁCH BỘ ĐỀ
                 </h5>
                 
                 <div>
@@ -58,18 +58,12 @@
                 </div>
             </div>
             <div class="modal-body">
-                <div class="popup_content">
-                    <div class="popup_content_box popup_content_box_1 shadow">
-                        <div class="text_question_type">
-                            1. Multiple choice
-                        </div>
-                        <div class="button_question_type">
-                                <button class="btn btn-secondary" data-link="https://english.ican.vn/classroom/local/omo_management/quiz/upsert_question_bank.php?course=206&amp;section=2&amp;is_course_detail=1&amp;edit-view=1&amp;qtype=multichoice">Moodle</button>
-                        </div>
-                    </div>
+                <div class="exam-list">
                     
-                    <input type="hidden" class="question-sub-quiz-id" value="53058">
                 </div>
+                <!-- <div class="popup_content">
+                    
+                </div> -->
             </div>
         </div>
     </div>
@@ -88,7 +82,7 @@
 
             <div class="modal-body">
                 <div class="popup_content">
-                    <iframe id="edit_view_qs" width="100%" height="232" src="https://english.ican.vn/classroom/local/omo_management/quiz/upsert_question_bank.php?course=171&amp;section=10457&amp;id=238507&amp;quiz_id=31113&amp;qtype=gapselect&amp;quiz_section_custom_id=10018&amp;quiz_slots_custom_id=44198&amp;edit-view=1&amp;is_course_detail=1" allowfullscreen="" data-gtm-yt-inspected-6="true"></iframe>
+                    <!-- <iframe id="edit_view_qs" width="100%" height="232" src="https://english.ican.vn/classroom/local/omo_management/quiz/upsert_question_bank.php?course=171&amp;section=10457&amp;id=238507&amp;quiz_id=31113&amp;qtype=gapselect&amp;quiz_section_custom_id=10018&amp;quiz_slots_custom_id=44198&amp;edit-view=1&amp;is_course_detail=1" allowfullscreen="" data-gtm-yt-inspected-6="true"></iframe> -->
                 </div>
             </div>
         </div>

@@ -47,12 +47,13 @@ class Common extends Model
     }
 
 
-    public static function core_course_create_courses($courseName, $courseCategory, $courseVisible)
+    public static function core_course_create_courses($courseName, $courseCode, $courseCategory, $courseVisible)
     {
         $data = [
             'courses[0][fullname]' => $courseName,
             'courses[0][shortname]' => $courseName,
             'courses[0][categoryid]' => $courseCategory,
+            'courses[0][idnumber]' => $courseCode,
             // 'courses[0][summary]' => $courseSummary, // Nội dung CKEditor đã được mã hóa
             'courses[0][visible]' => $courseVisible,
             // 'courses[0][format]' => $courseFormat,
@@ -565,10 +566,10 @@ class Common extends Model
         return json_decode(self::execute_curl($url, $dataJson, $contentType, false, $method),true);
     }
 
-    public static function core_course_create_categories($categoriName, $categoriParent = 0)
+    public static function core_course_create_categories($categoriName, $categoriParent = 0, $categoryCode)
     {
         $url = config('services.lms.URL_API_LMS') . 'core_course_create_categories';
-        $params = "categories[0][name]=".$categoriName."&categories[0][parent]=".$categoriParent;
+        $params = "categories[0][name]=".$categoriName."&categories[0][parent]=".$categoriParent."&categories[0][idnumber]=".$categoryCode;
         $method = 'POST';
         $contentType = 'Content-Type: application/x-www-form-urlencoded';
         // var_dump(self::execute_curl($url, $params, $contentType, false, $method));die;
@@ -779,9 +780,15 @@ class Common extends Model
             ];
         }
 
+        $classCode = 'class_'.time();
+
+        if(isset($data['class_code'])){
+            $classCode = $data['class_code'];
+        }
         // Tạo lớp học mới
         $newClass = Classes::create([
             'name' => $data['class_name'],
+            'code' => $classCode,
             'year' => $data['year'],
             'status' => $data['status'],
         ]);

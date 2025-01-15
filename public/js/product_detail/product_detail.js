@@ -30,6 +30,41 @@ $(document).ready(function() {
         $('#form-' + itemType + (itemType === 'folder' ? '-info' : '-setting')).removeClass('hide');
     });
 
+    $('.arrow-toogle').click(function() {
+        // 1. Chính nó sẽ thêm class hide
+        $(this).addClass('hide');
+
+        // 2. div class left-part width: 5%
+        $('.left-part').css('width', '5%');
+
+        // 3. class="above-block" và class="below-block" thêm class hide
+        $('.above-block, .below-block').addClass('hide');
+
+        // 4. class="above-block-toggle" và icon-pagetree remove class hide
+        $('.above-block-toggle, .icon-pagetree').removeClass('hide');
+
+        $('.right-part').attr('style', 'max-width: 100%;');
+    });
+
+    // Khi click vào icon-pagetree
+    $('.icon-pagetree').click(function() {
+        // Quay về trạng thái ban đầu
+
+        // 1. Hiển thị lại arrow-toogle
+        $('.arrow-toogle').removeClass('hide');
+
+        // 2. left-part quay về width ban đầu (có thể thay thế bằng giá trị bạn muốn)
+        $('.left-part').removeAttr('style');
+
+        // 3. Hiển thị lại above-block và below-block
+        $('.above-block, .below-block').removeClass('hide');
+
+        // 4. Ẩn lại above-block-toggle và icon-pagetree
+        $('.above-block-toggle, .icon-pagetree').addClass('hide');
+
+        $('.right-part').attr('style', '');
+    });
+
     $('.above-block').on('click', '.btn-group .fa-plus', function(e) {
         e.stopPropagation(); // Ngăn không cho sự kiện click bong bóng ra ngoài
         // Đóng tất cả các dropdown đang mở trừ cái hiện tại
@@ -131,7 +166,7 @@ $(document).ready(function() {
                     <input type="hidden" class="slot-parent-category" name="parent_category[slot]" value="${item.id}">
                     <div class="level-${level} tree-item ${classView} ${disabled} ${mainClass}" data-level=${level} data-type="${item.moodle_type}" data-category-id="${item.id}" style="width: calc(100% - 4%);">
                         <div class="left-item">
-                            <i class="fa fa-arrows" title="Di chuyển" aria-hidden="true"></i>
+                            <!-- <i class="fa fa-arrows" title="Di chuyển" aria-hidden="true"></i> -->
                             <i class="fa btn-expand-collapse fa-chevron-right btn-collapse" title="Mở rộng" data-category-id="${item.id}" aria-hidden="true"></i>
                             <i class="fa fa-folder-open fa-folder-color expand-folder" aria-hidden="true" data-type="course_sections" data-path="${item.id}" data-child-level="${index + 1}" data-category-id="${item.moodle_id}"></i>
                             <div class="product-name-w100 product-name-${item.id}" data-category-id="${item.id}">${item.moodle_name}</div>
@@ -324,69 +359,174 @@ $(document).ready(function() {
         const currentUser = localStorage.getItem('currentUser');
         $.ajax({
             url: "/api/ielts/exam/list",
+            // url: "/api/ems/exam/list",
             type: "GET",
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                if (response.status) {
-                    const parentElement = $('#popup_question_type .popup_content');
-                    parentElement.empty(); // Xóa nội dung cũ
-                    let i = 1;
-                    // *** Bước 1: Hiển thị thông tin bài kiểm tra và các type dưới dạng tag ***
-                    const examData = response.data;
-                    // Lấy danh sách các type từ rounds
-                    // const types = examData.rounds.map(round => round.contest_type);
+                // const parentElement = $('#popup_question_type .popup_content');
+                const parentElement = $('#popup_question_type .modal-body');
+                parentElement.empty(); // Xóa nội dung cũ
 
-                    const names = examData.rounds.map(round => round.name);
-                    // Tạo HTML cho thông tin bài kiểm tra và các type
-                    const examInfoHtml = `
-                        <div class="popup_content_box shadow">
-                            <div class="text_question_type mb-2">
-                                ${i}. ${examData.name}
-                            </div>
-                            <ul class="tags">
-                                ${names.map(name => `<li><a href="#" class="tag">${name}</a></li>`).join('')}
-                            </ul>
-                            <div class="button_question_type">
-                                <button class="btn btn-secondary" data-activity-type="${type}" data-course-id="${courseId}" data-category-id="${sectionId}" data-parent-id="${parentId}" data-question-name="${examData.name}" data-question-type="${examData.contest_type}" data-question-id=${examData.idMockContest}>Select</button>
+                let newHtml = '';
+
+                response.forEach(function(item, index) {
+                    // newHtml += `
+                    //     <div class="exam-contests-item exam-contests-item-${item.contest_type} level-1" data-exam-contest-type="${item.contest_type}" data-exam-idMockContest="${item.idMockContest}" style="cursor: pointer;">
+                    //         <div class="normal-item">
+                    //             <i class="ml-2 fa btn-collapse fa-chevron-right" data-instance="${item.contest_type}" data-level="1"></i>
+                    //             <div class="ml-1">${item.name}</div>
+                    //         </div>
+                    //     </div>
+                    // `;
+                    newHtml += `
+                        <div class="exam-item" data-activity-type="${type}" data-course-id="${courseId}" data-category-id="${sectionId}" data-parent-id="${parentId}" data-exam-contest-type="${item.contest_type}" data-exam-idMockContest="${item.idMockContest}">
+                            <span class="chevron"></span>
+                            ${item.name}
+                            <div class="exam-details">
+                                
                             </div>
                         </div>
                     `;
-                    parentElement.append(examInfoHtml);
-                    // *** Bước 2: Lặp qua các rounds và hiển thị thông tin từng bài kiểm tra ***
-                    // examData.rounds.forEach(function(round, index) {
-                    //     const roundName = round.name;
-                    //     const roundType = round.type;
+                });
+                parentElement.html(newHtml);
+                // if (response.status) {
+                //     let i = 1;
+                //     // *** Bước 1: Hiển thị thông tin bài kiểm tra và các type dưới dạng tag ***
+                //     const examData = response.data;
+                //     // Lấy danh sách các type từ rounds
+                //     // const types = examData.rounds.map(round => round.contest_type);
+
+                //     const names = examData.rounds.map(round => round.name);
+                //     // Tạo HTML cho thông tin bài kiểm tra và các type
+                //     const examInfoHtml = `
+                //         <div class="popup_content_box shadow">
+                //             <div class="text_question_type mb-2">
+                //                 ${i}. ${examData.name}
+                //             </div>
+                //             <!-- <ul class="tags">
+                //                 ${names.map(name => `<li><a href="#" class="tag">${name}</a></li>`).join('')}
+                //             </ul> -->
+                //             <div class="button_question_type">
+                //                 <button class="btn btn-secondary" data-activity-type="${type}" data-course-id="${courseId}" data-category-id="${sectionId}" data-parent-id="${parentId}" data-question-name="${examData.name}" data-question-type="${examData.contest_type}" data-question-id=${examData.idMockContest}>Select</button>
+                //             </div>
+                //         </div>
+                //     `;
+                //     parentElement.append(examInfoHtml);
+                //     // *** Bước 2: Lặp qua các rounds và hiển thị thông tin từng bài kiểm tra ***
+                //     // examData.rounds.forEach(function(round, index) {
+                //     //     const roundName = round.name;
+                //     //     const roundType = round.type;
                         
-                    //     // Lặp qua listBaikiemtra để hiển thị từng bài kiểm tra của round
-                    //     round.listBaikiemtra.forEach(function(testItem) {
-                    //         const testName = testItem.name;
-                    //         const idBaikiemtra = testItem.idBaikiemtra;
-                    //         const lowerCaseRoundName = roundName.toLowerCase();
-                    //         // Tạo phần HTML cho từng bài kiểm tra trong round
-                    //         const testHtml = `
-                    //             <div class="popup_content_box shadow">
-                    //                 <div class="text_question_type mb-2">
-                    //                     ${i + 1}. ${testName}
-                    //                 </div>
-                    //                 <ul class="tags">
-                    //                     <li><a href="#" class="tag">${roundName}</a></li>
-                    //                 </ul>
-                    //                 <div class="button_question_type">
-                    //                     <button class="btn btn-secondary" data-level="${level}" data-activity-type="${type}" data-course-id="${courseId}" data-category-id="${sectionId}" data-parent-id="${parentId}" data-question-name="${testName}" data-question-type=${lowerCaseRoundName} data-question-id=${idBaikiemtra}>Select</button>
-                    //                 </div>
-                    //             </div>
-                    //         `;
+                //     //     // Lặp qua listBaikiemtra để hiển thị từng bài kiểm tra của round
+                //     //     round.listBaikiemtra.forEach(function(testItem) {
+                //     //         const testName = testItem.name;
+                //     //         const idBaikiemtra = testItem.idBaikiemtra;
+                //     //         const lowerCaseRoundName = roundName.toLowerCase();
+                //     //         // Tạo phần HTML cho từng bài kiểm tra trong round
+                //     //         const testHtml = `
+                //     //             <div class="popup_content_box shadow">
+                //     //                 <div class="text_question_type mb-2">
+                //     //                     ${i + 1}. ${testName}
+                //     //                 </div>
+                //     //                 <ul class="tags">
+                //     //                     <li><a href="#" class="tag">${roundName}</a></li>
+                //     //                 </ul>
+                //     //                 <div class="button_question_type">
+                //     //                     <button class="btn btn-secondary" data-level="${level}" data-activity-type="${type}" data-course-id="${courseId}" data-category-id="${sectionId}" data-parent-id="${parentId}" data-question-name="${testName}" data-question-type=${lowerCaseRoundName} data-question-id=${idBaikiemtra}>Select</button>
+                //     //                 </div>
+                //     //             </div>
+                //     //         `;
                 
-                    //         // Append HTML của từng bài kiểm tra vào popup content
-                    //         parentElement.append(testHtml);
-                    //         i++; // Tăng chỉ số i để hiển thị đúng thứ tự
-                    //     });
-                    // });
-                }
+                //     //         // Append HTML của từng bài kiểm tra vào popup content
+                //     //         parentElement.append(testHtml);
+                //     //         i++; // Tăng chỉ số i để hiển thị đúng thứ tự
+                //     //     });
+                //     // });
+                // }
                 // Hiển thị popup
                 $('#popup_question_type').modal('show');
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+
+    $(document).on('click', '.exam-item', function () {
+        // Remove active class from all items
+        $('.exam-item').removeClass('active');
+        $('.exam-details').slideUp();
+        
+        // Add active class to clicked item
+        $(this).addClass('active');
+        
+        // Show details of clicked item
+        $(this).find('.exam-details').slideDown();
+
+        var exam_contest_type = $(this).attr('data-exam-contest-type');
+        var exam_idMockContest = $(this).attr('data-exam-idMockContest');
+        var activity_type = $(this).attr('data-activity-type');
+        var course_id = $(this).attr('data-course-id');
+        var category_id = $(this).attr('data-category-id');
+        var parent_id = $(this).attr('data-parent-id');
+
+        getContentExamContest(exam_contest_type, exam_idMockContest, activity_type, course_id, category_id, parent_id);
+    });
+
+    // $(document).on('click', '.exam-contests-item', function () {
+    //     var $this = $(this);
+
+    //     var $currentBlock = $this.closest('.modal-body');
+
+    //     var $icon = $this.find('.btn-collapse');
+    //     $icon.toggleClass('fa-chevron-down fa-chevron-right');
+
+    //     $currentBlock.find('.exam-contests-item').removeClass('active');
+    //     $this.addClass('active');
+
+    //     getContentExamContest($(this).attr('data-exam-contest-type'), $(this).attr('data-exam-idMockContest'));
+    // });
+
+    function getContentExamContest(exam_contest_type, exam_idMockContest, activity_type, course_id, category_id, parent_id){
+        $.ajax({
+            url: "/api/ems/exam/list/detail",
+            type: "GET",
+            data: {
+                exam_contest_type: exam_contest_type,
+                exam_idMockContest: exam_idMockContest
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                console.log(response);
+
+                // const parentElement = $('#popup_question_type .popup_content');
+                const parentElement = $('#popup_question_type .modal-body .exam-item .exam-details');
+                parentElement.empty(); // Xóa nội dung cũ
+
+                let newHtml = '';
+
+                const examData = response.data;
+
+                newHtml += `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Thời gian bắt đầu:</strong> ${examData.timeStart}</p>
+                            <p><strong>Thời gian kết thúc:</strong> ${examData.timeEnd}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Số lần làm tối đa:</strong> ${examData.maxNumAttempt}</p>
+                            <p><strong>Trạng thái:</strong> <span class="badge bg-success">Đang mở</span></p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-primary chooseEmsExam" data-activity-type="${activity_type}" data-course-id="${course_id}" data-category-id="${category_id}" data-parent-id="${parent_id}" data-question-name="${examData.name}" data-question-type="${examData.contest_type}" data-question-id=${examData.idMockContest}>Select</button>
+                    </div>
+                `;
+                parentElement.html(newHtml);
             },
             error: function(xhr, status, error) {
                 console.error('Error:', error);
@@ -398,8 +538,9 @@ $(document).ready(function() {
         event.preventDefault(); // Ngăn hành vi mặc định (click và chuyển hướng)
     });
 
-    $(document).on('click', '.button_question_type .btn-secondary', function() {
+    $(document).on('click', '.chooseEmsExam', function(e) {
         // Lấy giá trị từ các thuộc tính data- của nút được click
+        e.stopPropagation();
         const questionName = $(this).data('question-name');
         const questionType = $(this).data('question-type');
         const questionId = $(this).data('question-id');
@@ -621,7 +762,8 @@ $(document).ready(function() {
 
                 if(activity_type == 'quiz'){
                     uploadedFiles = []
-                    renderFormQuiz(response.data.cm, response.selectedParentId, response.sectionData, response.str_availability_cmid)
+                    renderFormQuiz(response.data.cm, response.selectedParentId, response.sectionData, response.str_availability_cmid, response.examContestsData)
+                    renderTemplateHtmlQuizSection(response.data.cm, response.selectedParentId, response.sectionData, response.str_availability_cmid, response.examContestsData);
                 }
 
                 if(activity_type == 'resource'){
@@ -745,7 +887,7 @@ $(document).ready(function() {
                         <input type="hidden" class="slot-parent-category" name="parent_category[slot]" value="${item.id}">
                         <div class="level-${level} tree-item view-course-children ${disabled} view-course-children-${item.id}" data-level=${level} data-type="${item.moodle_type}" data-category-id="${item.id}" style="width: calc(100% - 4%);">
                             <div class="left-item">
-                                <i class="fa fa-arrows" title="Di chuyển" aria-hidden="true"></i>
+                                <!-- <i class="fa fa-arrows" title="Di chuyển" aria-hidden="true"></i> -->
                                 <i class="fa ${icon}" aria-hidden="true" data-type="course_sections" data-path="${item.id}" data-child-level="${level + 1}" data-category-id="${item.moodle_id}"></i>
                                 <div class="${productClass} box-name product-name-${item.id}" data-parent="${item.parent_id}" data-cmid="${item.moodle_id}" data-type="${item.moodle_type}" data-category-id="${item.id}">${item.moodle_name}</div>
                             </div>
@@ -784,7 +926,10 @@ $(document).ready(function() {
                     icon = 'fa-list-ol';
                     if (item.availabilityinfo != null) {
                         dimmed = 'dimmed';
-                        completionMark = item.availabilityinfo;
+                        // completionMark = item.availabilityinfo; //old
+                        let tempDiv = $('<div>').html(item.availabilityinfo); // Tạo thẻ tạm
+                        tempDiv.find('a').contents().unwrap(); // Loại bỏ thẻ <a> và giữ lại nội dung
+                        completionMark = tempDiv.html(); // Lấy nội dung sau khi loại bỏ thẻ <a>
                     }
                 }
 
@@ -792,7 +937,10 @@ $(document).ready(function() {
                     icon = 'fa-file';
                     if (item.availabilityinfo != null) {
                         dimmed = 'dimmed';
-                        completionMark = item.availabilityinfo;
+                        // completionMark = item.availabilityinfo; //old
+                        let tempDiv = $('<div>').html(item.availabilityinfo); // Tạo thẻ tạm
+                        tempDiv.find('a').contents().unwrap(); // Loại bỏ thẻ <a> và giữ lại nội dung
+                        completionMark = tempDiv.html(); // Lấy nội dung sau khi loại bỏ thẻ <a>
                     }
                 }
 
@@ -800,7 +948,10 @@ $(document).ready(function() {
                     icon = 'fa-file';
                     if (item.availabilityinfo != null) {
                         dimmed = 'dimmed';
-                        completionMark = item.availabilityinfo;
+                        // completionMark = item.availabilityinfo; //old
+                        let tempDiv = $('<div>').html(item.availabilityinfo); // Tạo thẻ tạm
+                        tempDiv.find('a').contents().unwrap(); // Loại bỏ thẻ <a> và giữ lại nội dung
+                        completionMark = tempDiv.html(); // Lấy nội dung sau khi loại bỏ thẻ <a>
                     }
                 }
 
@@ -808,7 +959,10 @@ $(document).ready(function() {
                     icon = 'fa-link';
                     if (item.availabilityinfo != null) {
                         dimmed = 'dimmed';
-                        completionMark = item.availabilityinfo;
+                        // completionMark = item.availabilityinfo; //old
+                        let tempDiv = $('<div>').html(item.availabilityinfo); // Tạo thẻ tạm
+                        tempDiv.find('a').contents().unwrap(); // Loại bỏ thẻ <a> và giữ lại nội dung
+                        completionMark = tempDiv.html(); // Lấy nội dung sau khi loại bỏ thẻ <a>
                     }
                 }
                 
@@ -928,8 +1082,7 @@ $(document).ready(function() {
         });
     }
 
-    function renderFormQuiz(response, selectedParentId, sectionData, str_availability_cmid) {
-        console.log(response)
+    function renderFormQuiz(response, selectedParentId, sectionData, str_availability_cmid, examContestsData) {
         var parentElement = $('#form-quiz-setting');
         parentElement.empty();
 
@@ -946,6 +1099,30 @@ $(document).ready(function() {
                             const isSelected = section.id === selectedParentId ? 'selected' : '';
                             return `<option value="${section.id}" ${isSelected}>${section.moodle_name}</option>`;
                         }).join('')}
+                    </select>
+                </div>
+            </div>
+        `;
+
+        var selectedExamContests = response.quiz_settings_type;
+        var examSelectHtml = `
+            <div class="row mb-2">
+                <div class="col-5">
+                    <h5>Loại học liệu</h5>
+                </div>
+                <div class="col-7 quiz-parent-box">
+                    <select class="w-100" disabled="" name="quiz_settings_type" id="quiz_settings_type">
+        `;
+
+        // Lặp qua từng mảng con
+        examContestsData.forEach(subArray => {
+            subArray.forEach(exam => {
+                const isSelected = exam.contest_type === selectedExamContests ? 'selected' : '';
+                examSelectHtml += `<option value="${exam.contest_type}" ${isSelected}>${exam.name}</option>`;
+            });
+        });
+
+        examSelectHtml += `
                     </select>
                 </div>
             </div>
@@ -973,24 +1150,11 @@ $(document).ready(function() {
                     </div>
                     <div class="col-7">
                         <select class="w-100" disabled="" name="quiz_type" id="quiz_type">
-                            <option selected="" value="quiz">QIZ EMS</option>
+                            <option selected="" value="quiz">QUIZ EMS</option>
                         </select>
                     </div>
                 </div>
-                <div class="row mb-2">
-                    <div class="col-5">
-                        <h5>Loại học liệu</h5>
-                    </div>
-                    <div class="col-7">
-                        <select class="w-100" name="quiz_settings_type" id="quiz_settings_type">
-                            <option ${response.quiz_settings_type == 1 ? 'selected' : ''} value="1">Mock Test 1</option>
-                            <option ${response.quiz_settings_type == 2 ? 'selected' : ''} value="2">Mock Test 2</option>
-                            <option ${response.quiz_settings_type == 3 ? 'selected' : ''} value="3">Mock Test 3</option>
-                            <option ${response.quiz_settings_type == 4 ? 'selected' : ''} value="4">Mock Test 4</option>
-                            <option ${response.quiz_settings_type == 5 ? 'selected' : ''} value="5">Mock Test 5</option>
-                        </select>
-                    </div>
-                </div>
+                ${examSelectHtml}
                 <div class="row mb-2">
                     <div class="col-5">
                         <h5>Trạng thái</h5>
@@ -1007,12 +1171,12 @@ $(document).ready(function() {
                         <h5><b>Điểm</b></h5>
                     </div>
                 </div>
-                <div class="row mb-2">
+                <!-- <div class="row mb-2">
                     <div class="col-5">
                         <h5>Thang điểm</h5>
                     </div>
                     <div class="col-7"><input class="i-grade-quiz w-100" min="0" type="number" name="gradeQuiz" value="${response.grade || '0'}"></div>
-                </div>
+                </div> -->
                 <div class="row mb-2">
                     <div class="col-5">
                         <h5>Số lần làm bài</h5>
@@ -1069,12 +1233,12 @@ $(document).ready(function() {
                     <div class="col-7">
                         <select class="w-100" name="preferredbehaviour" id="preferredbehaviour">
                             <option ${response.preferredbehaviour == 'adaptive' ? 'selected' : ''} value="adaptive">Adaptive mode</option>
-                            <option ${response.preferredbehaviour == 'adaptivenopenalty' ? 'selected' : ''} value="adaptivenopenalty">Adaptive mode (no penalties)</option>
+                            <!-- <option ${response.preferredbehaviour == 'adaptivenopenalty' ? 'selected' : ''} value="adaptivenopenalty">Adaptive mode (no penalties)</option> -->
                             <option ${response.preferredbehaviour == 'deferredfeedback' ? 'selected' : ''} value="deferredfeedback">Deferred feedback</option>
-                            <option ${response.preferredbehaviour == 'deferredcbm' ? 'selected' : ''} value="deferredcbm">Deferred feedback with CBM</option>
+                            <!-- <option ${response.preferredbehaviour == 'deferredcbm' ? 'selected' : ''} value="deferredcbm">Deferred feedback with CBM</option> -->
                             <option ${response.preferredbehaviour == 'immediatefeedback' ? 'selected' : ''} value="immediatefeedback">Immediate feedback</option>
-                            <option ${response.preferredbehaviour == 'immediatecbm' ? 'selected' : ''} value="immediatecbm">Immediate feedback with CBM</option>
-                            <option ${response.preferredbehaviour == 'interactive' ? 'selected' : ''} value="interactive">Interactive with multiple tries</option>
+                            <!-- <option ${response.preferredbehaviour == 'immediatecbm' ? 'selected' : ''} value="immediatecbm">Immediate feedback with CBM</option> -->
+                            <!-- <option ${response.preferredbehaviour == 'interactive' ? 'selected' : ''} value="interactive">Interactive with multiple tries</option> -->
                         </select>
                     </div>
                 </div>
@@ -1303,6 +1467,140 @@ $(document).ready(function() {
                 $('.form-check-completionminattempts').show();
             }
         });
+    }
+
+    function renderTemplateHtmlQuizSection(response, selectedParentId, sectionData, str_availability_cmid, examContestsData){
+        var parentElement = $('.right-part .left-side-content');
+        parentElement.empty();
+
+        var selectedExamContests = response.quiz_settings_type; // Loại học liệu được chọn
+        let selectedExamContestsText = ''; // Biến để lưu tên loại học liệu
+
+        // Lặp qua dữ liệu để tìm loại học liệu được chọn
+        examContestsData.forEach(subArray => {
+            subArray.forEach(exam => {
+                if (exam.contest_type === selectedExamContests) {
+                    selectedExamContestsText = exam.name; // Lấy tên của loại học liệu
+                }
+            });
+        });
+
+        let gradeMethodText = '';
+        switch (response.grademethod) {
+            case "1":
+                gradeMethodText = 'Lần cao nhất';
+                break;
+            case "2":
+                gradeMethodText = 'Điểm trung bình';
+                break;
+            case "3":
+                gradeMethodText = 'Thử nghiệm lần đầu';
+                break;
+            case "4":
+                gradeMethodText = 'Kiểm tra lần cuối';
+                break;
+            default:
+                gradeMethodText = 'Không xác định'; // Giá trị mặc định nếu không khớp
+        }
+
+        const gradeMethodHtml = `
+            <p><strong>Cách tính điểm:</strong> ${gradeMethodText}</p>
+        `;
+
+        let submitMethodText = '';
+
+        if (response.quiz_allquestions == 1) {
+            submitMethodText = 'Tất cả câu hỏi';
+        } else if (response.quiz_requiredquestions == 1) {
+            const requiredQuestions = response.quiz_requiredquestionsPass || 0; // Số lượng câu hỏi
+            submitMethodText = `Yêu cầu số lượng câu hỏi để hoàn thành (${requiredQuestions} câu hỏi)`;
+        } else {
+            submitMethodText = 'Không xác định';
+        }
+
+        const submitMethodHtml = `
+            <p><strong>Nộp bài sau khi hoàn thành:</strong> ${submitMethodText}</p>
+        `;
+
+        // Tạo nội dung HTML mới
+        var newItem = `
+            <div class="exam-header">
+                <h2 class="mb-0">${response.moodle_name}</h2>
+            </div>
+
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-md-12">
+                    <!-- Exam Information -->
+                    <div class="info-card">
+                        <h4 class="mb-4">Thông tin bài thi</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Môn thi:</strong> IELTS</p>
+                                <p><strong>Loại tài nguyên:</strong> QUIZ EMS</p>
+                                <p><strong>Loại học liệu:</strong> ${selectedExamContestsText}</p>
+                                <p><strong>Số lần làm bài:</strong> ${response.attempts}</p>
+                                ${gradeMethodHtml}
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Cho phép nộp bài trước thời gian:</strong> ${response.quiz_submitearly == 1 ? 'Có' : 'Không'}</p>
+                                <p><strong>Thời gian hiển thị nút submit (Phút):</strong> ${response.quiz_submitbuttontime || 0}</p>
+                                ${submitMethodHtml}
+                                <p><strong>Trạng thái:</strong> 
+                                    <span class="badge ${response.visible == 1 ? 'bg-success' : 'bg-danger'}">
+                                        ${response.visible == 1 ? 'Đang mở' : 'Đã ẩn'}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="info-card">
+                        <h4 class="mb-4">Hướng dẫn làm bài</h4>
+                        <ul class="instruction-list">
+                            <li>Đọc kỹ câu hỏi trước khi trả lời</li>
+                            <li>Thời gian làm bài sẽ được tính ngay khi bắt đầu</li>
+                            <li>Không được phép thoát toàn màn hình khi đang làm bài</li>
+                            <li>Bài làm sẽ tự động nộp khi hết thời gian</li>
+                            <li>Có thể nộp bài trước khi hết thời gian</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <!-- <div class="col-md-4">
+                    <div class="info-card text-center">
+                        <h4 class="mb-3">Thời gian còn lại</h4>
+                        <div class="timer-section mb-3">
+                            <span id="timer">120:00</span>
+                        </div>
+                        <button class="btn btn-primary btn-lg w-100 mb-3" id="startExam">
+                            Bắt đầu làm bài
+                        </button>
+                        <div class="text-muted small">
+                            Nhấn "Bắt đầu làm bài" để bắt đầu tính thời gian
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h4 class="mb-3">Thống kê</h4>
+                        <div class="mb-2">
+                            <strong>Số lần đã thi:</strong> 0
+                        </div>
+                        <div class="mb-2">
+                            <strong>Điểm cao nhất:</strong> Chưa có
+                        </div>
+                        <div>
+                            <strong>Lần thi gần nhất:</strong> Chưa có
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+        `;
+    
+        // Thêm nội dung vào parentElement
+        parentElement.append(newItem); 
     }
 
     function renderTemplateUrl(response, selectedParentId, sectionData, str_availability_cmid){
@@ -1877,7 +2175,8 @@ $(document).ready(function() {
             quiz_section: $("#quiz-parent").val(),
             quiz_visible: $("#quiz_status").val(),
             quiz_settings_type: $("#quiz_settings_type").val(),
-            gradeQuiz: $("input[name='gradeQuiz']").val(),
+            // gradeQuiz: $("input[name='gradeQuiz']").val(),
+            gradeQuiz: 10,
             attempts: $("#attempts").val(),
             grademethod: $("#grademethod").val(),
             // shuffleanswers: $("#shuffleanswers").val(),

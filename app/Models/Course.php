@@ -24,7 +24,7 @@ class Course extends Model implements Transformable
      * @var array
      */
     protected $fillable = [
-        'name', 'api_moodle_id'
+        'name', 'api_moodle_id', 'code'
     ];
 
     /**

@@ -78,6 +78,7 @@ Route::get('/class/search', [ClassController::class, 'search'])->middleware('aut
 Route::get('/class/edit/{id}', [ClassController::class, 'edit'])->middleware('auth')->name('class.edit');
 Route::post('/class/update/{id}', [ClassController::class, 'update'])->middleware('auth')->name('class.update');
 Route::post('/class/delete', [ClassController::class, 'delete'])->middleware('auth')->name('class.delete');
+Route::post('/class/import', [ClassController::class, 'import'])->middleware('auth')->name('class.import');
 
 Route::get('/ssologin', function () {
     return Socialite::driver('keycloak')->redirect();
