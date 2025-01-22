@@ -1248,7 +1248,7 @@ class ProductController extends Controller
         //     $completioncmid = -1;
         // }
 
-        $createactivityQuiz = Common::local_custom_service_create_activity_quiz($course_id, $questionName, $sectionData['sectionnum']);
+        $createactivityQuiz = Common::local_custom_service_create_activity_quiz($course_id, $quizName, $sectionData['sectionnum']);
 
         if (isset($createactivityQuiz['cmid'])) {
             $quizId = $createactivityQuiz['cmid'];
@@ -1271,13 +1271,13 @@ class ProductController extends Controller
             // Tạo mới Quiz trong ElasticSearch
             $checkEmsExamExits = ApiEms::where('ems_id', $questionId)->first();
             // 'ems_id', 'ems_name', 'ems_type_id', 'rubric_template_id'
-            if(!$checkEmsExamExits){
-                $checkEmsExamExits = ApiEms::create([
-                    'ems_id' => $questionId,
-                    'ems_name' => $questionName,
-                    'ems_type_id' => $questionType
-                ]);
-            }
+            // if(!$checkEmsExamExits){
+            //     $checkEmsExamExits = ApiEms::create([
+            //         'ems_id' => $questionId,
+            //         'ems_name' => $questionName,
+            //         'ems_type_id' => $questionType
+            //     ]);
+            // }
         
             if (!$checkEmsExamExits) {
                 return response()->json(['error' => 'Failed to create quiz in Es']);
@@ -1633,92 +1633,6 @@ class ProductController extends Controller
 
     public function listContestIelts()
     {
-        $products = [
-            "status" => true,
-            "data" => [
-                "name" => "VTP IELTS EXAM TEST 7",
-                "contest_type" => 3,
-                "maxNumAttempt" => 0,
-                "timeStart" => null,
-                "timeEnd" => null,
-                "idMockContest" => 107,
-                "rounds" => [
-                    [
-                        "name" => "Listening",
-                        "listBaikiemtra" => [
-                            [
-                                "name" => "VTP IELTS LISTENING TEST 7",
-                                "timeAllow" => 2400,
-                                "maxMark" => 10,
-                                "testFormat" => 13,
-                                "maxNumAttempt" => 0,
-                                "timeStart" => "2023-06-01T10:44:00.000Z",
-                                "timeEnd" => "2030-01-01T10:45:00.000Z",
-                                "timeSubmit" => null,
-                                "resultReturnType" => 3,
-                                "idBaikiemtra" => 10252
-                            ]
-                        ],
-                        "type" => 6
-                    ],
-                    [
-                        "name" => "Reading",
-                        "listBaikiemtra" => [
-                            [
-                                "name" => "VTP IELTS READING TEST 7",
-                                "timeAllow" => 3600,
-                                "maxMark" => 10,
-                                "testFormat" => 14,
-                                "maxNumAttempt" => 0,
-                                "timeStart" => "2023-06-01T10:02:00.000Z",
-                                "timeEnd" => "2030-01-01T10:04:00.000Z",
-                                "timeSubmit" => null,
-                                "resultReturnType" => 3,
-                                "idBaikiemtra" => 10256
-                            ]
-                        ],
-                        "type" => 7
-                    ],
-                    [
-                        "name" => "Writing",
-                        "listBaikiemtra" => [
-                            [
-                                "name" => "VTP IELTS WRITING TEST 7",
-                                "timeAllow" => 3600,
-                                "maxMark" => 10,
-                                "testFormat" => 15,
-                                "maxNumAttempt" => 0,
-                                "timeStart" => "2023-06-01T10:12:00.000Z",
-                                "timeEnd" => "2030-01-01T10:13:00.000Z",
-                                "timeSubmit" => null,
-                                "resultReturnType" => 3,
-                                "idBaikiemtra" => 10257
-                            ]
-                        ],
-                        "type" => 8
-                    ],
-                    [
-                        "name" => "Speaking",
-                        "listBaikiemtra" => [
-                            [
-                                "name" => "VTP IELTS SPEAKING TEST 7",
-                                "timeAllow" => 1080,
-                                "maxMark" => 16,
-                                "testFormat" => 16,
-                                "maxNumAttempt" => 0,
-                                "timeStart" => "2023-06-01T10:18:00.000Z",
-                                "timeEnd" => "2030-01-01T10:18:00.000Z",
-                                "timeSubmit" => null,
-                                "resultReturnType" => 3,
-                                "idBaikiemtra" => 10258
-                            ]
-                        ],
-                        "type" => 9
-                    ]
-                ]
-            ]
-        ];
-
         // Danh sách các dạng đề thi(contest_type)
         $contests = [
             [

@@ -358,20 +358,22 @@ $(document).ready(function() {
     function showPopupQuestionType(sectionId, parentId, courseId, type, level) {
         const currentUser = localStorage.getItem('currentUser');
         $.ajax({
-            url: "/api/ielts/exam/list",
-            // url: "/api/ems/exam/list",
+            // url: "/api/ielts/exam/list",
+            url: "/api/ems/exam/list",
             type: "GET",
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
+                console.log(response);
+                var dataResponse = response.data;
                 // const parentElement = $('#popup_question_type .popup_content');
                 const parentElement = $('#popup_question_type .modal-body');
                 parentElement.empty(); // Xóa nội dung cũ
 
                 let newHtml = '';
 
-                response.forEach(function(item, index) {
+                dataResponse.forEach(function(item, index) {
                     // newHtml += `
                     //     <div class="exam-contests-item exam-contests-item-${item.contest_type} level-1" data-exam-contest-type="${item.contest_type}" data-exam-idMockContest="${item.idMockContest}" style="cursor: pointer;">
                     //         <div class="normal-item">

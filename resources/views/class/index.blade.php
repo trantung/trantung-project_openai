@@ -208,14 +208,14 @@
                     </form>
                     <small class="form-text text-muted">Chỉ chấp nhận file .csv</small>
                 </div>
-                <div class="mt-3">
+                <!-- <div class="mt-3">
                     <h6>Hướng dẫn:</h6>
                     <ul class="small text-muted">
                         <li>File CSV phải có các cột: Tên, Email, Số điện thoại</li>
                         <li>Dữ liệu phải được phân tách bằng dấu phẩy (,)</li>
                         <li>Kích thước file tối đa: 5MB</li>
                     </ul>
-                </div>
+                </div> -->
                 <div id="preview" class="mt-3" style="display:none;">
                     <h6>Preview dữ liệu:</h6>
                     <div class="table-responsive">

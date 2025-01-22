@@ -13,4 +13,7 @@ class CategoryValue
         1 => 'course',
         2 => 'quiz',
     ];
+    
+    const CONTEST_TYPE_1 = 19;
+    const CONTEST_TYPE_2 = 21;
 }

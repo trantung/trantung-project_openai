@@ -54,7 +54,40 @@ class CommonEms extends Model
         $apiUrl = getenv('EMS_API_URL_ALL');
         $data = self::connectEms($apiUrl, 'GET');
         if($data) {
-            return $data;
+            $decodeData = json_decode($data, true);
+            if(empty($decodeData['data'])){
+                $decodeData = [
+                    "status" => true,
+                    "data" => [
+                        [
+                            "name" => "Introduction Mock Tests 1&2 exam",
+                            "contest_type" => 19,
+                            "idMockContest" => 548,
+                        ],
+                        // [
+                        //     "name" => "Introduction Mock Test 3, Final Test; Foundation Mock Tests 1&2 exam",
+                        //     "contest_type" => 21,
+                        //     "idMockContest" => 556,
+                        // ],
+                        // [
+                        //     "name" => "Foundation Mock Test 3, Final Test exam",
+                        //     "contest_type" => 23,
+                        //     "idMockContest" => 556,
+                        // ],
+                        // [
+                        //     "name" => "Preparation Mock Tests 1 và 2 exam",
+                        //     "contest_type" => 25,
+                        //     "idMockContest" => 556,
+                        // ],
+                        // [
+                        //     "name" => "IELTS test exam",
+                        //     "contest_type" => 27,
+                        //     "idMockContest" => 556,
+                        // ]
+                    ],
+                ];
+            }
+            return json_encode($decodeData, JSON_PRETTY_PRINT);
         }
         return false;
     }

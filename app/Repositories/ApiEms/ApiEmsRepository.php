@@ -3,6 +3,7 @@
 namespace App\Repositories\ApiEms;
 
 use App\Models\ApiEms;
+use App\Models\EmsType;
 use Prettus\Repository\Eloquent\BaseRepository;
 use Prettus\Repository\Criteria\RequestCriteria;
 use App\Repositories\ApiEms\ApiEmsRepositoryInterface;
@@ -96,11 +97,9 @@ class ApiEmsRepository extends BaseRepository implements ApiEmsRepositoryInterfa
 
     public function createOrUpdateExamPaper($data)
     {
-        dd($data);
         //create apiems
-        // 'ems_id', 'ems_name', 'ems_type_id', 'rubric_template_id', 'skill'
         $ems_id = $data['idMockContest'];
-        $dataEms = $this->model->find($ems_id);
+        $dataEms = $this->model->where('ems_id', $ems_id)->first();
         if(!$dataEms) {
             //tao moi de thi
             return $this->createExamPaper($data);
@@ -113,15 +112,28 @@ class ApiEmsRepository extends BaseRepository implements ApiEmsRepositoryInterfa
     {
         //tao moi api_ems
         $apiEmsId = $this->createEms($data);
-        //tao moi api_ems_type
-        $this->createEmsType($data);
-        //tao moi api_ems_tags
-        $this->createEmsTag($data);
+        if($apiEmsId){
+            //tao moi api_ems_type
+            $this->createEmsType($data);
+        }
+
+        return $apiEmsId;
     }
 
     public function createEmsType($data)
     {
+        $type_id = $data['contest_type'];
+        $type_name = config("ems.contest_type.$type_id");
+        $checkDataExits = EmsType::where('type_id', $type_id)->value('id');
+        // 'ems_id', 'ems_name', 'ems_type_id', 'rubric_template_id'
+        if(!$checkDataExits){
+            $checkDataExits = EmsType::create([
+                'type_id' => $type_id,
+                'type_name' => $type_name,
+            ])->id;
+        }
 
+        return $checkDataExits;
     }
     
     public function createEmsTag($data)
@@ -133,14 +145,31 @@ class ApiEmsRepository extends BaseRepository implements ApiEmsRepositoryInterfa
     {
         $ems_id = $data['idMockContest'];
         $ems_name = $data['name'];
+        $ems_type_id = $data['contest_type'];
+
         return $this->model->create([
             'ems_id' => $ems_id,
             'ems_name' => $ems_name,
+            'ems_type_id' => $ems_type_id
         ])->id;
     }
 
     public function updateExamPaper($data, $dataEms)
     {
-        
+        $ems_id = $data['idMockContest'];
+        $ems_name = $data['name'];
+
+        $update = $this->model->where('ems_id', $ems_id)->update([
+            'ems_name' => $ems_name,
+        ]);
+
+        $type_id = $data['contest_type'];
+        $type_name = config("ems.contest_type.$type_id");
+
+        $checkDataExits = EmsType::where('type_id', $type_id)->update([
+            'type_name' => $type_name,
+        ]);
+
+        return $dataEms->id;
     }
 }

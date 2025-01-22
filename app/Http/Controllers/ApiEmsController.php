@@ -68,6 +68,8 @@ class ApiEmsController extends BaseController
     {
         $request = request()->all();
         $check = $this->connectEms($request);
+
+        return json_decode($check, true);
     }
 
     public function examListDetail(Request $request)
@@ -75,12 +77,12 @@ class ApiEmsController extends BaseController
         $contestDetail = [
             "status" => true,
             "data" => [
-                "name" => "IELTS test exam",
-                "contest_type" => 27,
+                "name" => "Introduction Mock Tests 1&2 exam",
+                "contest_type" => 19,
                 "maxNumAttempt" => 0,
                 "timeStart" => "2024-01-01T00:00:00.000Z",//thời gian bắt đầu thi
                 "timeEnd" => "2035-01-01T23:59:59.999Z",//thời gian kết thúc thi
-                "idMockContest" => 556,
+                "idMockContest" => 548,
                 "rounds" => [
                     [
                         "type" => 6,
@@ -172,17 +174,17 @@ class ApiEmsController extends BaseController
 
     public function connectEms($request)
     {
-        $data = CommonEms::getListExam();
-        if(!$data) {
+        $dataCommonEms = CommonEms::getListExam();
+        if(!$dataCommonEms) {
             return $this->error(400, 'fail');
         }
 
-        $data = json_decode($data, true);
-        $data = $data['data'];
-        foreach($data as $value)
+        $decodeData = json_decode($dataCommonEms, true);
+        foreach($decodeData['data'] as $value)
         {
             $this->apiEmsService->createOrUpdateEmsExamPaper($value);
         }
 
+        return $dataCommonEms;
     }
 }
