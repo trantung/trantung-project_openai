@@ -19,16 +19,26 @@ class CommonHocmaiTask2 extends Model
 
     public static function callCms($dataResponseChat, $questionId, $partNumber)
     {
-        
+        $contestTypeId = '';
+        $apiUeserQuestionPartData = ApiUserQuestionPart::where('user_question_id', $questionId)->first();
+        if($apiUeserQuestionPartData) {
+            if($apiUeserQuestionPartData->contest_type_id == CategoryValue::CONTEST_TYPE_1) {
+                $urlConfig = getenv('EMS_API_TASK2_CONTEST_TYPE_19');
+                $contestTypeId = 19;
+            }
+        } else {
+            $urlConfig = getenv('EMS_API_TASK2');
+        }
+
         $data = [
             'question_id' => $questionId,
             'part_number' => $partNumber,
             'part_info' => $partNumber,
-            'data' => $dataResponseChat
+            'data' => $dataResponseChat,
+            'contest_type_id' => $contestTypeId
         ];
         $data_string = json_encode($data, true);
         $data_string = trim($data_string, '"');
-        $urlConfig = getenv('EMS_API_TASK2');
         $curl = curl_init($urlConfig);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);

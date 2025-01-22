@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use \OpenAI;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Models\ApiUserQuestionPart;
+use App\Commons\Constants\CategoryValue;
 
 class CommonHocmai extends Model
 {
@@ -18,16 +20,26 @@ class CommonHocmai extends Model
 
     public static function callCmsTask1($dataResponseChat, $questionId, $partNumber)
     {
+        $contestTypeId = '';
+        $apiUeserQuestionPartData = ApiUserQuestionPart::where('user_question_id', $questionId)->first();
+        if($apiUeserQuestionPartData) {
+            if($apiUeserQuestionPartData->contest_type_id == CategoryValue::CONTEST_TYPE_1) {
+                $urlConfig = getenv('EMS_API_TASK1_CONTEST_TYPE_19');
+                $contestTypeId = 19;
+            }
+        } else {
+            $urlConfig = getenv('EMS_API_TASK1');
+        }
+        // $urlConfig = getenv('EMS_API_TASK1');
         $data = [
             'question_id' => $questionId,
             'part_number' => $partNumber,
             'part_info' => $partNumber,
-            'data' => $dataResponseChat
+            'data' => $dataResponseChat,
+            'contest_type_id' => $contestTypeId
         ];
         $data_string = json_encode($data, true);
         $data_string = trim($data_string, '"');
-        $urlConfig = getenv('EMS_API_TASK1');
-        
         $curl = curl_init($urlConfig);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);

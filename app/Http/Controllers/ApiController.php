@@ -155,8 +155,16 @@ class ApiController extends Controller
         }
         $question = $jsonData['report'];
         $topic = $jsonData['sample'];
+        $contest_type_id = '';
+        $ems_id = '';
         $jsonData['report'] = strtr( $jsonData['report'], array(  "\n" => "\\n",  "\r" => "\\r"  ));
         $jsonData['sample'] = strtr( $jsonData['sample'], array(  "\n" => "\\n",  "\r" => "\\r"  ));
+        if(isset($jsonData['contest_type_id'])) {
+            $contest_type_id = $jsonData['contest_type_id'];
+        } 
+        if(isset($jsonData['ems_id'])) {
+            $ems_id = $jsonData['ems_id'];
+        } 
         DB::beginTransaction();
         try {
             // Insert v�o b?ng ApiUserQuestion
@@ -166,7 +174,9 @@ class ApiController extends Controller
                 'user_id' => $jsonData['user_id'],
                 'username' => $jsonData['username'],
                 'writing_task_number' => ApiUserQuestion::TASK_1,
-                'status' => 0
+                'status' => 0,
+                'contest_type_id' => $contest_type_id,
+                'ems_id' => $ems_id,
             ];
             $questionTable = ApiUserQuestion::create($data);
             if ($questionTable->id) {
@@ -178,7 +188,9 @@ class ApiController extends Controller
                         'topic' => $jsonData['sample'],
                         'part_number' => $i,
                         'writing_task_number' => ApiUserQuestionPart::WRITING_TASK_1,
-                        'status' => 0
+                        'status' => 0,
+                        'contest_type_id' => $contest_type_id,
+                        'ems_id' => $ems_id,
                     ];
                     ApiUserQuestionPart::create($dataUserQuestionPart);
                 }
@@ -210,6 +222,14 @@ class ApiController extends Controller
         $topic = $jsonData['topic'];
         $jsonData['report'] = strtr( $jsonData['report'], array(  "\n" => "\\n",  "\r" => "\\r"  ));
         $jsonData['topic'] = strtr( $jsonData['topic'], array(  "\n" => "\\n",  "\r" => "\\r"  ));
+        $contest_type_id = '';
+        $ems_id = '';
+        if(isset($jsonData['contest_type_id'])) {
+            $contest_type_id = $jsonData['contest_type_id'];
+        } 
+        if(isset($jsonData['ems_id'])) {
+            $ems_id = $jsonData['ems_id'];
+        } 
         DB::beginTransaction();
         try {
             // Insert v�o b?ng ApiUserQuestion
@@ -219,7 +239,9 @@ class ApiController extends Controller
                 'user_id' => $jsonData['user_id'],
                 'username' => $jsonData['username'],
                 'writing_task_number' => ApiUserQuestion::TASK_2,
-                'status' => 0
+                'status' => 0,
+                'contest_type_id' => $contest_type_id,
+                'ems_id' => $ems_id,
             ];
             $questionTable = ApiUserQuestion::create($data);
             if ($questionTable->id) {
@@ -231,7 +253,9 @@ class ApiController extends Controller
                         'topic' => $jsonData['topic'],
                         'part_number' => $i,
                         'writing_task_number' => ApiUserQuestionPart::WRITING_TASK_2,
-                        'status' => 0
+                        'status' => 0,
+                        'contest_type_id' => $contest_type_id,
+                        'ems_id' => $ems_id,
                     ];
                     ApiUserQuestionPart::create($dataUserQuestionPart);
                 }
