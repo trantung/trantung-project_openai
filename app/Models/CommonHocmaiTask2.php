@@ -29,7 +29,7 @@ class CommonHocmaiTask2 extends Model
         } else {
             $urlConfig = getenv('EMS_API_TASK2');
         }
-
+        $urlConfig = getenv('EMS_API_TASK2');
         $data = [
             'question_id' => $questionId,
             'part_number' => $partNumber,

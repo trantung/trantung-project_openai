@@ -21,16 +21,16 @@ class CommonHocmai extends Model
     public static function callCmsTask1($dataResponseChat, $questionId, $partNumber)
     {
         $contestTypeId = '';
-        $apiUeserQuestionPartData = ApiUserQuestionPart::where('user_question_id', $questionId)->first();
-        if($apiUeserQuestionPartData) {
-            if($apiUeserQuestionPartData->contest_type_id == CategoryValue::CONTEST_TYPE_1) {
+        $apiUserQuestionPartData = ApiUserQuestionPart::where('user_question_id', $questionId)->first();
+        if($apiUserQuestionPartData) {
+            if($apiUserQuestionPartData->contest_type_id == CategoryValue::CONTEST_TYPE_1) {
                 $urlConfig = getenv('EMS_API_TASK1_CONTEST_TYPE_19');
                 $contestTypeId = 19;
             }
         } else {
             $urlConfig = getenv('EMS_API_TASK1');
         }
-        // $urlConfig = getenv('EMS_API_TASK1');
+        $urlConfig = getenv('EMS_API_TASK1');
         $data = [
             'question_id' => $questionId,
             'part_number' => $partNumber,
