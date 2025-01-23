@@ -31,14 +31,13 @@ class CommonHocmai extends Model
         // } else {
         $urlConfig = getenv('EMS_API_TASK1');
         // }
-        $urlConfig = getenv('EMS_API_TASK1');
+        $urlConfig = "https://apiems.hocmai.vn/api_server/thirdparty/aihub/resultWritingTask1?apikey=BZwakOMDwkuJMZfMRhqpPJ7pfB9JHFzZ";
         Log::info('callCmsTask1 urlConfig ' . $urlConfig);
         $data = [
             'question_id' => $questionId,
             'part_number' => $partNumber,
             'part_info' => $partNumber,
             'data' => $dataResponseChat,
-            'contest_type_id' => $contestTypeId
         ];
         $data_string = json_encode($data, true);
         $data_string = trim($data_string, '"');
@@ -48,7 +47,6 @@ class CommonHocmai extends Model
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);  
         curl_setopt($curl, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
-            'x-api-key: d84c814c155bed7147115b5ec91c28246460cd8998ea6e57e89896362c164491',
             'Content-Length: ' . strlen($data_string))
         );
         $result = curl_exec($curl);

@@ -29,13 +29,12 @@ class CommonHocmaiTask2 extends Model
         // } else {
         //     $urlConfig = getenv('EMS_API_TASK2');
         // }
-        $urlConfig = getenv('EMS_API_TASK2');
+        $urlConfig = "https://apiems.hocmai.vn/api_server/thirdparty/aihub/resultWritingTask1?apikey=BZwakOMDwkuJMZfMRhqpPJ7pfB9JHFzZ";
         $data = [
             'question_id' => $questionId,
             'part_number' => $partNumber,
             'part_info' => $partNumber,
             'data' => $dataResponseChat,
-            'contest_type_id' => $contestTypeId
         ];
         $data_string = json_encode($data, true);
         $data_string = trim($data_string, '"');
