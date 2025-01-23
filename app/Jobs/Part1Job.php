@@ -52,8 +52,8 @@ class Part1Job implements ShouldQueue
 
             if (!empty($checkData)) {
                 $updateData = [
-                    // 'openai_response' => json_encode($dataResponseChat,true),
-                    'openai_response' => $dataResponseChat,
+                    'openai_response' => json_encode($dataResponseChat,true),
+                    // 'openai_response' => $dataResponseChat,
                     'total_token' => $totalToken,
                     'prompt_token' => $promptTokens,
                     'complete_token' => $completionTokens,
