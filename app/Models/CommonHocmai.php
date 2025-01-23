@@ -22,6 +22,7 @@ class CommonHocmai extends Model
     {
         $contestTypeId = '';
         $apiUserQuestionPartData = ApiUserQuestionPart::where('user_question_id', $questionId)->first();
+        Log::info('callCmsTask1 Part ' . $partNumber . ' of question_id: ' . $questionId . ' have data ' . count($apiUserQuestionPartData));
         if($apiUserQuestionPartData) {
             if($apiUserQuestionPartData->contest_type_id == CategoryValue::CONTEST_TYPE_1) {
                 $urlConfig = getenv('EMS_API_TASK1_CONTEST_TYPE_19');
@@ -31,6 +32,7 @@ class CommonHocmai extends Model
             $urlConfig = getenv('EMS_API_TASK1');
         }
         $urlConfig = getenv('EMS_API_TASK1');
+        Log::info('callCmsTask1 urlConfig ' . $urlConfig);
         $data = [
             'question_id' => $questionId,
             'part_number' => $partNumber,
