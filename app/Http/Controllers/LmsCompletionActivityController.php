@@ -526,11 +526,15 @@ class LmsCompletionActivityController extends Controller
 
     public function getPercentCourse($data)
     {
-        $percent = 0;
-        foreach($data as $value) {
-            $percent = $percent + $value['percent'];
+        if (empty($data)) {
+            return 0; // Tránh chia cho 0, có thể đặt giá trị mặc định là 0
         }
-        return $percent/count($data);
+
+        $percent = 0;
+        foreach ($data as $value) {
+            $percent += $value['percent'];
+        }
+        return $percent / count($data);
     }
 
     public function processExercise($courseId, $videoId, $exerciseId, $userId)

@@ -88,3 +88,14 @@ Route::post("openai/hocmai/task1/coherence_cohesion", [App\Http\Controllers\ApiT
 Route::post("openai/hocmai/task1/lexical_resource", [App\Http\Controllers\ApiTestController::class,'hocmaiTask1LexicalResource']);
 //grammatical_range_accuracy
 Route::post("openai/hocmai/task1/grammatical_range_accuracy", [App\Http\Controllers\ApiTestController::class,'hocmaiTask1GrammaRange']);
+Route::post("openai/test/task1/identifyError", [App\Http\Controllers\ApiTestController::class,'task2IdentifyErrors']);
+
+//office export file
+// Route::post("office/export/result", [App\Http\Controllers\ApiTestController::class,'exportResult']);
+Route::post("office/export/test/result/word_file", [App\Http\Controllers\ApiTestController::class,'exportResultWordFile']);
+Route::post("office/export/result/word_file", [App\Http\Controllers\ApiController::class,'exportResultWordFile']);
+Route::get("office/download/{filename}", [App\Http\Controllers\ApiController::class,'downloadFile']);
+
+Route::post("ai_video/import", [App\Http\Controllers\AiVideoController::class,'aiVideoImport']);
+
+Route::post("checkmate/upload/pdf", [App\Http\Controllers\ApiController::class,'uploadPDFLms']);
